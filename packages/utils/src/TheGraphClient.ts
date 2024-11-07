@@ -157,7 +157,7 @@ class IndexingState {
             try {
                 return await getCurrentBlockNumber()
             } catch (err) {
-                logger.warn('Failed to get current block number', { reason: err?.reason })
+                logger.warn('Failed to get current block number', { reason: err })
                 return undefined
             }
         }

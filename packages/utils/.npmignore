@@ -7,3 +7,5 @@ tsconfig.*.json
 *.tsbuildinfo
 .eslintignore
 .eslintrc
+karma.config.*
+rollup.config.*

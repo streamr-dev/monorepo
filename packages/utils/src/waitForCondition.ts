@@ -48,9 +48,10 @@ export const waitForCondition = async (
             await wait(retryInterval, composedSignal)
         }
     } catch (e) {
-        if (e.code === 'AbortError') {
+        if (e && e instanceof Object && 'code' in e && e.code === 'AbortError') {
             throwError(userAborted, conditionFn, onTimeoutContext)
         }
+
         throw e
     }
 }

@@ -4,7 +4,5 @@
         "src/**/*",
         "test/**/*"
     ],
-    "references": [
-        { "path": "../utils/tsconfig.node.json" }
-    ]
+    "references": []
 }

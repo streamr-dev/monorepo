@@ -3,18 +3,18 @@ import { pTransaction } from './pTransaction'
 import { AbortError, asAbortable } from './asAbortable'
 import { setAbortableInterval, setAbortableTimeout } from './abortableTimers'
 import { Defer } from './Defer'
-import { ENSName, toENSName } from './ENSName'
-import { EthereumAddress, toEthereumAddress } from './EthereumAddress'
+import { type ENSName, toENSName } from './ENSName'
+import { type EthereumAddress, toEthereumAddress } from './EthereumAddress'
 import { isENSName } from './isENSName'
 import { keyToArrayIndex } from './keyToArrayIndex'
-import { Logger, LogLevel } from './Logger'
+import { Logger, type LogLevel } from './Logger'
 import {
     CountMetric,
     Metric,
     LevelMetric,
     MetricsContext,
-    MetricsDefinition,
-    MetricsReport,
+    type MetricsDefinition,
+    type MetricsReport,
     RateMetric
 } from './Metric'
 import { Multimap } from './Multimap'
@@ -22,13 +22,13 @@ import { randomString } from './randomString'
 import { scheduleAtFixedRate } from './scheduleAtFixedRate'
 import { scheduleAtInterval } from './scheduleAtInterval'
 import { toEthereumAddressOrENSName } from './toEthereumAddressOrENSName'
-import { Events, BrandedString } from './types'
+import { type Events, type BrandedString } from './types'
 import { wait } from './wait'
 import { waitForEvent } from './waitForEvent'
 import { TimeoutError, withTimeout } from './withTimeout'
-import { composeAbortSignals, ComposedAbortSignal } from './composeAbortSignals'
+import { composeAbortSignals, type ComposedAbortSignal } from './composeAbortSignals'
 import { waitForCondition } from './waitForCondition'
-import { waitForEvent3, runAndWaitForEvents3, raceEvents3, runAndRaceEvents3, RunAndRaceEventsReturnType } from './waitForEvent3'
+import { waitForEvent3, runAndWaitForEvents3, raceEvents3, runAndRaceEvents3, type RunAndRaceEventsReturnType } from './waitForEvent3'
 import { withRateLimit } from './withRateLimit'
 import { ObservableEventEmitter } from './ObservableEventEmitter'
 import { initEventGateway } from './initEventGateway'
@@ -36,7 +36,7 @@ import { addManagedEventListener } from './addManagedEventListener'
 import { merge } from './merge'
 import { collect } from './collect'
 import { Gate } from './Gate'
-import { TheGraphClient, GraphQLQuery, FetchResponse } from './TheGraphClient'
+import { TheGraphClient, type GraphQLQuery, type FetchResponse } from './TheGraphClient'
 import { Heap } from './Heap'
 import { executeSafePromise } from './executeSafePromise'
 import { binaryToHex, binaryToUtf8, hexToBinary, utf8ToBinary, areEqualBinaries } from './binaryUtils'
@@ -122,9 +122,9 @@ export {
     RateMetric
 }
 
-export { StreamID, toStreamID, StreamIDUtils } from './StreamID'
+export { type StreamID, toStreamID, StreamIDUtils } from './StreamID'
 export { DEFAULT_PARTITION_COUNT, MAX_PARTITION_COUNT, ensureValidStreamPartitionCount, ensureValidStreamPartitionIndex } from './partition'
-export { StreamPartID, toStreamPartID, StreamPartIDUtils } from './StreamPartID'
-export { UserID, UserIDRaw, toUserId, toUserIdRaw, isValidUserId, isEthereumAddressUserId } from './UserID'
-export { HexString } from './HexString'
-export { ChangeFieldType } from './types'
+export { type StreamPartID, toStreamPartID, StreamPartIDUtils } from './StreamPartID'
+export { type UserID, type UserIDRaw, toUserId, toUserIdRaw, isValidUserId, isEthereumAddressUserId } from './UserID'
+export { type HexString } from './HexString'
+export { type ChangeFieldType } from './types'

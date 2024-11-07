@@ -2,6 +2,7 @@ import pino from 'pino'
 import path from 'path'
 import without from 'lodash/without'
 import padEnd from 'lodash/padEnd'
+import { ILogger } from './types'
 
 export type LogLevel = 'silent' | 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace'
 
@@ -72,7 +73,7 @@ function wrappedMethodCall(
     }
 }
 
-export class Logger {
+export class Logger implements ILogger {
     static NAME_LENGTH = 25
 
     private readonly logger: pino.Logger
