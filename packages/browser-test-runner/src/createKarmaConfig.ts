@@ -1,4 +1,4 @@
-import fs from 'fs'
+import { existsSync } from 'fs'
 
 const DEBUG_MODE = process.env.BROWSER_TEST_DEBUG_MODE ?? false
 
@@ -7,7 +7,7 @@ export const createKarmaConfig = (
 ): (config: any) => any => {
     const setupFiles = [__dirname + '/karma-setup.js']
     const localSetupFile = localDirectory + '/karma-setup.js'
-    if (fs.existsSync(localSetupFile)) {
+    if (existsSync(localSetupFile)) {
         setupFiles.push(localSetupFile)
     }
     const preprocessors: Record<string, string[]> = {}

@@ -3,24 +3,28 @@
   "version": "0.0.1",
   "private": true,
   "description": "A browser test runner for Jest tests",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/streamr-dev/network.git",
     "directory": "packages/browser-test-runner"
   },
-  "main": "./dist/src/exports.js",
+  "main": "./dist/bundle.cjs.js",
+  "module": "./dist/bundle.esm.js",
+  "types": "./dist/types.d.ts",
   "scripts": {
-    "build": "tsc -b tsconfig.node.json",
+    "build": "rollup -c",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '**/*.{js,ts}'"
   },
   "author": "Streamr Network AG <contact@streamr.network>",
   "license": "Apache-2.0",
-  "dependencies": {},
   "devDependencies": {
     "@electron/rebuild": "^3.7.0",
     "@jest/fake-timers": "^29.6.2",
+    "@rollup/plugin-node-resolve": "^15.3.0",
     "buffer": "^6.0.3",
     "electron": "^31.2.0",
+    "esbuild": "^0.24.0",
     "expect": "^29.6.2",
     "jest-matcher-utils": "^29.7.0",
     "jest-mock": "^29.6.3",
@@ -32,6 +36,9 @@
     "karma-spec-reporter": "^0.0.36",
     "karma-webpack": "^5.0.1",
     "node-polyfill-webpack-plugin": "^4.0.0",
+    "rollup": "^4.24.4",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-esbuild": "^6.1.1",
     "timers-browserify": "^2.0.12",
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4"

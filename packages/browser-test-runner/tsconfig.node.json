@@ -1,6 +1,10 @@
 {
     "extends": "../../tsconfig.node.json",
     "compilerOptions": {
+        "incremental": false,
+        "composite": false,
+        "moduleResolution": "Bundler",
+        "module": "Preserve",
         "outDir": "dist"
     },
     "include": [
