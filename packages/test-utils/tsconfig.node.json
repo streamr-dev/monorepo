@@ -1,11 +1,14 @@
 {
     "extends": "../../tsconfig.node.json",
     "compilerOptions": {
+        "incremental": false,
+        "composite": false,
         "outDir": "dist",
-        "types": ["node", "jest"]
+        "types": ["node", "jest"],
+        "declaration": true,
+        "emitDeclarationOnly": true
     },
     "include": [
         "src/**/*"
     ],
-    "references": []
 }
