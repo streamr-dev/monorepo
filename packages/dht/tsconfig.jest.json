@@ -15,7 +15,6 @@
         "src/connection/websocket/BrowserWebsocketClientConnection.ts"
     ],  
     "references": [
-        { "path": "../test-utils/tsconfig.node.json" },
         { "path": "../proto-rpc/tsconfig.node.json" },
         { "path": "../autocertifier-client/tsconfig.node.json" },
         { "path": "../cdn-location/tsconfig.node.json" },

@@ -8,8 +8,5 @@
         "src/**/*",
         "generated/**/*",
         "test/**/*",
-    ],
-    "references": [
-        { "path": "../test-utils/tsconfig.node.json" }
     ]
 }

@@ -7,8 +7,5 @@
     "include": [
         "src/**/*",
         "generated/**/*"
-    ],
-    "references": [
-        { "path": "../test-utils/tsconfig.node.json" }
     ]
 }
