@@ -16,7 +16,7 @@ export const executeSafePromise = async <T>(createPromise: () => Promise<T>): Pr
             process.exit(1)
         } else {
             // cause an unhandled promise rejection on purpose
-            throw new Error('executeSafePromise: Assertion failure!', err)
+            throw new Error(`executeSafePromise: Assertion failure! ${err}`)
         }
     }
 }

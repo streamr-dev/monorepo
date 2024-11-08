@@ -1,10 +1,17 @@
 {
-    "extends": "@tsconfig/node18/tsconfig.json",
-    "compilerOptions": {
-        "outDir": "dist",
-        "moduleResolution": "Bundler",
-        "module": "ES2020",
-        "allowSyntheticDefaultImports": true
-    },
-    "include": ["src/**/*"]
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "esModuleInterop": true,
+    "incremental": true,
+    "moduleResolution": "Bundler",
+    "outDir": "dist",
+    "rootDir": "src",
+    "target": "ES2020",
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "references": []
 }

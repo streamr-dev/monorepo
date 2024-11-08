@@ -2,7 +2,8 @@
     "name": "streamr-monorepo",
     "private": true,
     "scripts": {
-        "build": "npm run --workspaces --if-present build",
+        "build": "npm run build -w packages/browser-test-runner",
+        "build-prev": "npm run --workspaces --if-present build",
         "eslint": "npm run eslint --workspaces --if-present",
         "check": "npm run --workspaces --if-present check",
         "clean-dist": "npx --workspaces -c 'npm run --if-present clean || rm -rf dist *.tsbuildinfo || true'",

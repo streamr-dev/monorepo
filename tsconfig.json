@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/browser-test-runner" },
+    { "path": "./packages/utils" },
+    { "path": "./packages/test-utils" }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outFile": "dist/bundle.d.ts",
+    "rootDir": "src",
+    "isolatedDeclarations": true
+  }
+}
