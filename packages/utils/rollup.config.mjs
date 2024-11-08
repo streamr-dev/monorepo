@@ -1,30 +1,64 @@
-import resolve from "@rollup/plugin-node-resolve"
-import commonjs from "@rollup/plugin-commonjs"
-import esbuild from "rollup-plugin-esbuild"
-import { terser } from "rollup-plugin-terser"
-import json from "@rollup/plugin-json"
-import nodePolyfills from "rollup-plugin-polyfill-node"
 import alias from "@rollup/plugin-alias"
-import { fileURLToPath } from "url"
+import commonjs from "@rollup/plugin-commonjs"
+import json from "@rollup/plugin-json"
+import resolve from "@rollup/plugin-node-resolve"
+import typescript from "@rollup/plugin-typescript"
 import path, { dirname } from "path"
-import { dts } from "rollup-plugin-dts"
+import nodePolyfills from "rollup-plugin-polyfill-node"
+import { terser } from "rollup-plugin-terser"
+import { fileURLToPath } from "url"
+import pkg from "./package.json" assert { type: "json" }
 
-const production = !process.env.ROLLUP_WATCH
+function onwarn(warning, defaultHandler) {
+    if (warning.code !== "CIRCULAR_DEPENDENCY") {
+        defaultHandler(warning)
+    }
+}
 
 export default [
     {
         input: "src/exports.ts",
+        onwarn,
         output: [
             {
-                file: "dist/bundle.umd.js",
+                file: pkg.main,
+                format: "cjs",
+                sourcemap: true,
+            },
+            {
+                file: pkg.module,
+                format: "es",
+                sourcemap: true,
+            },
+        ],
+        plugins: [
+            nodePolyfills(),
+            json(),
+            resolve(),
+            commonjs(),
+            typescript({
+                outputToFilesystem: true,
+            }),
+        ],
+        external: [
+            ...Object.keys(pkg.dependencies || {}),
+            ...Object.keys(pkg.devDependencies || {}),
+        ],
+    },
+    {
+        input: "src/exports.ts",
+        onwarn,
+        output: [
+            {
+                file: pkg.browser,
                 format: "umd",
-                name: "@streamr/utils",
-                sourcemap: !production,
+                name: pkg.name,
+                sourcemap: true,
             },
             {
                 file: "dist/bundle.umd.min.js",
                 format: "umd",
-                name: "@streamr/utils",
+                name: pkg.name,
                 sourcemap: false,
                 plugins: [terser()],
             },
@@ -41,72 +75,15 @@ export default [
                     },
                 ],
             }),
-            nodePolyfills({
-                include: ["os", "crypto", "stream", "fs", "path"],
-            }),
+            nodePolyfills(),
             json(),
-            resolve({
-                preferBuiltins: false,
-            }),
+            resolve(),
             commonjs(),
-            esbuild({
-                target: "es2020",
-                minify: production,
-                sourcemap: !production,
-            }),
+            typescript(),
         ],
-    },
-    {
-        input: "src/exports.ts",
-        output: {
-            file: "dist/bundle.cjs.js",
-            format: "cjs",
-            sourcemap: !production,
-        },
-        plugins: [
-            json(),
-            resolve({
-                preferBuiltins: true,
-            }),
-            commonjs(),
-            esbuild({
-                target: "esnext",
-                minify: production,
-                sourcemap: !production,
-            }),
-        ],
-    },
-    {
-        input: "src/exports.ts",
-        output: {
-            file: "dist/bundle.esm.js",
-            format: "es",
-            sourcemap: !production,
-        },
-        plugins: [
-            json(),
-            resolve({
-                preferBuiltins: true,
-            }),
-            commonjs(),
-            esbuild({
-                target: "esnext",
-                minify: production,
-                sourcemap: !production,
-            }),
-        ],
-    },
-    {
-        input: "src/exports.ts",
-        output: {
-            file: "dist/types.d.ts",
-            format: "es",
-        },
-        plugins: [
-            resolve({
-                preferBuiltins: true,
-            }),
-            dts(),
-        ],
+        // external: [
+        //     ...Object.keys(pkg.dependencies || {}),
+        //     ...Object.keys(pkg.devDependencies || {}),
+        // ],
     },
 ]

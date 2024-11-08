@@ -11,7 +11,7 @@
   },
   "main": "./dist/bundle.cjs.js",
   "module": "./dist/bundle.esm.js",
-  "types": "./dist/bundle.d.ts",
+  "types": "./dist/src/exports.d.ts",
   "scripts": {
     "build": "rollup -c --bundleConfigAsCjs",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '**/*.{js,ts}'"
