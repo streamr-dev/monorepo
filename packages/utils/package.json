@@ -13,7 +13,7 @@
   "types": "./build/src/exports.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "prepare-release": "rollup -c && dts-bundle-generator --no-banner -o dist/bundle.d.ts --project=tsconfig.dist.json src/exports.ts && tsx scripts/rewrite-package.ts",
+    "postbuild": "rollup -c && dts-bundle-generator --no-banner -o dist/bundle.d.ts --project=tsconfig.dist.json src/exports.ts && tsx scripts/rewrite-package.ts",
     "clean": "jest --clearCache || true; rm -rf dist build vendor *.tsbuildinfo node_modules/.cache || true",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'",
     "test": "jest",
@@ -42,6 +42,7 @@
     "node-fetch": "^2.7.0",
     "prettier": "^3.3.3",
     "rollup": "^4.24.4",
+    "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-polyfill-node": "^0.13.0",
     "rollup-plugin-terser": "^7.0.2",
     "tsx": "^4.19.2"

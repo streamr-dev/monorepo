@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "prepare-release": "rollup -c && tsc -p tsconfig.dist.json && tsx scripts/rewrite-package.ts",
+    "postbuild": "rollup -c && tsc -p tsconfig.dist.json && tsx scripts/rewrite-package.ts",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",
     "test": "jest",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'"
@@ -51,6 +51,7 @@
     "@types/express": "^4.17.21",
     "@types/node-fetch": "^2.6.4",
     "prettier": "^3.3.3",
-    "rollup": "^4.24.4"
+    "rollup": "^4.24.4",
+    "rollup-plugin-copy": "^3.5.0"
   }
 }

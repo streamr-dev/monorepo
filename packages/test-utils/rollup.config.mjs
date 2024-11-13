@@ -1,5 +1,6 @@
 import resolve from "@rollup/plugin-node-resolve"
 import { basename, extname } from "node:path"
+import copy from "rollup-plugin-copy"
 import pkg from "./package.json" assert { type: "json" }
 
 function config(filename) {
@@ -22,6 +23,9 @@ function config(filename) {
         plugins: [
             resolve({
                 preferBuiltins: true,
+            }),
+            copy({
+                targets: [{ src: ["README.md", "LICENSE"], dest: "dist" }],
             }),
         ],
         external: [

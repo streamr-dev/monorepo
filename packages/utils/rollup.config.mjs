@@ -3,6 +3,7 @@ import commonjs from "@rollup/plugin-commonjs"
 import json from "@rollup/plugin-json"
 import resolve from "@rollup/plugin-node-resolve"
 import path, { dirname } from "path"
+import copy from "rollup-plugin-copy"
 import nodePolyfills from "rollup-plugin-polyfill-node"
 import { terser } from "rollup-plugin-terser"
 import { fileURLToPath } from "url"
@@ -20,22 +21,17 @@ export default [
         onwarn,
         output: [
             {
-                file: 'dist/bundle.cjs.js',
+                file: "dist/bundle.cjs.js",
                 format: "cjs",
                 sourcemap: true,
             },
             {
-                file: 'dist/bundle.esm.js',
+                file: "dist/bundle.esm.js",
                 format: "es",
                 sourcemap: true,
             },
         ],
-        plugins: [
-            nodePolyfills(),
-            json(),
-            resolve(),
-            commonjs(),
-        ],
+        plugins: [nodePolyfills(), json(), resolve(), commonjs()],
         external: [
             ...Object.keys(pkg.dependencies || {}),
             ...Object.keys(pkg.devDependencies || {}),
@@ -46,7 +42,7 @@ export default [
         onwarn,
         output: [
             {
-                file: 'dist/bundle.umd.js',
+                file: "dist/bundle.umd.js",
                 format: "umd",
                 name: pkg.name,
                 sourcemap: true,
@@ -66,7 +62,7 @@ export default [
                         find: "./Logger",
                         replacement: path.resolve(
                             dirname(fileURLToPath(import.meta.url)),
-                            "build/src/browser/Logger.js"
+                            "build/src/browser/Logger.js",
                         ),
                     },
                 ],
@@ -75,6 +71,9 @@ export default [
             json(),
             resolve(),
             commonjs(),
+            copy({
+                targets: [{ src: ["README.md", "LICENSE"], dest: "dist" }],
+            }),
         ],
     },
 ]
