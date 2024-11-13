@@ -25,7 +25,7 @@ export const getLocalAirportCodeByCoordinates: (latitude: number, longitude: num
 
     Object.keys(airportCodeToRegion).forEach((key) => {
         const airport = airportCodeToRegion[key]
-        const distance = haversine({ latitude, longitude }, { latitude: airport[1], longitude: airport[2] })
+        const distance = haversine({ latitude, longitude }, { latitude: airport[1], longitude: airport[2] }, {})
         distances.push([key, distance])
     })
 
@@ -82,7 +82,7 @@ export const getLocalRegionByCoordinates: (latitude: number, longitude: number) 
 
     Object.keys(airportCodeToRegion).forEach((key) => {
         const airport = airportCodeToRegion[key]
-        const distance = haversine({ latitude, longitude }, { latitude: airport[1], longitude: airport[2] })
+        const distance = haversine({ latitude, longitude }, { latitude: airport[1], longitude: airport[2] }, {})
         distances.push([airport[0], distance])
     })
 

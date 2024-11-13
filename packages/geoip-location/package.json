@@ -36,6 +36,7 @@
     "dts-bundle-generator": "^9.5.1",
     "express": "^4.21.1",
     "rollup": "^4.25.0",
-    "rollup-plugin-copy": "^3.5.0"
+    "rollup-plugin-copy": "^3.5.0",
+    "tsx": "^4.19.2"
   }
 }
