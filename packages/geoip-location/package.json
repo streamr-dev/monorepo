@@ -7,25 +7,21 @@
     "url": "git+https://github.com/streamr-dev/network.git",
     "directory": "packages/geoip-location"
   },
-  "main": "dist/src/exports.js",
-  "browser": {
-    "dist/src/exports.js": false,
-    "dist/src/GeoIpLocator.js": false,
-    "dist/src/downloadGeoIpDatabase.js": false
-  },
-  "types": "dist/src/exports.d.ts",
+  "private": true,
+  "type": "module",
+  "module": "src/exports.js",
+  "types": "build/src/exports.d.ts",
   "license": "Apache-2.0",
   "author": "Streamr Network AG <contact@streamr.network>",
   "scripts": {
-    "build": "tsc -b tsconfig.node.json",
-    "check": "tsc -p ./tsconfig.jest.json",
+    "build": "tsc -b",
+    "prepare-release": "rollup -c && dts-bundle-generator --no-banner -o dist/bundle.d.ts --project=tsconfig.dist.json src/exports.ts && tsx scripts/rewrite-package.ts",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'",
     "test": "jest test/unit",
     "test-unit": "jest test/unit"
   },
   "dependencies": {
-    "@streamr/utils": "102.0.0-beta.0",
     "eventemitter3": "^5.0.0",
     "long-timeout": "^0.1.1",
     "mmdb-lib": "^2.1.1",
@@ -33,8 +29,13 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@streamr/utils": "^102.0.0-beta.0",
     "@types/long-timeout": "^0.1.2",
     "@types/tar": "^6.1.11",
-    "express": "^4.21.1"
+    "dts-bundle-generator": "^9.5.1",
+    "express": "^4.21.1",
+    "rollup": "^4.25.0",
+    "rollup-plugin-copy": "^3.5.0"
   }
 }

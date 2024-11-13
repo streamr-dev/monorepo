@@ -2,33 +2,33 @@
   "name": "@streamr/test-utils",
   "version": "102.0.0-beta.0",
   "description": "A collection of shared test utilities",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/streamr-dev/network.git",
     "directory": "packages/test-utils"
   },
+  "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.esm.js",
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs.js"
+      "import": "./src/index.ts",
+      "types": "./build/src/index.d.ts"
     },
     "./customMatchers": {
-      "import": "./dist/customMatchers.esm.js",
-      "types": "./dist/customMatchers.d.ts",
-      "require": "./dist/customMatchers.cjs.js"
+      "import": "./src/customMatchers.ts",
+      "types": "./build/src/customMatchers.d.ts"
     },
     "./setupCustomMatchers": {
-      "import": "./dist/setupCustomMatchers.esm.js",
-      "types": "./dist/setupCustomMatchers.d.ts",
-      "require": "./dist/setupCustomMatchers.cjs.js"
+      "import": "./src/setupCustomMatchers.ts",
+      "types": "./build/src/setupCustomMatchers.d.ts"
     },
     "./customMatcherTypes": {
-      "types": "./dist/customMatchersTypes.d.ts"
+      "types": "./build/src/customMatchersTypes.d.ts"
     }
   },
   "scripts": {
-    "build": "rollup -c && tsc -p tsconfig.node.json",
+    "build": "tsc -b",
+    "prepare-release": "rollup -c && tsc -p tsconfig.dist.json && tsx scripts/rewrite-package.ts",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",
     "test": "jest",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'"
@@ -50,8 +50,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node-fetch": "^2.6.4",
-    "esbuild": "^0.24.0",
-    "rollup": "^4.24.4",
-    "rollup-plugin-esbuild": "^6.1.1"
+    "prettier": "^3.3.3",
+    "rollup": "^4.24.4"
   }
 }

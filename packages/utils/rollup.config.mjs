@@ -2,7 +2,6 @@ import alias from "@rollup/plugin-alias"
 import commonjs from "@rollup/plugin-commonjs"
 import json from "@rollup/plugin-json"
 import resolve from "@rollup/plugin-node-resolve"
-import typescript from "@rollup/plugin-typescript"
 import path, { dirname } from "path"
 import nodePolyfills from "rollup-plugin-polyfill-node"
 import { terser } from "rollup-plugin-terser"
@@ -17,16 +16,16 @@ function onwarn(warning, defaultHandler) {
 
 export default [
     {
-        input: "src/exports.ts",
+        input: "build/src/exports.js",
         onwarn,
         output: [
             {
-                file: pkg.main,
+                file: 'dist/bundle.cjs.js',
                 format: "cjs",
                 sourcemap: true,
             },
             {
-                file: pkg.module,
+                file: 'dist/bundle.esm.js',
                 format: "es",
                 sourcemap: true,
             },
@@ -36,9 +35,6 @@ export default [
             json(),
             resolve(),
             commonjs(),
-            typescript({
-                outputToFilesystem: true,
-            }),
         ],
         external: [
             ...Object.keys(pkg.dependencies || {}),
@@ -46,11 +42,11 @@ export default [
         ],
     },
     {
-        input: "src/exports.ts",
+        input: "build/src/exports.js",
         onwarn,
         output: [
             {
-                file: pkg.browser,
+                file: 'dist/bundle.umd.js',
                 format: "umd",
                 name: pkg.name,
                 sourcemap: true,
@@ -70,7 +66,7 @@ export default [
                         find: "./Logger",
                         replacement: path.resolve(
                             dirname(fileURLToPath(import.meta.url)),
-                            "src/browser/Logger.ts"
+                            "build/src/browser/Logger.js"
                         ),
                     },
                 ],
@@ -79,11 +75,6 @@ export default [
             json(),
             resolve(),
             commonjs(),
-            typescript(),
         ],
-        // external: [
-        //     ...Object.keys(pkg.dependencies || {}),
-        //     ...Object.keys(pkg.devDependencies || {}),
-        // ],
     },
 ]

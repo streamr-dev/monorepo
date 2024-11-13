@@ -4,6 +4,7 @@ import { CityResponse, Reader } from 'mmdb-lib'
 import { extractFileFromTarStream } from './tarHelper'
 import { v4 } from 'uuid'
 import { Logger } from '@streamr/utils'
+import { ReadableStream } from 'stream/web'
 
 const GEOIP_MIRROR_URL = 'https://raw.githubusercontent.com/GitSquared/node-geolite2-redist/master/redist/'
 const DB_NAME = 'GeoLite2-City'
@@ -52,7 +53,7 @@ const downloadNewDb = async (
     }
 
     try {
-        await extractFileFromTarStream(dbFileName, response.body!, downloadFolder)
+        await extractFileFromTarStream(dbFileName, response.body as ReadableStream<Uint8Array>, downloadFolder)
     } catch (e) {
         try {
             fs.rmSync(downloadFolder, { recursive: true })

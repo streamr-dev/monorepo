@@ -4,10 +4,10 @@
     "incremental": true,
     "declaration": true,
     "moduleResolution": "Bundler",
-    "outDir": "dist",
+    "outDir": "build",
     "target": "ES2020",
     "types": ["node"]
   },
   "include": ["src"],
-  "references": []
+  "references": [{ "path": "../browser-test-runner" }]
 }

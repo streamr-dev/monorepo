@@ -4,7 +4,7 @@ import { ReadableStream } from 'stream/web'
 import NodePath from 'path'     // use NodePath to avoid conflict with other 'path' symbols
 import fs from 'fs'
 
-const doExtractFileFromTarStream = (fileName: string, stream: ReadableStream<any>, downloadFolder: string): Promise<void> => {
+const doExtractFileFromTarStream = (fileName: string, stream: ReadableStream<unknown>, downloadFolder: string): Promise<void> => {
     return new Promise((resolve, reject) => {
         try {
             const nodeStream = Readable.fromWeb(stream)
@@ -26,7 +26,7 @@ const doExtractFileFromTarStream = (fileName: string, stream: ReadableStream<any
     })
 }
 
-export const extractFileFromTarStream = async (fileName: string, stream: ReadableStream<any>, downloadFolder: string): Promise<void> => {
+export const extractFileFromTarStream = async (fileName: string, stream: ReadableStream<unknown>, downloadFolder: string): Promise<void> => {
     await doExtractFileFromTarStream(fileName, stream, downloadFolder)
     if (!fs.existsSync(NodePath.join(downloadFolder, fileName))) {
         throw new Error('File not found in tarball: ' + fileName)
