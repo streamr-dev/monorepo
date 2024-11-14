@@ -74,18 +74,28 @@ export const sendConnectivityRequest = async (
                 outgoingConnection.close(false)
                 try {
                     const message: Message = Message.fromBinary(bytes)
-                    if (message.body.oneofKind === 'connectivityResponse') {
-                        logger.debug('ConnectivityResponse received: ' + JSON.stringify(Message.toJson(message)))
-                        const connectivityResponseMessage = message.body.connectivityResponse
-                        const remoteVersion = connectivityResponseMessage.version
-                        outgoingConnection!.off('data', listener)
-                        clearTimeout(timeoutId)
-                        if (isMaybeSupportedVersion(remoteVersion)) {
-                            resolve(connectivityResponseMessage)
-                        } else {
-                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                            reject(`Unsupported version: ${remoteVersion}`)
-                        }
+
+                    const { body } = message
+
+                    if (body.oneofKind !== 'connectivityResponse') {
+                        return
+                    }
+
+                    if (!('connectivityResponse' in body)) {
+                        return
+                    }
+
+                    logger.debug('ConnectivityResponse received: ' + JSON.stringify(Message.toJson(message)))
+
+                    const connectivityResponseMessage = body.connectivityResponse
+                    const remoteVersion = connectivityResponseMessage.version
+                    outgoingConnection!.off('data', listener)
+                    clearTimeout(timeoutId)
+                    if (isMaybeSupportedVersion(remoteVersion)) {
+                        resolve(connectivityResponseMessage)
+                    } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                        reject(`Unsupported version: ${remoteVersion}`)
                     }
                 } catch (err) {
                     logger.trace('Could not parse message', { err })

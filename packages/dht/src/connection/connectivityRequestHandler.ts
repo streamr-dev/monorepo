@@ -22,15 +22,26 @@ export const attachConnectivityRequestHandler = (connectionToListenTo: Websocket
         logger.trace('server received data')
         try {
             const message = Message.fromBinary(data)
-            if (message.body.oneofKind === 'connectivityRequest') {
-                logger.trace('ConnectivityRequest received: ' + JSON.stringify(Message.toJson(message)))
-                try {
-                    await handleIncomingConnectivityRequest(connectionToListenTo,
-                        message.body.connectivityRequest, geoIpLocator)
-                    logger.trace('handleIncomingConnectivityRequest ok')
-                } catch (err1) {
-                    logger.error('handleIncomingConnectivityRequest', { err: err1 })
-                }
+
+            const { body } = message
+
+            if (body.oneofKind !== 'connectivityRequest') {
+                return
+            }
+
+            if (!('connectivityRequest' in body)) {
+                return
+            }
+
+            logger.trace('ConnectivityRequest received: ' + JSON.stringify(Message.toJson(message)))
+
+            try {
+                await handleIncomingConnectivityRequest(connectionToListenTo,
+                    body.connectivityRequest, geoIpLocator)
+
+                logger.trace('handleIncomingConnectivityRequest ok')
+            } catch (err1) {
+                logger.error('handleIncomingConnectivityRequest', { err: err1 })
             }
         } catch (err2) {
             logger.trace('Could not parse message', { err: err2 })

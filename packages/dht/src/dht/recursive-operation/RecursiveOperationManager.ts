@@ -25,7 +25,7 @@ import { ServiceID } from '../../types/ServiceID'
 import { RecursiveOperationRpcLocal } from './RecursiveOperationRpcLocal'
 import { DhtAddress, areEqualPeerDescriptors, toDhtAddress, toNodeId, toDhtAddressRaw } from '../../identifiers'
 import { getDistance } from '../PeerManager'
-import { ConnectionsView } from '../../exports'
+import { ConnectionsView } from '../../connection/ConnectionsView'
 
 interface RecursiveOperationManagerOptions {
     rpcCommunicator: RoutingRpcCommunicator

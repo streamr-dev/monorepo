@@ -5,6 +5,9 @@
     { "path": "./packages/utils" },
     { "path": "./packages/test-utils" },
     { "path": "./packages/cdn-location" },
-    { "path": "./packages/geoip-location" }
+    { "path": "./packages/geoip-location" },
+    { "path": "./packages/proto-rpc" },
+    { "path": "./packages/autocertifier-client" },
+    { "path": "./packages/autocertifier-server" }
   ]
 }

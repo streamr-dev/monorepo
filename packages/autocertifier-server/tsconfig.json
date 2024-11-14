@@ -1,3 +1,19 @@
 {
-  "extends": "./tsconfig.jest.json"
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "declaration": true,
+    "moduleResolution": "Bundler",
+    "outDir": "build",
+    "target": "ES2020",
+    "types": ["node"]
+  },
+  "include": ["src", "bin"],
+  "references": [
+    { "path": "../utils" },
+    { "path": "../test-utils" },
+    { "path": "../proto-rpc" },
+    { "path": "../autocertifier-client" },
+    { "path": "../dht" }
+  ]
 }

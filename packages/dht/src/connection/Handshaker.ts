@@ -1,5 +1,5 @@
 import { Logger } from '@streamr/utils'
-import { EventEmitter } from 'eventemitter3'
+import EventEmitter from 'eventemitter3'
 import { v4 } from 'uuid'
 import { Message, HandshakeRequest, HandshakeResponse, HandshakeError } from '../../generated/packages/dht/protos/DhtRpc'
 import { PeerDescriptor } from '../../generated/packages/dht/protos/PeerDescriptor'
@@ -162,23 +162,27 @@ export class Handshaker extends EventEmitter<HandshakerEvents> {
         try {
             const message = Message.fromBinary(data)
             if (message.body.oneofKind === 'handshakeRequest') {
-                logger.trace('handshake request received')
-                const handshake = message.body.handshakeRequest
-                this.emit(
-                    'handshakeRequest',
-                    handshake.sourcePeerDescriptor!, 
-                    handshake.version,
-                    handshake.targetPeerDescriptor
-                )
+                if ('handshakeRequest' in message.body) {
+                    logger.trace('handshake request received')
+                    const handshake = message.body.handshakeRequest
+                    this.emit(
+                        'handshakeRequest',
+                        handshake.sourcePeerDescriptor!, 
+                        handshake.version,
+                        handshake.targetPeerDescriptor
+                    )
+                }
             }
             if (message.body.oneofKind === 'handshakeResponse') {
-                logger.trace('handshake response received')
-                const handshake = message.body.handshakeResponse
-                const error = !isMaybeSupportedVersion(handshake.version) ? HandshakeError.UNSUPPORTED_VERSION : handshake.error
-                if (error !== undefined) {
-                    this.emit('handshakeFailed', error)
-                } else {
-                    this.emit('handshakeCompleted', handshake.sourcePeerDescriptor!)
+                if ('handshakeResponse' in message.body) {
+                    logger.trace('handshake response received')
+                    const handshake = message.body.handshakeResponse
+                    const error = !isMaybeSupportedVersion(handshake.version) ? HandshakeError.UNSUPPORTED_VERSION : handshake.error
+                    if (error !== undefined) {
+                        this.emit('handshakeFailed', error)
+                    } else {
+                        this.emit('handshakeCompleted', handshake.sourcePeerDescriptor!)
+                    }
                 }
             }
         } catch (err) {

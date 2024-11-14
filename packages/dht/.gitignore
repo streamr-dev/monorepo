@@ -4,3 +4,4 @@ dist
 coverage
 test/data/nodeids.json
 test/data/orderedneighbors.json
+build

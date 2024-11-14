@@ -1,5 +1,5 @@
 import { CountMetric, LevelMetric, Logger, Metric, MetricsContext, MetricsDefinition, RateMetric, waitForEvent3 } from '@streamr/utils'
-import { EventEmitter } from 'eventemitter3'
+import EventEmitter from 'eventemitter3'
 import { SortedContactList } from '../dht/contact/SortedContactList'
 import { DuplicateDetector } from '../dht/routing/DuplicateDetector'
 import * as Err from '../helpers/errors'
@@ -257,7 +257,9 @@ export class ConnectionManager extends EventEmitter<TransportEvents> implements 
                     await eventReceived
                     logger.trace('resolving after receiving disconnected event from non-handshaked connection')
                 } catch (e) {
-                    endpoint.buffer.reject()
+                    if ('buffer' in endpoint) {
+                        endpoint.buffer.reject()
+                    }
                     logger.trace('force-closing non-handshaked connection timed out ' + e)
                 }
             }

@@ -6,7 +6,7 @@ import {
     scheduleAtInterval,
     waitForCondition
 } from '@streamr/utils'
-import { EventEmitter } from 'eventemitter3'
+import EventEmitter from 'eventemitter3'
 import { sample } from 'lodash'
 import type { MarkRequired } from 'ts-essentials'
 import { ConnectionLocker, ConnectionManager, PortRange, TlsCertificate } from '../connection/ConnectionManager'
