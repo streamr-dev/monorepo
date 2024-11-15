@@ -9,4 +9,3 @@ dist
 coverage
 test/simulation/data/nodeids.json
 test/simulation/data/orderedneighbors.json
-build

@@ -12,24 +12,24 @@
   "exports": {
     ".": {
       "import": "./src/index.ts",
-      "types": "./build/src/index.d.ts"
+      "types": "./src/index.ts"
     },
     "./customMatchers": {
       "import": "./src/customMatchers.ts",
-      "types": "./build/src/customMatchers.d.ts"
+      "types": "./src/customMatchers.ts"
     },
     "./setupCustomMatchers": {
       "import": "./src/setupCustomMatchers.ts",
-      "types": "./build/src/setupCustomMatchers.d.ts"
+      "types": "./src/setupCustomMatchers.ts"
     },
     "./customMatcherTypes": {
-      "types": "./build/src/customMatchersTypes.d.ts"
+      "types": "./src/customMatchersTypes.ts"
     }
   },
   "scripts": {
     "build": "tsc -b",
-    "zero": "rm -rf build dist",
-    "postbuild": "rollup -c && tsc -p tsconfig.dist.json && tsx scripts/rewrite-package.ts",
+    "zero": "rm -rf dist",
+    "postbuild": "tsx scripts/rewrite-package.ts && cp README.md LICENSE dist",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",
     "test": "jest",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'"
@@ -47,12 +47,10 @@
     "node-fetch": "^2.7.0"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.3.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node-fetch": "^2.6.4",
     "prettier": "^3.3.3",
-    "rollup": "^4.24.4",
-    "rollup-plugin-copy": "^3.5.0"
+    "tsx": "^4.19.2"
   }
 }

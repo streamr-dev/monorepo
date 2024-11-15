@@ -22,27 +22,27 @@ const newPkg = {
     ...rest,
     exports: {
         ".": {
-            import: "./index.esm.js",
-            require: "./index.cjs.js",
-            types: "./index.d.ts",
+            import: "./esm/src/index.js",
+            require: "./cjs/src/index.js",
+            types: "./esm/src/index.d.ts",
         },
         "./customMatchers": {
-            import: "./customMatchers.esm.js",
-            require: "./customMatchers.cjs.js",
-            types: "./customMatchers.d.ts",
+            import: "./esm/src/customMatchers.js",
+            require: "./cjs/src/customMatchers.js",
+            types: "./esm/src/customMatchers.d.ts",
         },
         "./setupCustomMatchers": {
-            import: "./setupCustomMatchers.esm.js",
-            require: "./setupCustomMatchers.cjs.js",
-            types: "./setupCustomMatchers.d.ts",
+            import: "./esm/src/setupCustomMatchers.js",
+            require: "./cjs/src/setupCustomMatchers.js",
+            types: "./esm/src/setupCustomMatchers.d.ts",
         },
         "./customMatcherTypes": {
-            types: "./customMatchersTypes.d.ts",
+            types: "./esm/src/customMatchersTypes.d.ts",
         },
     },
-    main: "./index.cjs.js",
-    module: "./index.esm.js",
-    types: "./index.d.ts",
+    main: "./cjs/src/index.js",
+    module: "./esm/src/index.js",
+    types: "./esm/src/index.d.ts",
 }
 
 ;(async () => {

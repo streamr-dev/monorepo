@@ -1,17 +1,14 @@
 {
   "compilerOptions": {
-    "composite": true,
-    "incremental": true,
-    "declaration": true,
-    "outDir": "build",
-    "target": "ES2020",
-    "moduleResolution": "Bundler",
-    "types": ["node", "jest"]
+    "composite": true
   },
-  "include": ["src"],
+  "files": [],
   "references": [
     {
-      "path": "../utils"
+      "path": "./tsconfig.cjs.json"
+    },
+    {
+      "path": "./tsconfig.esm.json"
     }
   ]
 }

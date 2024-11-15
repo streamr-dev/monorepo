@@ -21,10 +21,13 @@ const {
 
 const newPkg = {
     ...rest,
-    main: "./bundle.cjs.js",
-    module: "./bundle.esm.js",
-    browser: "./bundle.umd.min.js",
-    types: "./bundle.d.ts",
+    main: "./cjs/src/exports.js",
+    module: "./esm/src/exports.js",
+    types: "./esm/src/exports.d.ts",
+    browser: {
+        "./cjs/src/Logger.js": "./cjs/src/browser/Logger.js",
+        "./esm/src/Logger.js": "./esm/src/browser/Logger.js",
+    },
 }
 
 ;(async () => {

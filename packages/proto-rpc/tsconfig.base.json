@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "declaration": true,
+    "target": "ES2020",
+    "types": ["node"]
+  },
+  "include": ["src", "generated"],
+  "references": [
+    { "path": "../utils" },
+    { "path": "../browser-test-runner" },
+    { "path": "../test-utils" }
+  ]
+}

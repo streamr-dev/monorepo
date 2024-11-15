@@ -10,12 +10,12 @@
     "directory": "packages/utils"
   },
   "module": "./src/exports.ts",
-  "types": "./build/src/exports.d.ts",
+  "types": "./src/exports.ts",
   "scripts": {
     "build": "tsc -b",
-    "zero": "rm -rf build dist",
-    "postbuild": "rollup -c && dts-bundle-generator --no-banner -o dist/bundle.d.ts --project=tsconfig.dist.json src/exports.ts && tsx scripts/rewrite-package.ts",
-    "clean": "jest --clearCache || true; rm -rf dist build vendor *.tsbuildinfo node_modules/.cache || true",
+    "zero": "rm -rf dist",
+    "postbuild": "tsx scripts/rewrite-package.ts && cp README.md LICENSE dist",
+    "clean": "jest --clearCache || true; rm -rf dist vendor *.tsbuildinfo node_modules/.cache || true",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'",
     "test": "jest",
     "test-browser": "karma start karma.config.js"
@@ -31,21 +31,12 @@
     "sha3": "^2.1.4"
   },
   "devDependencies": {
-    "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-commonjs": "^28.0.1",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.3.0",
     "@streamr/browser-test-runner": "^0.0.1",
     "@types/lodash": "^4.17.12",
     "@types/node-fetch": "^2.6.4",
     "@types/secp256k1": "^4.0.6",
-    "dts-bundle-generator": "^9.5.1",
     "node-fetch": "^2.7.0",
     "prettier": "^3.3.3",
-    "rollup": "^4.24.4",
-    "rollup-plugin-copy": "^3.5.0",
-    "rollup-plugin-polyfill-node": "^0.13.0",
-    "rollup-plugin-terser": "^7.0.2",
     "tsx": "^4.19.2"
   }
 }

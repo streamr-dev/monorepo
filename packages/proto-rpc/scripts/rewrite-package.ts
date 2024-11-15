@@ -21,9 +21,9 @@ const {
 
 const newPkg = {
     ...rest,
-    main: "./bundle.cjs.js",
-    module: "./bundle.esm.js",
-    types: "./bundle.d.ts",
+    main: "./cjs/src/exports.cjs.js",
+    module: "./esm/src/exports.esm.js",
+    types: "./esm/src/exports.d.ts",
 }
 
 ;(async () => {
