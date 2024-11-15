@@ -8,6 +8,7 @@
     { "path": "./packages/geoip-location" },
     { "path": "./packages/proto-rpc" },
     { "path": "./packages/autocertifier-client" },
+    { "path": "./packages/dht" },
     { "path": "./packages/autocertifier-server" }
   ]
 }

@@ -13,6 +13,7 @@
   "types": "./build/src/exports.d.ts",
   "scripts": {
     "build": "tsc -b",
+    "zero": "rm -rf build dist",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '**/*.{js,ts}'"
   },
   "author": "Streamr Network AG <contact@streamr.network>",

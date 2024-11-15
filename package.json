@@ -3,6 +3,7 @@
     "private": true,
     "scripts": {
         "build": "tsc -b",
+        "zero": "npm run --workspaces --if-present zero",
         "build-wip": "npm run build -w packages/browser-test-runner",
         "build-prev": "npm run --workspaces --if-present build",
         "eslint": "npm run eslint --workspaces --if-present",

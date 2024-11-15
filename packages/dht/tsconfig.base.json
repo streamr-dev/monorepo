@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "declaration": true,
+    "target": "ES2020",
+    "types": ["node"]
+  },
+  "include": ["src", "generated"],
+  "references": [
+    { "path": "../autocertifier-client" },
+    { "path": "../browser-test-runner" },
+    { "path": "../cdn-location" },
+    { "path": "../geoip-location" },
+    { "path": "../proto-rpc" },
+    { "path": "../test-utils" },
+    { "path": "../utils" }
+  ]
+}

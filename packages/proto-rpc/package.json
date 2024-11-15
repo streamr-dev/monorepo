@@ -16,6 +16,7 @@
   "scripts": {
     "generate-protoc-code": "./proto.sh",
     "build": "tsc -b",
+    "zero": "rm -rf build dist",
     "postbuild": "rollup -c && dts-bundle-generator --no-banner -o dist/bundle.d.ts --project=tsconfig.dist.json src/exports.ts && tsx scripts/rewrite-package.ts",
     "build-browser": "webpack --mode=development --progress",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",

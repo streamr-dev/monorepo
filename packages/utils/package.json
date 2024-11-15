@@ -13,6 +13,7 @@
   "types": "./build/src/exports.d.ts",
   "scripts": {
     "build": "tsc -b",
+    "zero": "rm -rf build dist",
     "postbuild": "rollup -c && dts-bundle-generator --no-banner -o dist/bundle.d.ts --project=tsconfig.dist.json src/exports.ts && tsx scripts/rewrite-package.ts",
     "clean": "jest --clearCache || true; rm -rf dist build vendor *.tsbuildinfo node_modules/.cache || true",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'",

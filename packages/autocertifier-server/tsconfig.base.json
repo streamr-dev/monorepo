@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "declaration": true,
+    "target": "ES2020",
+    "types": ["node"]
+  },
+  "include": ["src", "bin"],
+  "references": [
+    { "path": "../autocertifier-client" },
+    { "path": "../dht" },
+    { "path": "../proto-rpc" },
+    { "path": "../test-utils" },
+    { "path": "../utils" }
+  ]
+}

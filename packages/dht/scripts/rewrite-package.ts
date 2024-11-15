@@ -10,20 +10,34 @@ const prettierOptions: Options = {
 }
 
 const {
-    type: _type,
-    module: _module,
-    types: _types,
     devDependencies: _devDependencies,
-    scripts: _scripts,
+    module: _module,
     private: _private,
+    scripts: _scripts,
+    type: _type,
+    types: _types,
     ...rest
 } = pkg
 
 const newPkg = {
     ...rest,
-    main: "./bundle.cjs.js",
-    module: "./bundle.esm.js",
-    types: "./bundle.d.ts",
+    main: "./cjs/src/exports.js",
+    module: "./esm/src/esports.js",
+    types: "./esm/src/esports.d.ts",
+    browser: {
+        "./cjs/src/connection/webrtc/NodeWebrtcConnection.js":
+            "./cjs/src/connection/webrtc/BrowserWebrtcConnection.js",
+        "./esm/src/connection/webrtc/NodeWebrtcConnection.js":
+            "./esm/src/connection/webrtc/BrowserWebrtcConnection.js",
+        "./cjs/src/connection/websocket/NodeWebsocketClientConnection.js":
+            "./cjs/src/connection/websocket/BrowserWebsocketClientConnection.js",
+        "./esm/src/connection/websocket/NodeWebsocketClientConnection.js":
+            "./esm/src/connection/websocket/BrowserWebsocketClientConnection.js",
+        "./cjs/src/helpers/browser/isBrowserEnvironment.js":
+            "./cjs/src/helpers/browser/isBrowserEnvironment_override.js",
+        "./esm/src/helpers/browser/isBrowserEnvironment.js":
+            "./esm/src/helpers/browser/isBrowserEnvironment_override.js",
+    },
 }
 
 ;(async () => {

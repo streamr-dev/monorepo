@@ -10,13 +10,14 @@
   "private": true,
   "type": "module",
   "module": "src/exports.ts",
-  "types": "build/src/exports.d.ts",
+  "types": "src/exports.ts",
   "license": "STREAMR NETWORK OPEN SOURCE LICENSE",
   "author": "Streamr Network AG <contact@streamr.network>",
   "scripts": {
     "generate-protoc-code": "./proto.sh",
     "build": "tsc -b",
-    "postbuild": "rollup -c && dts-bundle-generator --export-referenced-types=false --no-banner -o dist/bundle.d.ts --project=tsconfig.dist.json src/exports.ts && tsx scripts/rewrite-package.ts",
+    "zero": "rm -rf dist",
+    "postbuild": "tsx scripts/rewrite-package.ts && cp README.md dist",
     "typ": "dts-bundle-generator --export-referenced-types=false --no-banner -o dist/bundle.d.ts --project=tsconfig.dist.json src/exports.ts",
     "build-browser": "webpack --mode=development --progress",
     "clean": "jest --clearCache || true; rm -rf dist build *.tsbuildinfo node_modules/.cache || true",
@@ -50,7 +51,6 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.3.0",
     "@streamr/browser-test-runner": "^0.0.1",
     "@streamr/test-utils": "102.0.0-beta.0",
     "@types/heap": "^0.2.34",
@@ -59,11 +59,8 @@
     "@types/uuid": "^10.0.0",
     "@types/websocket": "^1.0.10",
     "@types/ws": "^8.5.12",
-    "dts-bundle-generator": "^9.5.1",
     "jest-leak-detector": "^27.3.1",
     "jest-matcher-utils": "^29.7.0",
-    "rollup": "^4.26.0",
-    "rollup-plugin-copy": "^3.5.0",
     "ts-essentials": "^10.0.2",
     "tsx": "^4.19.2"
   },

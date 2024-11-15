@@ -28,6 +28,7 @@
   },
   "scripts": {
     "build": "tsc -b",
+    "zero": "rm -rf build dist",
     "postbuild": "rollup -c && tsc -p tsconfig.dist.json && tsx scripts/rewrite-package.ts",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",
     "test": "jest",

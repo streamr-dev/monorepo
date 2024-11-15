@@ -1,19 +1,14 @@
 {
   "compilerOptions": {
-    "composite": true,
-    "incremental": true,
-    "declaration": true,
-    "moduleResolution": "Bundler",
-    "outDir": "build",
-    "target": "ES2020",
-    "types": ["node"]
+    "composite": true
   },
-  "include": ["src", "bin"],
+  "files": [],
   "references": [
-    { "path": "../utils" },
-    { "path": "../test-utils" },
-    { "path": "../proto-rpc" },
-    { "path": "../autocertifier-client" },
-    { "path": "../dht" }
+    {
+      "path": "./tsconfig.cjs.json"
+    },
+    {
+      "path": "./tsconfig.esm.json"
+    }
   ]
 }
