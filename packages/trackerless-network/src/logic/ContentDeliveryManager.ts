@@ -125,7 +125,7 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
         logger.debug(`Broadcasting to stream part ${streamPartId}`)
         this.joinStreamPart(streamPartId)
         this.streamParts.get(streamPartId)!.broadcast(msg)
-        if (msg.body.oneofKind === 'contentMessage') {
+        if (msg.body.oneofKind === 'contentMessage' && 'contentMessage' in msg.body) {
             this.metrics.broadcastMessagesPerSecond.record(1)
             this.metrics.broadcastBytesPerSecond.record(msg.body.contentMessage.content.length)
         }
@@ -212,6 +212,9 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
         const streamPart = this.streamParts.get(streamPartId)
         if ((streamPart === undefined) || streamPart.proxied) {
             // leaveStreamPart has been called (or leaveStreamPart called, and then setProxies called)
+            return
+        }
+        if (!('discoveryLayerNode' in streamPart)) {
             return
         }
         if ((this.transport! as ConnectionManager).isPrivateClientMode()) {
@@ -328,7 +331,7 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
 
     async inspect(peerDescriptor: PeerDescriptor, streamPartId: StreamPartID): Promise<boolean> {
         const streamPart = this.streamParts.get(streamPartId)
-        if ((streamPart !== undefined) && !streamPart.proxied) {
+        if ((streamPart !== undefined) && !streamPart.proxied && 'node' in streamPart) {
             return streamPart.node.inspect(peerDescriptor)
         }
         return false

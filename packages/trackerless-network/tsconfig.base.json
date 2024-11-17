@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "declaration": true,
+    "target": "ES2020",
+    "types": ["node"],
+    "resolveJsonModule": true
+  },
+  "include": ["src", "generated", "package.json"],
+  "references": [
+    { "path": "../browser-test-runner" },
+    { "path": "../dht" },
+    { "path": "../test-utils" },
+    { "path": "../utils" }
+  ]
+}

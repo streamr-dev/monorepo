@@ -61,7 +61,7 @@ export class ProxyConnectionRpcLocal extends EventEmitter<Events> implements IPr
     }
 
     getPropagationTargets(msg: StreamMessage): DhtAddress[] {
-        if (msg.body.oneofKind === 'groupKeyRequest') {
+        if (msg.body.oneofKind === 'groupKeyRequest' && 'groupKeyRequest' in msg.body) {
             try {
                 const recipientId = msg.body.groupKeyRequest.recipientId
                 return this.getNodeIdsForUserId(toUserId(recipientId))
