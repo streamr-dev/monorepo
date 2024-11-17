@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "target": "ES2020",
+    "lib": ["es2021", "dom"],
+    "types": ["node"]
+  },
+  "include": ["src", "package.json", "src/**/*.json"],
+  "references": [
+    { "path": "../dht" },
+    { "path": "../proto-rpc" },
+    { "path": "../test-utils" },
+    { "path": "../trackerless-network" },
+    { "path": "../utils" }
+  ]
+}

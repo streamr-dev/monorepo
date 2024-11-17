@@ -26,7 +26,7 @@ node_modules
 
 # Users Environment Variables
 .lock-wscript
-dist/*
+dist
 
 # IntelliJ IDEA
 .idea/workspace.xml
@@ -40,5 +40,4 @@ tests_outputbenchmarks.txt
 tests_output
 test/exports/dist
 test/exports/package-lock.json
-vendor
 docs

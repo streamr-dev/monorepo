@@ -1,7 +1,4 @@
-/**
- * This file captures named exports so we can manipulate them for cjs/browser builds.
- */
-export { StreamrClient, SubscribeOptions, ExtraSubscribeOptions } from './StreamrClient'
+export { StreamrClient, SubscribeOptions as default, SubscribeOptions, ExtraSubscribeOptions } from './StreamrClient'
 export { Stream } from './Stream'
 export { StreamMetadata } from './StreamMetadata'
 export { Message, MessageMetadata } from './Message'
@@ -135,3 +132,4 @@ export type { SetupOperatorContractOpts, SetupOperatorContractReturnType, Deploy
 
 export type { IceServer, PeerDescriptor, PortRange } from '@streamr/dht'
 export type { Signer, Eip1193Provider, Overrides } from 'ethers'
+

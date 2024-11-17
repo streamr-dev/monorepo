@@ -9,6 +9,7 @@
     { "path": "./packages/proto-rpc" },
     { "path": "./packages/autocertifier-client" },
     { "path": "./packages/dht" },
-    { "path": "./packages/autocertifier-server" }
+    { "path": "./packages/autocertifier-server" },
+    { "path": "./packages/sdk" }
   ]
 }

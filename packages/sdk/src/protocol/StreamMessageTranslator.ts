@@ -138,7 +138,7 @@ export class StreamMessageTranslator {
         let encryptionType: OldEncryptionType = OldEncryptionType.NONE
         let newGroupKey: OldEncryptedGroupKey | undefined = undefined
         let groupKeyId: string | undefined = undefined
-        if (msg.body.oneofKind === 'contentMessage') {
+        if (msg.body.oneofKind === 'contentMessage' && 'contentMessage' in msg.body) {
             messageType = OldStreamMessageType.MESSAGE
             content = msg.body.contentMessage.content
             contentType = newToOldContentType(msg.body.contentMessage.contentType)
@@ -150,7 +150,7 @@ export class StreamMessageTranslator {
                 )
             }
             groupKeyId = msg.body.contentMessage.groupKeyId
-        } else if (msg.body.oneofKind === 'groupKeyRequest') {
+        } else if (msg.body.oneofKind === 'groupKeyRequest' && 'groupKeyRequest' in msg.body) {
             messageType = OldStreamMessageType.GROUP_KEY_REQUEST
             try {
                 content = NewGroupKeyRequest.toBinary(msg.body.groupKeyRequest)
@@ -158,7 +158,7 @@ export class StreamMessageTranslator {
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 throw new Error(`invalid group key request: ${err}`)
             }
-        } else if (msg.body.oneofKind === 'groupKeyResponse') {
+        } else if (msg.body.oneofKind === 'groupKeyResponse' && 'groupKeyResponse' in msg.body) {
             messageType = OldStreamMessageType.GROUP_KEY_RESPONSE
             try {
                 content = NewGroupKeyResponse.toBinary(msg.body.groupKeyResponse)

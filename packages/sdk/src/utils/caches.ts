@@ -1,5 +1,5 @@
 import pMemoize from 'p-memoize'
-import LRU from '../../vendor/quick-lru'
+import LRU from 'quick-lru'
 
 interface Collection<K, V> {
     keys: Map<K, V>['keys']

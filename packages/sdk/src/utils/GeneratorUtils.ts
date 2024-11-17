@@ -72,7 +72,7 @@ export async function* map<InType, OutType>(
 export async function* filter<InType>(
     src: AsyncGenerator<InType>,
     fn: GeneratorFilter<InType>,
-    onError?: OnError<InType>
+    onError?: OnError<NoInfer<InType>>
 ): AsyncGenerator<InType> {
     let index = 0
     for await (const v of src) {

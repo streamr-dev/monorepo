@@ -136,7 +136,7 @@ type pTimeoutArgs = [timeout?: number, message?: string] | [pTimeoutOpts]
 
 export async function pTimeout<T>(promise: Promise<T>, ...args: pTimeoutArgs): Promise<T | undefined> {
     let opts: pTimeoutOpts = {}
-    if (args[0] && typeof args[0] === 'object') {
+    if (typeof args[0] === 'object') {
         [opts] = args
     } else {
         [opts.timeout, opts.message] = args

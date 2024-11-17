@@ -98,7 +98,7 @@ const createWrappedContractMethod = (
         }), methodFullName, 'executing')
         if (isTransactionResponse(returnValue)) {
             eventEmitter.emit('onTransactionSubmit', methodFullName, returnValue)
-            const originalWait = returnValue.wait.bind(returnValue)
+            const originalWait = returnValue.wait.bind(returnValue) as typeof returnValue.wait
             returnValue.wait = async (confirmations?: number, timeout?: number): Promise<null | ContractTransactionReceipt> => {
                 const receipt = await withErrorHandling(() => originalWait(confirmations, timeout), methodName, 'waiting transaction for')
                 eventEmitter.emit('onTransactionConfirm', methodFullName, receipt)
