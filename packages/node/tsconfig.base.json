@@ -2,20 +2,18 @@
   "compilerOptions": {
     "composite": true,
     "incremental": true,
-    "esModuleInterop": true,
-    "module": "CommonJS",
-    "outDir": "dist/cjs",
-    "resolveJsonModule": true,
+    "declaration": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
     "target": "ES2020",
+    "lib": ["es2021", "dom"],
     "types": ["node"]
   },
-  "include": ["src", "package.json", "bin"],
   "references": [
     { "path": "../dht" },
     { "path": "../sdk" },
     { "path": "../test-utils" },
-    { "path": "../trackerless-network" },
     { "path": "../utils" }
   ]
 }

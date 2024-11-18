@@ -15,10 +15,10 @@
   "author": "Streamr Network AG <contact@streamr.network>",
   "scripts": {
     "build": "tsc -b",
-    "postbuild": "tsx scripts/rewrite-package.ts && cp README.md dist",
+    "postbuild": "bash scripts/postbuild.sh",
     "build-browser": "webpack --mode=development --progress",
     "generate-protoc-code": "./proto.sh",
-    "check": "tsc -p ./tsconfig.jest.json",
+    "check": "tsc --noEmit -p tsconfig.esm.json",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",
     "coverage": "jest --coverage",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'",

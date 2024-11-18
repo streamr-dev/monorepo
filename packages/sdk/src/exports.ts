@@ -1,4 +1,4 @@
-export { StreamrClient, SubscribeOptions as default, SubscribeOptions, ExtraSubscribeOptions } from './StreamrClient'
+export { StreamrClient, StreamrClient as default, SubscribeOptions, ExtraSubscribeOptions } from './StreamrClient'
 export { Stream } from './Stream'
 export { StreamMetadata } from './StreamMetadata'
 export { Message, MessageMetadata } from './Message'

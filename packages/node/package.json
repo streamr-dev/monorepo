@@ -8,17 +8,19 @@
     "directory": "packages/broker"
   },
   "bin": {
-    "streamr-broker": "dist/bin/broker.js",
-    "streamr-node": "dist/bin/streamr-node.js",
-    "streamr-node-init": "dist/bin/streamr-node-init.js",
-    "delete-expired-data": "dist/bin/delete-expired-data.js",
-    "entry-point": "dist/bin/entry-point.js"
+    "delete-expired-data": "./cjs/bin/delete-expired-data.js",
+    "entry-point": "./cjs/bin/entry-point.js",
+    "streamr-broker": "./cjs/bin/broker.js",
+    "streamr-node-init": "./cjs/bin/streamr-node-init.js",
+    "streamr-node": "./cjs/bin/streamr-node.js"
   },
-  "main": "./dist/src/exports.js",
-  "types": "./dist/src/exports.d.ts",
+  "private": true,
+  "type": "module",
+  "module": "./src/exports.ts",
+  "types": "./src/exports.ts",
   "scripts": {
-    "build": "tsc -b tsconfig.node.json",
-    "check": "tsc -p ./tsconfig.jest.json",
+    "build": "tsc -b",
+    "check": "tsc --noEmit -p tsconfig.esm.json",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'",
     "test": "npm run test-unit && npm run test-integration && npm run test-sequential",
@@ -72,6 +74,7 @@
     "@types/ws": "^8.5.12",
     "async-mqtt": "^2.6.1",
     "stream-to-array": "^2.3.0",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.2"
   }
 }

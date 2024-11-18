@@ -104,7 +104,7 @@ export class OperatorFleetState extends EventEmitter<OperatorFleetStateEvents> {
                 const exists = this.latestHeartbeats.has(nodeId)
                 this.latestHeartbeats.set(nodeId, {
                     timestamp: this.timeProvider(),
-                    peerDescriptor: message.peerDescriptor
+                    peerDescriptor: message.peerDescriptor as NetworkPeerDescriptor
                 })
                 if (!exists) {
                     this.emit('added', nodeId)

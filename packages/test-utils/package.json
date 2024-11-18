@@ -28,9 +28,9 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "zero": "rm -rf dist",
-    "postbuild": "tsx scripts/rewrite-package.ts && cp README.md LICENSE dist",
+    "postbuild": "bash scripts/postbuild.sh",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",
+    "check": "tsc --noEmit -p tsconfig.esm.json",
     "test": "jest",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'"
   },

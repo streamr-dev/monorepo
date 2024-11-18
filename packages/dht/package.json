@@ -16,11 +16,9 @@
   "scripts": {
     "generate-protoc-code": "./proto.sh",
     "build": "tsc -b",
-    "zero": "rm -rf dist",
-    "postbuild": "tsx scripts/rewrite-package.ts && cp README.md dist",
-    "typ": "dts-bundle-generator --export-referenced-types=false --no-banner -o dist/bundle.d.ts --project=tsconfig.dist.json src/exports.ts",
-    "build-browser": "webpack --mode=development --progress",
+    "postbuild": "bash scripts/postbuild.sh",
     "clean": "jest --clearCache || true; rm -rf dist build *.tsbuildinfo node_modules/.cache || true",
+    "check": "tsc --noEmit -p tsconfig.esm.json",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'",
     "test": "npm run test-unit && npm run test-integration && npm run test-end-to-end",
     "test-browser": "karma start karma.config.js",

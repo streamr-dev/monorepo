@@ -130,7 +130,6 @@ export class DeleteExpiredCmd {
 
         const query = 'SELECT * FROM bucket WHERE stream_id = ? AND partition = ? AND date_create <= ?'
 
-        // @ts-expect-error void filtering
         const tasks = streamsInfo.filter(Boolean).map((stream: StreamPartInfo) => {
             const { streamId, partition, storageDays } = stream
             const timestampBefore = Date.now() - 1000 * 60 * 60 * 24 * storageDays

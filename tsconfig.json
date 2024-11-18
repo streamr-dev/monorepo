@@ -10,6 +10,8 @@
     { "path": "./packages/autocertifier-client" },
     { "path": "./packages/dht" },
     { "path": "./packages/autocertifier-server" },
-    { "path": "./packages/sdk" }
+    { "path": "./packages/sdk" },
+    { "path": "./packages/node" },
+    { "path": "./packages/cli-tools" }
   ]
 }

@@ -2,23 +2,23 @@ import { checkbox, confirm, input, password, select } from '@inquirer/prompts'
 import { config as streamrConfig } from '@streamr/config'
 import { toEthereumAddress } from '@streamr/utils'
 import chalk from 'chalk'
-import { Wallet, isAddress, formatEther, parseEther, JsonRpcProvider } from 'ethers'
+import { JsonRpcProvider, Wallet, formatEther, isAddress, parseEther } from 'ethers'
 import { chmodSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import capitalize from 'lodash/capitalize'
 import omit from 'lodash/omit'
+import fetch from 'node-fetch'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 import { z } from 'zod'
-import fetch from 'node-fetch'
-import {
-    CURRENT_CONFIGURATION_VERSION,
-    formSchemaUrl,
-} from '../config/migration'
 import { generateMnemonicFromAddress } from '../helpers/generateMnemonicFromAddress'
 import * as MqttConfigSchema from '../plugins/mqtt/config.schema.json'
 import * as WebsocketConfigSchema from '../plugins/websocket/config.schema.json'
 import { ConfigFile, getDefaultFile } from './config'
 import * as BrokerConfigSchema from './config.schema.json'
+import {
+    CURRENT_CONFIGURATION_VERSION,
+    formSchemaUrl,
+} from './migration'
 
 const MIN_BALANCE = parseEther('0.1')
 

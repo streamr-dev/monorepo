@@ -7,10 +7,10 @@ export interface Diff<E extends string> {
     removed: E[]
 }
 
-export const EMPTY_DIFF: Diff<never> = Object.freeze({
+export const EMPTY_DIFF = Object.freeze({
     added: [],
-    removed: []
-})
+    removed: [],
+} as Diff<never>)
 
 function setDifference<E>(setA: Set<E>, setB: Set<E>): E[] {
     return [...setA].filter((el) => !setB.has(el))

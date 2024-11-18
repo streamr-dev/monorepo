@@ -12,8 +12,10 @@ tsx scripts/rewrite-package.ts
 # Copy stuff
 cp -f README.md LICENSE readme-header.png dist
 
-# Copy over the migrations
+# Copy over the migrations (cjs)
 mkdir -p dist/cjs/src/encryption/migrations
 cp -f src/encryption/migrations/* dist/cjs/src/encryption/migrations
+
+# Copy over the migrations (esm)
 mkdir -p dist/esm/src/encryption/migrations
 cp -f src/encryption/migrations/* dist/esm/src/encryption/migrations

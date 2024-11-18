@@ -16,6 +16,7 @@
     "build": "tsc -b",
     "postbuild": "bash scripts/postbuild.sh",
     "clean": "jest --clearCache || true; rm -rf dist *.tsbuildinfo node_modules/.cache || true",
+    "check": "tsc --noEmit -p tsconfig.esm.json",
     "eslint": "eslint --cache --cache-location=node_modules/.cache/.eslintcache/ '*/**/*.{js,ts}'",
     "generate-protoc-code": "./proto.sh",
     "test": "npm run test-unit && npm run test-integration && npm run test-end-to-end",
