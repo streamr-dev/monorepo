@@ -1,6 +1,6 @@
 {
   "name": "@streamr/browser-test-runner",
-  "version": "0.0.1",
+  "version": "102.0.0-xi.0",
   "private": true,
   "description": "A browser test runner for Jest tests",
   "type": "module",

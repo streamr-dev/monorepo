@@ -1,6 +1,6 @@
 {
   "name": "@streamr/cdn-location",
-  "version": "102.0.0-beta.0",
+  "version": "102.0.0-xi.0",
   "description": "Library for getting own approximate location by querying CDN servers",
   "private": true,
   "repository": {
@@ -28,7 +28,7 @@
     "haversine": "^1.1.1"
   },
   "devDependencies": {
-    "@streamr/utils": "^102.0.0-beta.0",
+    "@streamr/utils": "^102.0.0-xi.0",
     "@types/haversine": "^1.1.8",
     "@types/node": "^22.9.0",
     "prettier": "^3.3.3",

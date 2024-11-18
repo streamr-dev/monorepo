@@ -1,7 +1,13 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
-  "version": "0.0.0",
-  "packages": ["packages/*"],
+  "version": "102.0.0-xi.0",
+  "packages": [
+    "packages/*"
+  ],
   "npmClient": "npm",
-  "npmClientArgs": ["--prefer-offline", "--no-audit", "--progress=false"]
+  "npmClientArgs": [
+    "--prefer-offline",
+    "--no-audit",
+    "--progress=false"
+  ]
 }
