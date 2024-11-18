@@ -30,6 +30,7 @@
   "devDependencies": {
     "@streamr/utils": "^102.0.0-beta.0",
     "@types/haversine": "^1.1.8",
+    "@types/node": "^22.9.0",
     "prettier": "^3.3.3",
     "tsx": "^4.19.2"
   }

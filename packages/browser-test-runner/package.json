@@ -23,6 +23,7 @@
   "devDependencies": {
     "@electron/rebuild": "^3.7.0",
     "@jest/fake-timers": "^29.6.2",
+    "@types/node": "^22.9.0",
     "buffer": "^6.0.3",
     "electron": "^31.2.0",
     "expect": "^29.6.2",
@@ -36,6 +37,7 @@
     "karma-spec-reporter": "^0.0.36",
     "karma-webpack": "^5.0.1",
     "node-polyfill-webpack-plugin": "^4.0.0",
+    "prettier": "^3.3.3",
     "timers-browserify": "^2.0.12",
     "tsx": "^4.19.2",
     "webpack": "^5.95.0",
