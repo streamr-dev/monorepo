@@ -14,14 +14,15 @@ import { createClient, createTestStream, formConfig, startBroker } from '../../.
 
 const {
     delegate,
-    deploySponsorshipContract,
-    generateWalletWithGasAndTokens,
-    setupOperatorContract,
+    deployTestSponsorshipContract,
+    createTestWallet,
+    setupTestOperatorContract,
     sponsor,
     stake
 } = _operatorContractUtils
 
 const DEFAULT_STREAM_PARTITION = 0
+const SPONSOR_AMOUNT = 10000n
 
 describe('OperatorPlugin', () => {
 
@@ -31,7 +32,7 @@ describe('OperatorPlugin', () => {
     let operatorWallet: Wallet
 
     beforeAll(async () => {
-        const deployment = (await setupOperatorContract({
+        const deployment = (await setupTestOperatorContract({
             nodeCount: 1
         }))
         brokerWallet = deployment.nodeWallets[0]
@@ -54,11 +55,11 @@ describe('OperatorPlugin', () => {
         const subscriber = createClient(await fetchPrivateKeyWithGas())
         const stream = await createTestStream(subscriber, module)
 
-        const sponsorer = await generateWalletWithGasAndTokens()
-        const sponsorship1 = await deploySponsorshipContract({ streamId: stream.id, deployer: sponsorer })
-        await sponsor(sponsorer, await sponsorship1.getAddress(), 10000)
-        await delegate(operatorWallet, await operatorContract.getAddress(), 10000)
-        await stake(operatorContract, await sponsorship1.getAddress(), 10000)
+        const sponsorer = await createTestWallet()
+        const sponsorship1 = await deployTestSponsorshipContract({ streamId: stream.id, deployer: sponsorer })
+        await sponsor(sponsorer, await sponsorship1.getAddress(), SPONSOR_AMOUNT)
+        await delegate(operatorWallet, toEthereumAddress(await operatorContract.getAddress()), SPONSOR_AMOUNT)
+        await stake(operatorContract, await sponsorship1.getAddress(), SPONSOR_AMOUNT)
 
         const publisher = createClient(fastPrivateKey())
         await stream.grantPermissions({
@@ -112,11 +113,11 @@ describe('OperatorPlugin', () => {
         const client = createClient(await fetchPrivateKeyWithGas())
         const stream = await createTestStream(client, module)
 
-        const sponsorer = await generateWalletWithGasAndTokens()
-        const sponsorship = await deploySponsorshipContract({ streamId: stream.id, deployer: sponsorer })
-        await sponsor(sponsorer, await sponsorship.getAddress(), 10000)
-        await delegate(operatorWallet, await operatorContract.getAddress(), 10000)
-        await stake(operatorContract, await sponsorship.getAddress(), 10000)
+        const sponsorer = await createTestWallet()
+        const sponsorship = await deployTestSponsorshipContract({ streamId: stream.id, deployer: sponsorer })
+        await sponsor(sponsorer, await sponsorship.getAddress(), SPONSOR_AMOUNT)
+        await delegate(operatorWallet, toEthereumAddress(await operatorContract.getAddress()), SPONSOR_AMOUNT)
+        await stake(operatorContract, await sponsorship.getAddress(), SPONSOR_AMOUNT)
 
         const operatorContractAddress = await operatorContract.getAddress()
         broker = await startBroker({
