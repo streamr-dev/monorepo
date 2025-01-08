@@ -5,7 +5,7 @@ import { StreamrClient, _operatorContractUtils } from '@streamr/sdk'
 import { getOperatorContract } from '../../sdk/dist/types/src/contracts/operatorContractUtils'
 import { createClientCommand } from '../src/command'
 
-createClientCommand(async (client: StreamrClient, operatorContractAddress: string, sponsorshipAddress: string, amountWei: number) => {
+createClientCommand(async (client: StreamrClient, operatorContractAddress: string, sponsorshipAddress: string, amountWei: bigint) => {
     const operatorContract = getOperatorContract(operatorContractAddress).connect(client.getSigner())
     await _operatorContractUtils.stake(operatorContract, sponsorshipAddress, amountWei)
 })

@@ -4,7 +4,7 @@ import '../src/logLevel'
 import { StreamrClient, _operatorContractUtils } from '@streamr/sdk'
 import { createClientCommand } from '../src/command'
 
-createClientCommand(async (client: StreamrClient, operatorAddress: string, amountWei: number) => {
+createClientCommand(async (client: StreamrClient, operatorAddress: string, amountWei: bigint) => {
     await _operatorContractUtils.undelegate(await client.getSigner(), operatorAddress, amountWei)
 })
     .arguments('<operatorAddress> <amountWei>')

@@ -5,7 +5,7 @@ import { StreamrClient, _operatorContractUtils } from '@streamr/sdk'
 import { createClientCommand } from '../src/command'
 import { getTestTokenContract } from '../../sdk/dist/types/src/contracts/operatorContractUtils'
 
-createClientCommand(async (client: StreamrClient, operatorAddress: string, amountWei: number) => {
+createClientCommand(async (client: StreamrClient, operatorAddress: string, amountWei: bigint) => {
     await _operatorContractUtils.delegate(await client.getSigner(), operatorAddress, amountWei, getTestTokenContract())
 })
     .arguments('<operatorAddress> <amountWei>')

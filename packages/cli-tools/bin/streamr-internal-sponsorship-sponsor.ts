@@ -5,7 +5,7 @@ import { StreamrClient, _operatorContractUtils } from '@streamr/sdk'
 import { createClientCommand } from '../src/command'
 import { getTestTokenContract } from '../../sdk/dist/types/src/contracts/operatorContractUtils'
 
-createClientCommand(async (client: StreamrClient, sponsorshipAddress: string, amountWei: number) => {
+createClientCommand(async (client: StreamrClient, sponsorshipAddress: string, amountWei: bigint) => {
     await _operatorContractUtils.sponsor(await client.getSigner(), sponsorshipAddress, amountWei, getTestTokenContract())
 })
     .arguments('<sponsorshipAddress> <amountWei>')

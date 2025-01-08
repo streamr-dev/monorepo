@@ -9,6 +9,7 @@ import { OperatorFleetState } from '../../../../src/plugins/operator/OperatorFle
 import { StreamPartAssignments } from '../../../../src/plugins/operator/StreamPartAssignments'
 import { formCoordinationStreamId } from '../../../../src/plugins/operator/formCoordinationStreamId'
 import { createClient, createTestStream } from '../../../utils'
+import { parseEther } from 'ethers'
 
 const {
     delegate,
@@ -60,8 +61,8 @@ describe('MaintainTopologyService', () => {
     })
 
     afterEach(async () => {
-        await client?.destroy()
-        await operatorFleetState?.destroy()
+        await client.destroy()
+        await operatorFleetState.destroy()
     })
 
     it('happy path', async () => {
@@ -70,8 +71,8 @@ describe('MaintainTopologyService', () => {
         const sponsorship1 = await deploySponsorshipContract({ deployer: operatorWallet, streamId: stream1.id })
         const sponsorship2 = await deploySponsorshipContract({ deployer: operatorWallet, streamId: stream2.id })
         const operatorContract = await deployOperatorContract({ deployer: operatorWallet })
-        await delegate(operatorWallet, await operatorContract.getAddress(), 20000)
-        await stake(operatorContract, await sponsorship1.getAddress(), 10000)
+        await delegate(operatorWallet, await operatorContract.getAddress(), parseEther('20000'))
+        await stake(operatorContract, await sponsorship1.getAddress(), parseEther('10000'))
         
         const createOperatorFleetState = OperatorFleetState.createOperatorFleetStateBuilder(
             client,
@@ -82,7 +83,7 @@ describe('MaintainTopologyService', () => {
             0
         )
         const operatorContractAddress = toEthereumAddress(await operatorContract.getAddress())
-        const operatorFleetState = createOperatorFleetState(formCoordinationStreamId(operatorContractAddress))
+        operatorFleetState = createOperatorFleetState(formCoordinationStreamId(operatorContractAddress))
         const maintainTopologyHelper = new MaintainTopologyHelper(
             createClient(operatorWallet.privateKey).getOperator(toEthereumAddress(operatorContractAddress))
         )
@@ -104,7 +105,7 @@ describe('MaintainTopologyService', () => {
             return containsAll(await getSubscribedStreamPartIds(client), await stream1.getStreamParts())
         }, 10000, 1000)
 
-        await stake(operatorContract, await sponsorship2.getAddress(), 10000)
+        await stake(operatorContract, await sponsorship2.getAddress(), parseEther('10000'))
         await until(async () => {
             return containsAll(await getSubscribedStreamPartIds(client), [
                 ...await stream1.getStreamParts(),
