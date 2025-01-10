@@ -7,7 +7,11 @@ import { parseEther } from 'ethers'
 
 createClientCommand(async (client: StreamrClient, operatorContractAddress: string, sponsorshipAddress: string, dataTokenAmount: string) => {
     const operatorContract = _operatorContractUtils.getOperatorContract(operatorContractAddress).connect(client.getSigner())
-    await _operatorContractUtils.stake(operatorContract, sponsorshipAddress, parseEther(dataTokenAmount))
+    await _operatorContractUtils.stake(
+        operatorContract,
+        sponsorshipAddress,
+        parseEther(dataTokenAmount)
+    )
 })
     .description('stake funds to a sponsorship')
     .arguments('<operatorContractAddress> <sponsorshipAddress> <dataTokenAmount>')

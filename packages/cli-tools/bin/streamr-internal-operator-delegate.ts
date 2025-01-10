@@ -6,7 +6,12 @@ import { createClientCommand } from '../src/command'
 import { parseEther } from 'ethers'
 
 createClientCommand(async (client: StreamrClient, operatorAddress: string, dataTokenAmount: string) => {
-    await _operatorContractUtils.delegate(await client.getSigner(), operatorAddress, parseEther(dataTokenAmount), _operatorContractUtils.getTestTokenContract())
+    await _operatorContractUtils.delegate(
+        await client.getSigner(),
+        operatorAddress,
+        parseEther(dataTokenAmount),
+        _operatorContractUtils.getTestTokenContract()
+    )
 })
     .description('delegate funds to an operator')
     .arguments('<operatorAddress> <dataTokenAmount>')

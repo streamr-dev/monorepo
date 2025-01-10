@@ -16,7 +16,8 @@ describe('sponsorship-sponsor', () => {
         })
 
         const sponsorer = await generateWalletWithGasAndTokens()
-        await runCommand(`internal sponsorship-sponsor ${await sponsorshipContract.getAddress()} ${SPONSOR_AMOUNT}`, {
+        const sponsorshipAddress: string = await sponsorshipContract.getAddress()
+        await runCommand(`internal sponsorship-sponsor ${sponsorshipAddress} ${SPONSOR_AMOUNT}`, {
             privateKey: sponsorer.privateKey
         })
 
