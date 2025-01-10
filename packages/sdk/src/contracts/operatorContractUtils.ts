@@ -35,7 +35,7 @@ export interface SetupOperatorContractOpts {
  * @hidden
  */
 export interface SetupOperatorContractReturnType {
-    operatorWallet: Wallet
+    operatorWallet: Wallet & SignerWithProvider
     operatorContract: OperatorContract
     nodeWallets: (Wallet & SignerWithProvider)[]
 }
