@@ -3,10 +3,11 @@ import '../src/logLevel'
 
 import { StreamrClient, _operatorContractUtils } from '@streamr/sdk'
 import { createClientCommand } from '../src/command'
+import { parseEther } from 'ethers'
 
-createClientCommand(async (client: StreamrClient, sponsorshipAddress: string, amountWei: bigint) => {
-    await _operatorContractUtils.sponsor(await client.getSigner(), sponsorshipAddress, amountWei, _operatorContractUtils.getTestTokenContract())
+createClientCommand(async (client: StreamrClient, sponsorshipAddress: string, dataTokenAmount: string) => {
+    await _operatorContractUtils.sponsor(await client.getSigner(), sponsorshipAddress, parseEther(dataTokenAmount), _operatorContractUtils.getTestTokenContract())
 })
-    .arguments('<sponsorshipAddress> <amountWei>')
     .description('sponsor a stream')
+    .arguments('<sponsorshipAddress> <tokenAmount>')
     .parseAsync()
