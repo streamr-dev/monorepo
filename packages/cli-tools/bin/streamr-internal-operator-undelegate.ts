@@ -8,7 +8,7 @@ import { parseEther } from 'ethers'
 createClientCommand(async (client: StreamrClient, operatorAddress: string, dataTokenAmount: string) => {
     await _operatorContractUtils.undelegate(
         await client.getSigner(),
-        operatorAddress,
+        _operatorContractUtils.getOperatorContract(operatorAddress),
         parseEther(dataTokenAmount)
     )
 })
