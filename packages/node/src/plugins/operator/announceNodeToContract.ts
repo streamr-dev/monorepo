@@ -13,10 +13,7 @@ export const announceNodeToContract = async (
     }
 }
 
-const isHeartbeatStale = async (
-    writeIntervalInMs: number,
-    operator: Operator
-): Promise<boolean> => {
+const isHeartbeatStale = async (writeIntervalInMs: number, operator: Operator): Promise<boolean> => {
     logger.debug('Polling last heartbeat timestamp', {
         operatorContractAddress: await operator.getContractAddress()
     })
@@ -32,10 +29,7 @@ const isHeartbeatStale = async (
     return stale
 }
 
-const writeHeartbeat = async (
-    operator: Operator,
-    streamrClient: StreamrClient
-): Promise<void> => {
+const writeHeartbeat = async (operator: Operator, streamrClient: StreamrClient): Promise<void> => {
     logger.info('Write heartbeat')
     try {
         const nodeDescriptor = await streamrClient.getPeerDescriptor()

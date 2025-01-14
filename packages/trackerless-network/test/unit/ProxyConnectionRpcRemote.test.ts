@@ -7,7 +7,6 @@ import { ProxyConnectionRpcClient } from '../../generated/packages/trackerless-n
 import { createMockPeerDescriptor } from '../utils/utils'
 
 describe('ProxyConnectionRpcRemote', () => {
-
     it('happy path', async () => {
         const onOutgoingMessage = jest.fn()
         const rpcCommunicator = new RpcCommunicator()

@@ -29,7 +29,7 @@ const Msg = (bytes) => {
     count += 1
     return {
         id: `msg${count}`,
-        data: randomBytes(bytes),
+        data: randomBytes(bytes)
     }
 }
 
@@ -39,21 +39,21 @@ async function setupClientAndStream(clientOpts, streamOpts) {
 
     const stream = await client.createStream({
         id: `/test-stream-resend/${process.pid}`,
-        ...streamOpts,
+        ...streamOpts
     })
     await stream.addToStorageNode(StorageNode.STREAMR_DOCKER_DEV)
     return [client, stream]
 }
 
 const BATCH_SIZES = [
-    1024,
+    1024
     // 2048,
     // 4096,
 ]
 
 const PAYLOAD_SIZES = [
     // 32, // 32b
-    1024, // 1kb
+    1024 // 1kb
     // 128 * 1024, // 128 kb
 ]
 
@@ -68,29 +68,38 @@ async function run() {
         const startTime = Date.now()
         try {
             log('publishing %d %s messages to %s >>', batchSize, bytes(payloadBytes), stream.id)
-            const published = await client.collectMessages(client.publishFrom(stream, (async function* Generate() {
-                for (let i = 0; i < batchSize; i++) {
-                    yield Msg(payloadBytes)
-                }
-            }())), batchSize)
+            const published = await client.collectMessages(
+                client.publishFrom(
+                    stream,
+                    (async function* Generate() {
+                        for (let i = 0; i < batchSize; i++) {
+                            yield Msg(payloadBytes)
+                        }
+                    })()
+                ),
+                batchSize
+            )
             await client.waitForStorage(published[published.length - 1], { timeout: 60000, count: 1000 })
             const s = JSON.stringify(published[0])
             log(bytes(Buffer.byteLength(s)), s, published[0])
             return published
         } finally {
-            log('publishing %d %s messages to %s: %dms <<', batchSize, bytes(payloadBytes), stream.id, Date.now() - startTime)
+            log(
+                'publishing %d %s messages to %s: %dms <<',
+                batchSize,
+                bytes(payloadBytes),
+                stream.id,
+                Date.now() - startTime
+            )
         }
     }
 
     async function test(client, stream, batchSize) {
         return async function Fn(deferred) {
             this.BATCH_SIZE = batchSize
-            const sub = await client.resend(
-                stream.id,
-                {
-                    last: batchSize,
-                }
-            )
+            const sub = await client.resend(stream.id, {
+                last: batchSize
+            })
             await sub.collect(batchSize)
             deferred.resolve()
         }
@@ -98,12 +107,15 @@ async function run() {
 
     async function setup(clientOptions, streamOptions) {
         const account = StreamrClient.generateEthereumAccount()
-        const [client, stream] = await setupClientAndStream({
-            auth: {
-                privateKey: account.privateKey,
+        const [client, stream] = await setupClientAndStream(
+            {
+                auth: {
+                    privateKey: account.privateKey
+                },
+                ...clientOptions
             },
-            ...clientOptions
-        }, streamOptions)
+            streamOptions
+        )
 
         suite.on('complete', () => {
             client.destroy().catch(() => {})
@@ -113,22 +125,22 @@ async function run() {
     }
 
     log('setting up...')
-    const [[client1, stream1], [client2, stream2]] = await Promise.all([
-        setup(),
-        setup()
-    ])
+    const [[client1, stream1], [client2, stream2]] = await Promise.all([setup(), setup()])
 
     for (const payloadBytes of PAYLOAD_SIZES) {
         const published = await Promise.all([
             publish(client1, stream1, TOTAL_MESSAGES, payloadBytes),
-            publish(client2, stream2, TOTAL_MESSAGES, payloadBytes),
+            publish(client2, stream2, TOTAL_MESSAGES, payloadBytes)
         ])
 
         for (const batchSize of BATCH_SIZES) {
-            suite.add(`client resend last ${bytes(payloadBytes)} messages in batches of ${batchSize} without encryption`, {
-                defer: true,
-                fn: await test(client1, stream1, batchSize)
-            })
+            suite.add(
+                `client resend last ${bytes(payloadBytes)} messages in batches of ${batchSize} without encryption`,
+                {
+                    defer: true,
+                    fn: await test(client1, stream1, batchSize)
+                }
+            )
 
             suite.add(`client resend last ${bytes(payloadBytes)} messages in batches of ${batchSize} with encryption`, {
                 defer: true,
@@ -149,8 +161,17 @@ async function run() {
             return result + ' Error'
         }
 
-        result += ' x ' + Benchmark.formatNumber(hz.toFixed(hz < 100 ? 2 : 0)) + ' ops/sec ' + pm
-            + stats.rme.toFixed(2) + '% (' + size + ' run' + (size === 1 ? '' : 's') + ' sampled)'
+        result +=
+            ' x ' +
+            Benchmark.formatNumber(hz.toFixed(hz < 100 ? 2 : 0)) +
+            ' ops/sec ' +
+            pm +
+            stats.rme.toFixed(2) +
+            '% (' +
+            size +
+            ' run' +
+            (size === 1 ? '' : 's') +
+            ' sampled)'
         return result
     }
 

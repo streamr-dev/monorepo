@@ -26,7 +26,7 @@ export const getPermissionId = (permission: StreamPermission): string => {
 
 export const runModifyPermissionsCommand = (
     modify: (stream: Stream, assignment: PermissionAssignment) => Promise<void>,
-    modification: string,
+    modification: string
 ): void => {
     createClientCommand(async (client: StreamrClient, streamId: string, user: string, permissionIds: string[]) => {
         const stream = await client.getStream(streamId)
@@ -43,11 +43,13 @@ export const runModifyPermissionsCommand = (
                 userId: user
             }
         }
-        await modify(stream, assignment) 
+        await modify(stream, assignment)
     })
         .addArgument(new Argument('<streamId>'))
         .addArgument(new Argument('<user>'))
         .addArgument(new Argument('<permissions...>').choices(Array.from(PERMISSIONS.keys())))
-        .description(`${modification} permission: use keyword "public" as a user to ${modification} a public permission`)
+        .description(
+            `${modification} permission: use keyword "public" as a user to ${modification} a public permission`
+        )
         .parseAsync(process.argv)
 }

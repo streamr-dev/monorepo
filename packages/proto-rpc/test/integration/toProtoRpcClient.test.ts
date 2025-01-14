@@ -54,12 +54,16 @@ describe('toProtoRpcClient', () => {
         const helloClient = toProtoRpcClient(new HelloRpcServiceClient(communicator2.getRpcClientTransport()))
 
         // Simulate a network connection, in real life the message blobs would be transferred over a network
-        communicator1.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator2.handleIncomingMessage(msg, new ProtoCallContext())
-        })
-        communicator2.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator1.handleIncomingMessage(msg, new ProtoCallContext())
-        })
+        communicator1.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator2.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
+        communicator2.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator1.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
 
         const { greeting } = await helloClient.sayHello({ myName: 'Alice' })
         expect(greeting).toBe('Hello Alice!')
@@ -79,12 +83,16 @@ describe('toProtoRpcClient', () => {
         const wakeUpClient = toProtoRpcClient(new WakeUpRpcServiceClient(communicator2.getRpcClientTransport()))
 
         // Simulate a network connection, in real life the message blobs would be transferred over a network
-        communicator1.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator2.handleIncomingMessage(msg, new ProtoCallContext())
-        })
-        communicator2.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator1.handleIncomingMessage(msg, new ProtoCallContext())
-        })
+        communicator1.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator2.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
+        communicator2.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator1.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
 
         wakeUpService.on('wakeUpCalled', async (reason) => {
             expect(reason).toBe('School')
@@ -107,15 +115,19 @@ describe('toProtoRpcClient', () => {
         const optionalClient = toProtoRpcClient(new OptionalServiceClient(communicator2.getRpcClientTransport()))
 
         // Simulate a network connection, in real life the message blobs would be transferred over a network
-        communicator1.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator2.handleIncomingMessage(msg, new ProtoCallContext())
-        })
-        communicator2.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator1.handleIncomingMessage(msg, new ProtoCallContext())
-        })
+        communicator1.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator2.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
+        communicator2.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator1.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
 
         const { someOptionalField } = await optionalClient.getOptional({ someOptionalField: 'something' })
-        
+
         expect(someOptionalField).toBe(undefined)
 
         communicator1.stop()
@@ -127,17 +139,16 @@ describe('toProtoRpcClient', () => {
         const communicator2 = new RpcCommunicator()
         const helloClient = toProtoRpcClient(new HelloRpcServiceClient(communicator2.getRpcClientTransport()))
 
-        communicator2.setOutgoingMessageListener(async (_message: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            throw new Error('testException')
-        })
+        communicator2.setOutgoingMessageListener(
+            async (_message: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                throw new Error('testException')
+            }
+        )
 
-        await expect(helloClient.sayHello({ myName: 'School' }))
-            .rejects.toThrow('testException')
-
+        await expect(helloClient.sayHello({ myName: 'School' })).rejects.toThrow('testException')
     })
 
     it('Awaiting RPC notifications returns when using events', async () => {
-
         // Setup server
         const communicator1 = new RpcCommunicator()
         const wakeUpService = new WakeUpService()
@@ -149,15 +160,16 @@ describe('toProtoRpcClient', () => {
 
         // Simulate a network connection, in real life the message blobs would be transferred over a network
 
-        communicator2.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator1.handleIncomingMessage(msg, new ProtoCallContext())
-        })
+        communicator2.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator1.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
 
         await wakeUpClient.wakeUp({ reason: 'School' })
     })
 
     it('Awaiting RPC notifications returns when using outgoingMessageListener', async () => {
-
         // Setup server
         const communicator1 = new RpcCommunicator()
         const wakeUpService = new WakeUpService()
@@ -169,9 +181,11 @@ describe('toProtoRpcClient', () => {
 
         // Simulate a network connection, in real life the message blobs would be transferred over a network
 
-        communicator2.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator1.handleIncomingMessage(msg, new ProtoCallContext())
-        })
+        communicator2.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator1.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
 
         await wakeUpClient.wakeUp({ reason: 'School' })
     })
@@ -181,13 +195,13 @@ describe('toProtoRpcClient', () => {
         const communicator2 = new RpcCommunicator()
         const wakeUpClient = toProtoRpcClient(new WakeUpRpcServiceClient(communicator2.getRpcClientTransport()))
 
-        communicator2.setOutgoingMessageListener(async (_message: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            throw new Error('test exception')
-        })
+        communicator2.setOutgoingMessageListener(
+            async (_message: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                throw new Error('test exception')
+            }
+        )
 
-        await expect(wakeUpClient.wakeUp({ reason: 'School' }))
-            .rejects.toThrow('test exception')
-
+        await expect(wakeUpClient.wakeUp({ reason: 'School' })).rejects.toThrow('test exception')
     })
 
     it('making a rpc call with protobuf-ts client throws', (done) => {
@@ -201,18 +215,24 @@ describe('toProtoRpcClient', () => {
         const helloClient = new HelloRpcServiceClient(communicator2.getRpcClientTransport())
 
         // Simulate a network connection, in real life the message blobs would be transferred over a network
-        communicator1.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator2.handleIncomingMessage(msg, new ProtoCallContext())
-        })
-        communicator2.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator1.handleIncomingMessage(msg, new ProtoCallContext())
-        })
+        communicator1.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator2.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
+        communicator2.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator1.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
 
         try {
             helloClient.sayHello({ myName: 'Alice' })
         } catch (e) {
-            // eslint-disable-next-line max-len
-            expect(e.message).toEqual('ProtoRpc ClientTransport can only be used with ProtoRpcClients. Please convert your protobuf-ts generated client to a ProtoRpcClient by calling toProtoRpcclient(yourClient).')
+            expect(e.message).toEqual(
+                // eslint-disable-next-line max-len
+                'ProtoRpc ClientTransport can only be used with ProtoRpcClients. Please convert your protobuf-ts generated client to a ProtoRpcClient by calling toProtoRpcclient(yourClient).'
+            )
             communicator1.stop()
             communicator2.stop()
             done()
@@ -230,12 +250,16 @@ describe('toProtoRpcClient', () => {
         const wakeUpClient = new WakeUpRpcServiceClient(communicator2.getRpcClientTransport())
 
         // Simulate a network connection, in real life the message blobs would be transferred over a network
-        communicator1.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator2.handleIncomingMessage(msg, new ProtoCallContext())
-        })
-        communicator2.setOutgoingMessageListener(async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
-            communicator1.handleIncomingMessage(msg, new ProtoCallContext())
-        })
+        communicator1.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator2.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
+        communicator2.setOutgoingMessageListener(
+            async (msg: RpcMessage, _requestId: string, _callContext?: ProtoCallContext) => {
+                communicator1.handleIncomingMessage(msg, new ProtoCallContext())
+            }
+        )
 
         wakeUpService.on('wakeUpCalled', async (_reason) => {
             communicator1.stop()
@@ -246,12 +270,13 @@ describe('toProtoRpcClient', () => {
         try {
             wakeUpClient.wakeUp({ reason: 'School' })
         } catch (e) {
-            // eslint-disable-next-line max-len
-            expect(e.message).toEqual('ProtoRpc ClientTransport can only be used with ProtoRpcClients. Please convert your protobuf-ts generated client to a ProtoRpcClient by calling toProtoRpcclient(yourClient).')
+            expect(e.message).toEqual(
+                // eslint-disable-next-line max-len
+                'ProtoRpc ClientTransport can only be used with ProtoRpcClients. Please convert your protobuf-ts generated client to a ProtoRpcClient by calling toProtoRpcclient(yourClient).'
+            )
             communicator1.stop()
             communicator2.stop()
             done()
         }
     })
-
 })

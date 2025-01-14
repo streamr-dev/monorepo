@@ -21,7 +21,6 @@ export interface ContentDeliveryRpcLocalOptions {
 }
 
 export class ContentDeliveryRpcLocal implements IContentDeliveryRpc {
-    
     private readonly options: ContentDeliveryRpcLocalOptions
 
     constructor(options: ContentDeliveryRpcLocalOptions) {

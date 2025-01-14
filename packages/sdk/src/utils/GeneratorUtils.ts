@@ -2,7 +2,11 @@ import { MaybeAsync } from '../types'
 
 export type GeneratorForEach<InType> = MaybeAsync<(value: InType, index: number, src: AsyncGenerator<InType>) => void>
 export type GeneratorFilter<InType> = MaybeAsync<(value: InType, index: number, src: AsyncGenerator<InType>) => any>
-export type GeneratorMap<InType, OutType> = (value: InType, index: number, src: AsyncGenerator<InType>) => OutType | Promise<OutType>
+export type GeneratorMap<InType, OutType> = (
+    value: InType,
+    index: number,
+    src: AsyncGenerator<InType>
+) => OutType | Promise<OutType>
 
 type OnError<ValueType> = (err: Error, value: ValueType) => Promise<any> | any
 
@@ -107,10 +111,7 @@ export async function consume<InType>(
     return noopConsume(forEach(src, fn, onError))
 }
 
-export async function* unique<T>(
-    source: AsyncIterable<T>,
-    getIdentity: (item: T) => string
-): AsyncGenerator<T> {
+export async function* unique<T>(source: AsyncIterable<T>, getIdentity: (item: T) => string): AsyncGenerator<T> {
     const seenIdentities = new Set<string>()
     for await (const item of source) {
         const identity = getIdentity(item)
@@ -127,7 +128,10 @@ export const fromArray = async function* <T>(items: T[]): AsyncGenerator<T> {
     }
 }
 
-export const transformError = async function* <T>(src: AsyncGenerator<T>, transformFn: (err: any) => any): AsyncGenerator<T> {
+export const transformError = async function* <T>(
+    src: AsyncGenerator<T>,
+    transformFn: (err: any) => any
+): AsyncGenerator<T> {
     try {
         for await (const item of src) {
             yield item

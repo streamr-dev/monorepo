@@ -1,12 +1,11 @@
 import { randomUserId } from '@streamr/test-utils'
-import {
-    StreamPartIDUtils,
-    hexToBinary,
-    toUserIdRaw,
-    waitForEvent3
-} from '@streamr/utils'
+import { StreamPartIDUtils, hexToBinary, toUserIdRaw, waitForEvent3 } from '@streamr/utils'
 import { NetworkNode, createNetworkNode } from '../../src/NetworkNode'
-import { ProxyDirection, SignatureType, StreamMessage } from '../../generated/packages/trackerless-network/protos/NetworkRpc'
+import {
+    ProxyDirection,
+    SignatureType,
+    StreamMessage
+} from '../../generated/packages/trackerless-network/protos/NetworkRpc'
 import { createMockPeerDescriptor } from '../utils/utils'
 
 const STREAM_PART_ID = StreamPartIDUtils.parse('proxy-test#0')
@@ -41,7 +40,7 @@ describe('proxy group key exchange', () => {
         publisher = createNetworkNode({
             layer0: {
                 entryPoints: [proxyNodeDescriptor],
-                peerDescriptor: publisherDescriptor,
+                peerDescriptor: publisherDescriptor
             }
         })
         await publisher.start(false)
@@ -49,7 +48,7 @@ describe('proxy group key exchange', () => {
         subscriber = createNetworkNode({
             layer0: {
                 entryPoints: [proxyNodeDescriptor],
-                peerDescriptor: subscriberDescriptor,
+                peerDescriptor: subscriberDescriptor
             }
         })
         await subscriber.start(false)
@@ -60,7 +59,7 @@ describe('proxy group key exchange', () => {
         await publisher.stop()
         await subscriber.stop()
     })
-    
+
     it('happy path request', async () => {
         await publisher.setProxies(STREAM_PART_ID, [proxyNodeDescriptor], ProxyDirection.PUBLISH, publisherUserId)
         await subscriber.setProxies(STREAM_PART_ID, [proxyNodeDescriptor], ProxyDirection.SUBSCRIBE, subscriberUserId)

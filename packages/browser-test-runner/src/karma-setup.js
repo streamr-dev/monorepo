@@ -3,8 +3,8 @@
 
 import * as jestMock from 'jest-mock'
 
-// The following lines need to use the require syntax to fix 
-// process.stdout dependency in expect v. 28+ 
+// The following lines need to use the require syntax to fix
+// process.stdout dependency in expect v. 28+
 process.stdout = {}
 const expect = require('expect').default
 
@@ -58,7 +58,7 @@ window.test.each = (inputs) => (testName, test) =>
     inputs.forEach((args) => window.it(format(testName, args), () => test(args)))
 window.describe.each = (inputs) => (testName, test) =>
     inputs.forEach((args) => window.describe(format(testName, args), () => test(args)))
-window.test.todo = function() {
+window.test.todo = function todo() {
     return undefined
 }
 window.it.skip = window.xit

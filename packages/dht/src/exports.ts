@@ -22,7 +22,7 @@ export { ConnectionType } from './connection/IConnection'
 export { ServiceID } from './types/ServiceID'
 export { RingContacts } from './dht/contact/RingContactList'
 export { createOutgoingHandshaker } from './connection/Handshaker'
-export { 
+export {
     DhtAddress,
     DhtAddressRaw,
     toDhtAddress,

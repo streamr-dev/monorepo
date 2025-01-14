@@ -16,9 +16,13 @@ export const createSignaturePayload = (opts: {
     newGroupKey?: EncryptedGroupKey
 }): Uint8Array | never => {
     const header = Buffer.concat([
-        Buffer.from(`${opts.messageId.streamId}${opts.messageId.streamPartition}${opts.messageId.timestamp}`
-                + `${opts.messageId.sequenceNumber}${opts.messageId.publisherId}${opts.messageId.msgChainId}`),
-        (opts.prevMsgRef !== undefined) ? Buffer.from(`${opts.prevMsgRef.timestamp}${opts.prevMsgRef.sequenceNumber}`) : new Uint8Array(0)
+        Buffer.from(
+            `${opts.messageId.streamId}${opts.messageId.streamPartition}${opts.messageId.timestamp}` +
+                `${opts.messageId.sequenceNumber}${opts.messageId.publisherId}${opts.messageId.msgChainId}`
+        ),
+        opts.prevMsgRef !== undefined
+            ? Buffer.from(`${opts.prevMsgRef.timestamp}${opts.prevMsgRef.sequenceNumber}`)
+            : new Uint8Array(0)
     ])
     if (opts.messageType === StreamMessageType.MESSAGE) {
         const newGroupKeyId = opts.newGroupKey ? Buffer.from(opts.newGroupKey.id) : undefined
@@ -26,7 +30,7 @@ export const createSignaturePayload = (opts: {
             header,
             opts.content,
             newGroupKeyId ?? new Uint8Array(0),
-            opts.newGroupKey?.data ?? new Uint8Array(0),
+            opts.newGroupKey?.data ?? new Uint8Array(0)
         ])
     } else if (opts.messageType === StreamMessageType.GROUP_KEY_REQUEST) {
         // NOTE: this conversion will be removed in the future when we migrate all usages of

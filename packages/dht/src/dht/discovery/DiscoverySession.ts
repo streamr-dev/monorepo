@@ -20,7 +20,6 @@ interface DiscoverySessionOptions {
 }
 
 export class DiscoverySession {
-
     public readonly id = v4()
     private noProgressCounter = 0
     private ongoingRequests: Set<DhtAddress> = new Set()
@@ -91,13 +90,18 @@ export class DiscoverySession {
         }
         const uncontacted = getClosestNodes(
             this.options.targetId,
-            Array.from(this.options.peerManager.getNearbyContacts().getAllContactsInUndefinedOrder(), (c) => c.getPeerDescriptor()), 
+            Array.from(this.options.peerManager.getNearbyContacts().getAllContactsInUndefinedOrder(), (c) =>
+                c.getPeerDescriptor()
+            ),
             {
                 maxCount: this.options.parallelism,
                 excludedNodeIds: this.options.contactedPeers
             }
         )
-        if ((uncontacted.length === 0 && this.ongoingRequests.size === 0) || (this.noProgressCounter >= this.options.noProgressLimit)) {
+        if (
+            (uncontacted.length === 0 && this.ongoingRequests.size === 0) ||
+            this.noProgressCounter >= this.options.noProgressLimit
+        ) {
             this.doneGate.open()
             return
         }
@@ -124,6 +128,11 @@ export class DiscoverySession {
         setImmediate(() => {
             this.findMoreContacts()
         })
-        await withTimeout(this.doneGate.waitUntilOpen(), timeout, 'discovery session timed out', this.options.abortSignal)
+        await withTimeout(
+            this.doneGate.waitUntilOpen(),
+            timeout,
+            'discovery session timed out',
+            this.options.abortSignal
+        )
     }
 }

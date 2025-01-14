@@ -29,7 +29,7 @@ export class StreamPartAssignments extends EventEmitter3<StreamPartAssignmentEve
         redundancyFactor: number,
         getStreamParts: (streamId: StreamID) => Promise<StreamPartID[]>,
         operatorFleetState: OperatorFleetState,
-        maintainTopologyHelper: EventEmitter3<MaintainTopologyHelperEvents>,
+        maintainTopologyHelper: EventEmitter3<MaintainTopologyHelperEvents>
     ) {
         super()
         this.myNodeId = myNodeId
@@ -107,7 +107,10 @@ export class StreamPartAssignments extends EventEmitter3<StreamPartAssignmentEve
             }
         }
         for (const streamPartId of this.myStreamParts) {
-            if (!this.assignments.has(streamPartId) || !this.consistentHashRing.get(streamPartId).includes(this.myNodeId)) {
+            if (
+                !this.assignments.has(streamPartId) ||
+                !this.consistentHashRing.get(streamPartId).includes(this.myNodeId)
+            ) {
                 unassigned.push(streamPartId)
                 this.myStreamParts.delete(streamPartId)
                 this.emit('unassigned', streamPartId)
@@ -125,9 +128,7 @@ export class StreamPartAssignments extends EventEmitter3<StreamPartAssignmentEve
         }
     }
 
-    private concurrencyLimiter<T>(
-        fn: (t: T) => Promise<void>
-    ): (t: T) => void {
+    private concurrencyLimiter<T>(fn: (t: T) => Promise<void>): (t: T) => void {
         return (t) => {
             this.concurrencyLimit(() => fn(t)).catch((err) => {
                 logger.warn('Encountered error while processing event', { err })

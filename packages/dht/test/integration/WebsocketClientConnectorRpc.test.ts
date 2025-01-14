@@ -7,7 +7,6 @@ import { Empty } from '../../generated/google/protobuf/empty'
 import { DhtCallContext } from '../../src/rpc-protocol/DhtCallContext'
 
 describe('WebsocketClientConnectorRpc', () => {
-
     let rpcCommunicator1: RpcCommunicator<DhtCallContext>
     let rpcCommunicator2: RpcCommunicator<DhtCallContext>
     let client1: ProtoRpcClient<WebsocketClientConnectorRpcClient>
@@ -50,19 +49,21 @@ describe('WebsocketClientConnectorRpc', () => {
     })
 
     it('Happy path', async () => {
-        const response1 = client1.requestConnection({
-            ip: '127.0.0.1',
-            port: 9099
-        },
-        { targetDescriptor: peerDescriptor2 },
+        const response1 = client1.requestConnection(
+            {
+                ip: '127.0.0.1',
+                port: 9099
+            },
+            { targetDescriptor: peerDescriptor2 }
         )
         await response1
-        
-        const response2 = client2.requestConnection({
-            ip: '127.0.0.1',
-            port: 9111
-        },
-        { targetDescriptor: peerDescriptor1 },
+
+        const response2 = client2.requestConnection(
+            {
+                ip: '127.0.0.1',
+                port: 9111
+            },
+            { targetDescriptor: peerDescriptor1 }
         )
         await response2
     })

@@ -13,7 +13,8 @@ type ExpressType = ReturnType<typeof express>
 type ServerType = ReturnType<ExpressType['listen']>
 
 const dbUrl = 'https://raw.githubusercontent.com/GitSquared/node-geolite2-redist/master/redist/GeoLite2-City.tar.gz'
-const hashUrl = 'https://raw.githubusercontent.com/GitSquared/node-geolite2-redist/master/redist/GeoLite2-City.mmdb.sha384'
+const hashUrl =
+    'https://raw.githubusercontent.com/GitSquared/node-geolite2-redist/master/redist/GeoLite2-City.mmdb.sha384'
 
 const dbFileName = '/GeoLite2-City.tar.gz'
 const hashFileName = '/GeoLite2-City.mmdb.sha384'
@@ -39,7 +40,6 @@ export class TestServer extends EventEmitter<TestServerEvents> {
     private static dbData?: Uint8Array
 
     private static async prefetchData(): Promise<void> {
-
         TestServer.hashData = await fetchFileToMemory(hashUrl)
 
         // check if db data is already prefetched to CACHE_PATH
@@ -73,7 +73,11 @@ export class TestServer extends EventEmitter<TestServerEvents> {
         fs.renameSync(CACHE_PATH + dbFileName + uniqueName, CACHE_PATH + dbFileName)
     }
 
-    private async writeDataKilobytesPerSecond(res: http.ServerResponse, data: Uint8Array, kilobytesPerSecond?: number): Promise<void> {
+    private async writeDataKilobytesPerSecond(
+        res: http.ServerResponse,
+        data: Uint8Array,
+        kilobytesPerSecond?: number
+    ): Promise<void> {
         let delayMilliseconds = 1
 
         if (kilobytesPerSecond) {
@@ -103,12 +107,13 @@ export class TestServer extends EventEmitter<TestServerEvents> {
             app.get(dbFileName, (_req, res) => {
                 if (kiloBytesPerSecond !== undefined) {
                     res.setHeader('Content-Type', 'application/gzip')
-                    this.writeDataKilobytesPerSecond(res, TestServer.dbData!,
-                        kiloBytesPerSecond).then(() => {
-                        res.end()
-                    }).catch((_err) => {
-                        res.end()
-                    })
+                    this.writeDataKilobytesPerSecond(res, TestServer.dbData!, kiloBytesPerSecond)
+                        .then(() => {
+                            res.end()
+                        })
+                        .catch((_err) => {
+                            res.end()
+                        })
                 } else {
                     // send data without throttling from file
                     const readable = bufferToStream(Buffer.from(TestServer.dbData!))
@@ -132,7 +137,7 @@ export class TestServer extends EventEmitter<TestServerEvents> {
 
             this.server = app.listen(port, '127.0.0.1', () => {
                 logger.info('Test server is running on port ' + port)
-                
+
                 // The server is not really ready after listen callback, possible bug in express
                 setTimeout(() => {
                     resolve()

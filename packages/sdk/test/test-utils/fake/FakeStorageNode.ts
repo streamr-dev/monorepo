@@ -1,9 +1,11 @@
 import { fastWallet } from '@streamr/test-utils'
 import {
-    EthereumAddress, Multimap,
+    EthereumAddress,
+    Multimap,
     StreamID,
     StreamPartID,
-    toEthereumAddress, toLengthPrefixedFrame,
+    toEthereumAddress,
+    toLengthPrefixedFrame,
     toStreamID,
     toStreamPartID,
     toUserId,
@@ -31,7 +33,11 @@ const MIN_SEQUENCE_NUMBER = 0
 const MAX_SEQUENCE_NUMBER = 2147483647
 
 const startServer = async (
-    getMessages: (streamPartId: StreamPartID, resendType: ResendType, queryParams: Record<string, any>) => AsyncIterable<StreamMessage>
+    getMessages: (
+        streamPartId: StreamPartID,
+        resendType: ResendType,
+        queryParams: Record<string, any>
+    ) => AsyncIterable<StreamMessage>
 ): Promise<Server> => {
     const app = express()
     app.get('/streams/:streamId/data/partitions/:partition/:resendType', async (req: Request, res: Response) => {
@@ -60,11 +66,10 @@ const isStorableMessage = (msg: StreamMessage): boolean => {
 }
 
 const parseNumberQueryParameter = (str: string | undefined): number | undefined => {
-    return (str !== undefined) ? Number(str) : undefined
+    return str !== undefined ? Number(str) : undefined
 }
 
 export class FakeStorageNode {
-
     private readonly streamPartMessages: Multimap<StreamPartID, StreamMessage> = new Multimap()
     private server?: Server
     private readonly wallet: Wallet
@@ -90,33 +95,35 @@ export class FakeStorageNode {
     }
 
     async start(): Promise<void> {
-        this.server = await startServer((streamPartId: StreamPartID, resendType: ResendType, queryParams: Record<string, any>) => {
-            switch (resendType) {
-                case 'last':
-                    return this.getLast(streamPartId, {
-                        count: queryParams.count
-                    })
-                case 'from':
-                    return this.getRange(streamPartId, {
-                        fromTimestamp: parseNumberQueryParameter(queryParams.fromTimestamp)!,
-                        fromSequenceNumber: parseNumberQueryParameter(queryParams.fromSequenceNumber),
-                        toTimestamp: MAX_TIMESTAMP,
-                        toSequenceNumber: MAX_SEQUENCE_NUMBER,
-                        publisherId: queryParams.publisherId
-                    })
-                case 'range':
-                    return this.getRange(streamPartId, {
-                        fromTimestamp: parseNumberQueryParameter(queryParams.fromTimestamp)!,
-                        fromSequenceNumber: parseNumberQueryParameter(queryParams.fromSequenceNumber),
-                        toTimestamp: parseNumberQueryParameter(queryParams.toTimestamp)!,
-                        toSequenceNumber: parseNumberQueryParameter(queryParams.toSequenceNumber),
-                        publisherId: queryParams.publisherId,
-                        msgChainId: queryParams.msgChainId
-                    })
-                default:
-                    throw new Error('assertion failed')
+        this.server = await startServer(
+            (streamPartId: StreamPartID, resendType: ResendType, queryParams: Record<string, any>) => {
+                switch (resendType) {
+                    case 'last':
+                        return this.getLast(streamPartId, {
+                            count: queryParams.count
+                        })
+                    case 'from':
+                        return this.getRange(streamPartId, {
+                            fromTimestamp: parseNumberQueryParameter(queryParams.fromTimestamp)!,
+                            fromSequenceNumber: parseNumberQueryParameter(queryParams.fromSequenceNumber),
+                            toTimestamp: MAX_TIMESTAMP,
+                            toSequenceNumber: MAX_SEQUENCE_NUMBER,
+                            publisherId: queryParams.publisherId
+                        })
+                    case 'range':
+                        return this.getRange(streamPartId, {
+                            fromTimestamp: parseNumberQueryParameter(queryParams.fromTimestamp)!,
+                            fromSequenceNumber: parseNumberQueryParameter(queryParams.fromSequenceNumber),
+                            toTimestamp: parseNumberQueryParameter(queryParams.toTimestamp)!,
+                            toSequenceNumber: parseNumberQueryParameter(queryParams.toSequenceNumber),
+                            publisherId: queryParams.publisherId,
+                            msgChainId: queryParams.msgChainId
+                        })
+                    default:
+                        throw new Error('assertion failed')
+                }
             }
-        })
+        )
         const port = (this.server.address() as AddressInfo).port
         this.chain.setStorageNodeMetadata(this.getAddress(), {
             urls: [`http://127.0.0.1:${port}`]
@@ -142,16 +149,19 @@ export class FakeStorageNode {
         streamParts.forEach(async (streamPartId) => {
             if (!(await this.node.getStreamParts()).includes(streamPartId)) {
                 this.node.addMessageListener((msg: StreamMessage) => {
-                    if ((msg.getStreamPartID() === streamPartId) && isStorableMessage(msg)) {
+                    if (msg.getStreamPartID() === streamPartId && isStorableMessage(msg)) {
                         this.storeMessage(msg)
                     }
                 })
                 await this.node.join(streamPartId)
                 const assignmentMessage = await createMockMessage({
-                    streamPartId: toStreamPartID(formStorageNodeAssignmentStreamId(this.getAddress()), DEFAULT_PARTITION),
+                    streamPartId: toStreamPartID(
+                        formStorageNodeAssignmentStreamId(this.getAddress()),
+                        DEFAULT_PARTITION
+                    ),
                     publisher: this.wallet,
                     content: {
-                        streamPart: streamPartId,
+                        streamPart: streamPartId
                     }
                 })
                 await this.node.broadcast(assignmentMessage)
@@ -164,9 +174,12 @@ export class FakeStorageNode {
         this.streamPartMessages.add(streamPartId, msg)
     }
 
-    async* getLast(streamPartId: StreamPartID, opts: {
-        count: number
-    }): AsyncIterable<StreamMessage> {
+    async *getLast(
+        streamPartId: StreamPartID,
+        opts: {
+            count: number
+        }
+    ): AsyncIterable<StreamMessage> {
         const messages = this.streamPartMessages.get(streamPartId)
         if (messages !== undefined) {
             const firstIndex = Math.max(messages.length - opts.count, 0)
@@ -177,26 +190,29 @@ export class FakeStorageNode {
         }
     }
 
-    async* getRange(streamPartId: StreamPartID, opts: {
-        fromTimestamp: number
-        fromSequenceNumber?: number
-        toTimestamp: number
-        toSequenceNumber?: number
-        publisherId?: string
-        msgChainId?: string
-    }): AsyncIterable<StreamMessage> {
+    async *getRange(
+        streamPartId: StreamPartID,
+        opts: {
+            fromTimestamp: number
+            fromSequenceNumber?: number
+            toTimestamp: number
+            toSequenceNumber?: number
+            publisherId?: string
+            msgChainId?: string
+        }
+    ): AsyncIterable<StreamMessage> {
         const messages = this.streamPartMessages.get(streamPartId)
         if (messages !== undefined) {
             const minSequenceNumber = opts.fromSequenceNumber ?? MIN_SEQUENCE_NUMBER
             const maxSequenceNumber = opts.toSequenceNumber ?? MAX_SEQUENCE_NUMBER
             yield* messages.filter((msg) => {
-                return ((opts.publisherId === undefined) || (msg.getPublisherId() === opts.publisherId))
-                    && ((opts.msgChainId === undefined) || (msg.getMsgChainId() === opts.msgChainId))
-                    && (
-                        ((msg.getTimestamp() > opts.fromTimestamp) && (msg.getTimestamp() < opts.toTimestamp))
-                        || ((msg.getTimestamp() === opts.fromTimestamp) && (msg.getSequenceNumber() >= minSequenceNumber))
-                        || ((msg.getTimestamp() === opts.toTimestamp) && (msg.getSequenceNumber() <= maxSequenceNumber))
-                    )
+                return (
+                    (opts.publisherId === undefined || msg.getPublisherId() === opts.publisherId) &&
+                    (opts.msgChainId === undefined || msg.getMsgChainId() === opts.msgChainId) &&
+                    ((msg.getTimestamp() > opts.fromTimestamp && msg.getTimestamp() < opts.toTimestamp) ||
+                        (msg.getTimestamp() === opts.fromTimestamp && msg.getSequenceNumber() >= minSequenceNumber) ||
+                        (msg.getTimestamp() === opts.toTimestamp && msg.getSequenceNumber() <= maxSequenceNumber))
+                )
             })
         } else {
             // TODO throw an error if this storage node doesn't isn't configured to store the stream?

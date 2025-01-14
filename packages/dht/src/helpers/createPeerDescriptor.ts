@@ -1,21 +1,14 @@
-import {
-    createSignature,
-    hash
-} from '@streamr/utils'
+import { createSignature, hash } from '@streamr/utils'
 import crypto from 'crypto'
 import { isBrowserEnvironment } from '../helpers/browser/isBrowserEnvironment'
 import { createPeerDescriptorSignaturePayload } from '../helpers/createPeerDescriptorSignaturePayload'
 import { DhtAddress, DhtAddressRaw, toDhtAddressRaw } from '../identifiers'
-import {
-    ConnectivityResponse,
-    NodeType,
-    PeerDescriptor
-} from '../../generated/packages/dht/protos/DhtRpc'
+import { ConnectivityResponse, NodeType, PeerDescriptor } from '../../generated/packages/dht/protos/DhtRpc'
 
 const calculateNodeIdRaw = (ipAddress: number, privateKey: Uint8Array): DhtAddressRaw => {
-    // nodeId is calculated as 
+    // nodeId is calculated as
     // concatenate(
-    //   get104leastSignificatBits(hash(ipAddress)), 
+    //   get104leastSignificatBits(hash(ipAddress)),
     //   get56leastSignificatBits(sign(ipAddress))
     // )
     const ipAsBuffer = Buffer.alloc(4)
@@ -29,9 +22,13 @@ const calculateNodeIdRaw = (ipAddress: number, privateKey: Uint8Array): DhtAddre
     return nodeIdRaw
 }
 
-export const createPeerDescriptor = (connectivityResponse: ConnectivityResponse, region: number, nodeId?: DhtAddress): PeerDescriptor => {
+export const createPeerDescriptor = (
+    connectivityResponse: ConnectivityResponse,
+    region: number,
+    nodeId?: DhtAddress
+): PeerDescriptor => {
     const privateKey = crypto.randomBytes(32)
-    const publicKey = crypto.randomBytes(20)  // TODO calculate publicKey from privateKey
+    const publicKey = crypto.randomBytes(20) // TODO calculate publicKey from privateKey
     let nodeIdRaw: DhtAddressRaw
     if (nodeId !== undefined) {
         nodeIdRaw = toDhtAddressRaw(nodeId)
@@ -43,7 +40,7 @@ export const createPeerDescriptor = (connectivityResponse: ConnectivityResponse,
         type: isBrowserEnvironment() ? NodeType.BROWSER : NodeType.NODEJS,
         ipAddress: connectivityResponse.ipAddress,
         region,
-        publicKey 
+        publicKey
     }
     if (connectivityResponse.websocket) {
         ret.websocket = {

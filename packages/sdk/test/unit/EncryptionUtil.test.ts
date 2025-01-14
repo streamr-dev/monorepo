@@ -30,14 +30,18 @@ describe('EncryptionUtil', () => {
         const plaintext = 'some random text'
         const cipher1 = EncryptionUtil.encryptWithAES(Buffer.from(plaintext, 'utf8'), key.data)
         const cipher2 = EncryptionUtil.encryptWithAES(Buffer.from(plaintext, 'utf8'), key.data)
-        expect(cipher1.slice(0, INITIALIZATION_VECTOR_LENGTH)).not.toStrictEqual(cipher2.slice(0, INITIALIZATION_VECTOR_LENGTH))
-        expect(cipher1.slice(INITIALIZATION_VECTOR_LENGTH)).not.toStrictEqual(cipher2.slice(INITIALIZATION_VECTOR_LENGTH))
+        expect(cipher1.slice(0, INITIALIZATION_VECTOR_LENGTH)).not.toStrictEqual(
+            cipher2.slice(0, INITIALIZATION_VECTOR_LENGTH)
+        )
+        expect(cipher1.slice(INITIALIZATION_VECTOR_LENGTH)).not.toStrictEqual(
+            cipher2.slice(INITIALIZATION_VECTOR_LENGTH)
+        )
     })
 
     it('StreamMessage decryption: happy path', async () => {
         const key = GroupKey.generate()
         const nextKey = GroupKey.generate()
-        const streamMessage = await createMockMessage({
+        const streamMessage = (await createMockMessage({
             streamPartId: StreamPartIDUtils.parse('stream#0'),
             publisher: fastWallet(),
             content: {
@@ -45,7 +49,7 @@ describe('EncryptionUtil', () => {
             },
             encryptionKey: key,
             nextEncryptionKey: nextKey
-        }) as StreamMessageAESEncrypted
+        })) as StreamMessageAESEncrypted
         const [content, newGroupKey] = EncryptionUtil.decryptStreamMessage(streamMessage, key)
         expect(content).toEqualBinary(utf8ToBinary('{"foo":"bar"}'))
         expect(newGroupKey).toEqual(nextKey)

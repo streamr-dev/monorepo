@@ -21,11 +21,14 @@ export class MaintainTopologyService {
         let subscription: Subscription
         try {
             logger.info('Join stream partition', { streamPartId })
-            subscription = await this.streamrClient.subscribe({
-                id,
-                partition,
-                raw: true
-            }, () => {})
+            subscription = await this.streamrClient.subscribe(
+                {
+                    id,
+                    partition,
+                    raw: true
+                },
+                () => {}
+            )
         } catch (err) {
             logger.warn('Failed to join stream partition', { streamPartId, reason: err?.reason })
             return

@@ -1,5 +1,13 @@
 import { EthereumAddress } from '@streamr/utils'
-import { AbstractProvider, BaseContract, Contract, ContractTransactionReceipt, InterfaceAbi, Provider, Signer } from 'ethers'
+import {
+    AbstractProvider,
+    BaseContract,
+    Contract,
+    ContractTransactionReceipt,
+    InterfaceAbi,
+    Provider,
+    Signer
+} from 'ethers'
 import { Lifecycle, inject, scoped } from 'tsyringe'
 import { ConfigInjectionToken, StrictStreamrClientConfig } from '../Config'
 import { StreamrClientEventEmitter } from '../events'
@@ -8,12 +16,10 @@ import { ObservableContract, createDecoratedContract } from './contract'
 
 @scoped(Lifecycle.ContainerScoped)
 export class ContractFactory {
-
     private readonly config: Pick<StrictStreamrClientConfig, 'contracts'>
     private readonly eventEmitter: StreamrClientEventEmitter
     private readonly loggerFactory: LoggerFactory
 
-    /* eslint-disable indent */
     constructor(
         @inject(ConfigInjectionToken) config: Pick<StrictStreamrClientConfig, 'contracts'>,
         eventEmitter: StreamrClientEventEmitter,
@@ -54,12 +60,15 @@ export class ContractFactory {
             // because the concurrency limit covers only submits, not tx.wait() calls.
             999999
         )
-        contract.eventEmitter.on('onTransactionConfirm', (methodName: string, receipt: ContractTransactionReceipt | null) => {
-            this.eventEmitter.emit('contractTransactionConfirmed', {
-                methodName,
-                receipt
-            })
-        })
+        contract.eventEmitter.on(
+            'onTransactionConfirm',
+            (methodName: string, receipt: ContractTransactionReceipt | null) => {
+                this.eventEmitter.emit('contractTransactionConfirmed', {
+                    methodName,
+                    receipt
+                })
+            }
+        )
         return contract
     }
 

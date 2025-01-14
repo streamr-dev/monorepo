@@ -1,17 +1,8 @@
-import {
-    ListeningRpcCommunicator,
-    NodeType,
-    PeerDescriptor,
-    Simulator,
-    SimulatorTransport
-} from '@streamr/dht'
+import { ListeningRpcCommunicator, NodeType, PeerDescriptor, Simulator, SimulatorTransport } from '@streamr/dht'
 import { StreamPartIDUtils, until } from '@streamr/utils'
 import { ContentDeliveryRpcRemote } from '../../src/logic/ContentDeliveryRpcRemote'
 import { Empty } from '../../generated/google/protobuf/empty'
-import {
-    LeaveStreamPartNotice,
-    StreamMessage
-} from '../../generated/packages/trackerless-network/protos/NetworkRpc'
+import { LeaveStreamPartNotice, StreamMessage } from '../../generated/packages/trackerless-network/protos/NetworkRpc'
 import { ContentDeliveryRpcClient } from '../../generated/packages/trackerless-network/protos/NetworkRpc.client'
 import { createStreamMessage } from '../utils/utils'
 import { randomUserId } from '@streamr/test-utils'
@@ -43,18 +34,14 @@ describe('ContentDeliveryRpcRemote', () => {
         await mockConnectionManager1.start()
         mockConnectionManager2 = new SimulatorTransport(clientNode, simulator)
         await mockConnectionManager2.start()
-        
+
         mockServerRpc = new ListeningRpcCommunicator('test', mockConnectionManager1)
         clientRpc = new ListeningRpcCommunicator('test', mockConnectionManager2)
 
-        mockServerRpc.registerRpcNotification(
-            StreamMessage,
-            'sendStreamMessage',
-            async (): Promise<Empty> => {
-                recvCounter += 1
-                return Empty
-            }
-        )
+        mockServerRpc.registerRpcNotification(StreamMessage, 'sendStreamMessage', async (): Promise<Empty> => {
+            recvCounter += 1
+            return Empty
+        })
 
         mockServerRpc.registerRpcNotification(
             LeaveStreamPartNotice,
@@ -65,12 +52,7 @@ describe('ContentDeliveryRpcRemote', () => {
             }
         )
 
-        rpcRemote = new ContentDeliveryRpcRemote(
-            clientNode,
-            serverNode,
-            clientRpc,
-            ContentDeliveryRpcClient
-        )
+        rpcRemote = new ContentDeliveryRpcRemote(clientNode, serverNode, clientRpc, ContentDeliveryRpcClient)
     })
 
     afterEach(async () => {
@@ -96,5 +78,4 @@ describe('ContentDeliveryRpcRemote', () => {
         rpcRemote.leaveStreamPartNotice(StreamPartIDUtils.parse('test#0'), false)
         await until(() => recvCounter === 1)
     })
-
 })

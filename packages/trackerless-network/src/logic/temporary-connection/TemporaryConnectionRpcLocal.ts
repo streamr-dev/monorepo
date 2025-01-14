@@ -18,12 +18,11 @@ interface TemporaryConnectionRpcLocalOptions {
     localPeerDescriptor: PeerDescriptor
     streamPartId: StreamPartID
     connectionLocker: ConnectionLocker
-} 
+}
 
 const LOCK_ID_BASE = 'system/content-delivery/temporary-connection/'
 
 export class TemporaryConnectionRpcLocal implements ITemporaryConnectionRpc {
-
     private readonly options: TemporaryConnectionRpcLocalOptions
     private readonly temporaryNodes: NodeList
     private readonly lockId: string

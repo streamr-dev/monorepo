@@ -30,7 +30,6 @@ const MAX_PENDING_REQUEST_COUNT = 50000 // just some limit, we can tweak the num
 
 @scoped(Lifecycle.ContainerScoped)
 export class SubscriberKeyExchange {
-
     private rsaKeyPair?: RSAKeyPair
     private readonly pendingRequests: MaxSizedSet<string> = new MaxSizedSet(MAX_PENDING_REQUEST_COUNT)
     private readonly networkNodeFacade: NetworkNodeFacade
@@ -73,7 +72,11 @@ export class SubscriberKeyExchange {
         }, config.encryption.maxKeyRequestsPerSecond)
     }
 
-    private async doRequestGroupKey(groupKeyId: string, publisherId: UserID, streamPartId: StreamPartID): Promise<void> {
+    private async doRequestGroupKey(
+        groupKeyId: string,
+        publisherId: UserID,
+        streamPartId: StreamPartID
+    ): Promise<void> {
         await this.ensureStarted()
         const requestId = uuidv4()
         const request = await this.createRequest(
@@ -81,7 +84,8 @@ export class SubscriberKeyExchange {
             streamPartId,
             publisherId,
             this.rsaKeyPair!.getPublicKey(),
-            requestId)
+            requestId
+        )
         await this.networkNodeFacade.broadcast(request)
         this.pendingRequests.add(requestId)
         this.logger.debug('Sent group key request (waiting for response)', {
@@ -102,23 +106,26 @@ export class SubscriberKeyExchange {
             recipient: publisherId,
             requestId,
             rsaPublicKey,
-            groupKeyIds: [groupKeyId],
+            groupKeyIds: [groupKeyId]
         })
         const erc1271contract = this.subscriber.getERC1271ContractAddress(streamPartId)
-        return this.messageSigner.createSignedMessage({
-            messageId: new MessageID(
-                StreamPartIDUtils.getStreamID(streamPartId),
-                StreamPartIDUtils.getStreamPartition(streamPartId),
-                Date.now(),
-                0,
-                erc1271contract === undefined ? await this.authentication.getUserId() : toUserId(erc1271contract),
-                createRandomMsgChainId()
-            ),
-            content: convertGroupKeyRequestToBytes(requestContent),
-            contentType: ContentType.BINARY,
-            messageType: StreamMessageType.GROUP_KEY_REQUEST,
-            encryptionType: EncryptionType.NONE,
-        }, erc1271contract === undefined ? SignatureType.SECP256K1 : SignatureType.ERC_1271)
+        return this.messageSigner.createSignedMessage(
+            {
+                messageId: new MessageID(
+                    StreamPartIDUtils.getStreamID(streamPartId),
+                    StreamPartIDUtils.getStreamPartition(streamPartId),
+                    Date.now(),
+                    0,
+                    erc1271contract === undefined ? await this.authentication.getUserId() : toUserId(erc1271contract),
+                    createRandomMsgChainId()
+                ),
+                content: convertGroupKeyRequestToBytes(requestContent),
+                contentType: ContentType.BINARY,
+                messageType: StreamMessageType.GROUP_KEY_REQUEST,
+                encryptionType: EncryptionType.NONE
+            },
+            erc1271contract === undefined ? SignatureType.SECP256K1 : SignatureType.ERC_1271
+        )
     }
 
     private async onMessage(msg: StreamMessage): Promise<void> {
@@ -129,10 +136,12 @@ export class SubscriberKeyExchange {
                     this.logger.debug('Handle group key response', { requestId })
                     this.pendingRequests.delete(requestId)
                     await validateStreamMessage(msg, this.streamRegistry, this.signatureValidator)
-                    await Promise.all(encryptedGroupKeys.map(async (encryptedKey) => {
-                        const key = GroupKey.decryptRSAEncrypted(encryptedKey, this.rsaKeyPair!.getPrivateKey())
-                        await this.store.set(key.id, msg.getPublisherId(), key.data)
-                    }))
+                    await Promise.all(
+                        encryptedGroupKeys.map(async (encryptedKey) => {
+                            const key = GroupKey.decryptRSAEncrypted(encryptedKey, this.rsaKeyPair!.getPrivateKey())
+                            await this.store.set(key.id, msg.getPublisherId(), key.data)
+                        })
+                    )
                 }
             } catch (err: any) {
                 this.logger.debug('Failed to handle group key response', { err })
@@ -144,7 +153,10 @@ export class SubscriberKeyExchange {
         if (this.pendingRequests.has(requestId)) {
             const authenticatedUser = await this.authentication.getUserId()
             const erc1271Contract = this.subscriber.getERC1271ContractAddress(streamPartId)
-            return (recipientId === authenticatedUser) || ((erc1271Contract !== undefined) && (recipientId === toUserId(erc1271Contract)))
+            return (
+                recipientId === authenticatedUser ||
+                (erc1271Contract !== undefined && recipientId === toUserId(erc1271Contract))
+            )
         }
         return false
     }

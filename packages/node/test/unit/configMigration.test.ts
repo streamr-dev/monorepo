@@ -1,5 +1,10 @@
 import merge from 'lodash/merge'
-import { createMigratedConfig, CURRENT_CONFIGURATION_VERSION, formSchemaUrl, needsMigration } from '../../src/config/migration'
+import {
+    createMigratedConfig,
+    CURRENT_CONFIGURATION_VERSION,
+    formSchemaUrl,
+    needsMigration
+} from '../../src/config/migration'
 import BROKER_CONFIG_SCHEMA from '../../src/config/config.schema.json'
 import { validateConfig } from '../../src/config/validateConfig'
 import { createPlugin } from '../../src/pluginRegistry'
@@ -22,7 +27,6 @@ const testMigration = async (source: any, assertTarget: (target: any) => void | 
 }
 
 describe('Config migration', () => {
-
     it('no migration', () => {
         const source = {
             $schema: formSchemaUrl(CURRENT_CONFIGURATION_VERSION)
@@ -36,7 +40,6 @@ describe('Config migration', () => {
     })
 
     describe('from v1 to v3', () => {
-
         const createConfig = (version: number, customConfig: any) => {
             const minimalConfig = {
                 $schema: `https://schema.streamr.network/config-v${version}.schema.json`,
@@ -206,7 +209,7 @@ describe('Config migration', () => {
                                 duration: 86400000,
                                 streamId: 'mock-prefix/day'
                             }
-                        ]        
+                        ]
                     }
                 }
             })
@@ -230,7 +233,9 @@ describe('Config migration', () => {
                     }
                 }
             })
-            return expect(async () => testMigration(v1, () => {})).rejects.toThrow('websocket plugin: must NOT have additional properties (foobar)')
+            return expect(async () => testMigration(v1, () => {})).rejects.toThrow(
+                'websocket plugin: must NOT have additional properties (foobar)'
+            )
         })
     })
 })

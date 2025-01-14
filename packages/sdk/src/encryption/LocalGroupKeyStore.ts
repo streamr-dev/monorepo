@@ -48,7 +48,6 @@ function formLookupKey2(publisherId: UserID, streamId: StreamID): string {
 
 @scoped(Lifecycle.ContainerScoped)
 export class LocalGroupKeyStore {
-
     private readonly persistenceManager: PersistenceManager
     private readonly eventEmitter: StreamrClientEventEmitter
     private readonly logger: Logger
@@ -56,7 +55,7 @@ export class LocalGroupKeyStore {
     constructor(
         persistenceManager: PersistenceManager,
         eventEmitter: StreamrClientEventEmitter,
-        loggerFactory: LoggerFactory,
+        loggerFactory: LoggerFactory
     ) {
         this.persistenceManager = persistenceManager
         this.eventEmitter = eventEmitter

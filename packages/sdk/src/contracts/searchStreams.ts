@@ -1,5 +1,10 @@
 import { ChangeFieldType, GraphQLQuery, HexString, TheGraphClient, toUserId, UserID } from '@streamr/utils'
-import { ChainPermissions, convertChainPermissionsToStreamPermissions, PUBLIC_PERMISSION_USER_ID, StreamPermission } from '../permission'
+import {
+    ChainPermissions,
+    convertChainPermissionsToStreamPermissions,
+    PUBLIC_PERMISSION_USER_ID,
+    StreamPermission
+} from '../permission'
 import { filter, unique } from '../utils/GeneratorUtils'
 import { StreamQueryResult } from './StreamRegistry'
 
@@ -25,7 +30,9 @@ export type SearchStreamsResultItem = {
     stream: StreamQueryResult
 } & ChainPermissions
 
-export const toInternalSearchStreamsPermissionFilter = (filter: SearchStreamsPermissionFilter): InternalSearchStreamsPermissionFilter => {
+export const toInternalSearchStreamsPermissionFilter = (
+    filter: SearchStreamsPermissionFilter
+): InternalSearchStreamsPermissionFilter => {
     return {
         ...filter,
         userId: toUserId(filter.userId)
@@ -36,10 +43,10 @@ export async function* searchStreams(
     term: string | undefined,
     permissionFilter: InternalSearchStreamsPermissionFilter | undefined,
     orderBy: SearchStreamsOrderBy,
-    theGraphClient: TheGraphClient,
+    theGraphClient: TheGraphClient
 ): AsyncGenerator<SearchStreamsResultItem> {
-    const backendResults = theGraphClient.queryEntities<SearchStreamsResultItem>(
-        (lastId: string, pageSize: number) => buildQuery(term, permissionFilter, orderBy, lastId, pageSize)
+    const backendResults = theGraphClient.queryEntities<SearchStreamsResultItem>((lastId: string, pageSize: number) =>
+        buildQuery(term, permissionFilter, orderBy, lastId, pageSize)
     )
     /*
      * There can be orphaned permission entities if a stream is deleted (currently
@@ -65,7 +72,7 @@ export async function* searchStreams(
          * non-existing assignments.
          * -> Here we filter out the empty assignments by defining a fallback value for anyOf filter
          */
-        const anyOf = permissionFilter.anyOf ?? Object.values(StreamPermission) as StreamPermission[]
+        const anyOf = permissionFilter.anyOf ?? (Object.values(StreamPermission) as StreamPermission[])
         yield* filter(withoutDuplicates, (item: SearchStreamsResultItem) => {
             const actual = convertChainPermissionsToStreamPermissions(item)
             return anyOf.some((p) => actual.includes(p))
@@ -103,7 +110,9 @@ const buildQuery = (
             variables.canEdit = permissionFilter.allOf.includes(StreamPermission.EDIT) ? true : undefined
             variables.canDelete = permissionFilter.allOf.includes(StreamPermission.DELETE) ? true : undefined
             variables.publishExpiration_gt = permissionFilter.allOf.includes(StreamPermission.PUBLISH) ? now : undefined
-            variables.subscribeExpiration_gt = permissionFilter.allOf.includes(StreamPermission.SUBSCRIBE) ? now : undefined
+            variables.subscribeExpiration_gt = permissionFilter.allOf.includes(StreamPermission.SUBSCRIBE)
+                ? now
+                : undefined
             variables.canGrant = permissionFilter.allOf.includes(StreamPermission.GRANT) ? true : undefined
         }
     }

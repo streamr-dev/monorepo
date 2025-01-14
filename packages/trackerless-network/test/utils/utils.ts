@@ -24,7 +24,10 @@ import {
     SignatureType,
     StreamMessage
 } from '../../generated/packages/trackerless-network/protos/NetworkRpc'
-import { ContentDeliveryRpcClient, HandshakeRpcClient } from '../../generated/packages/trackerless-network/protos/NetworkRpc.client'
+import {
+    ContentDeliveryRpcClient,
+    HandshakeRpcClient
+} from '../../generated/packages/trackerless-network/protos/NetworkRpc.client'
 
 export const mockConnectionLocker: ConnectionLocker = {
     lockConnection: () => {},
@@ -33,7 +36,7 @@ export const mockConnectionLocker: ConnectionLocker = {
     weakUnlockConnection: () => {},
     getLocalLockedConnectionCount: () => 0,
     getRemoteLockedConnectionCount: () => 0,
-    getWeakLockedConnectionCount: () => 0,
+    getWeakLockedConnectionCount: () => 0
 }
 
 export const createMockContentDeliveryLayerNodeAndDhtNode = async (
@@ -41,7 +44,7 @@ export const createMockContentDeliveryLayerNodeAndDhtNode = async (
     entryPointDescriptor: PeerDescriptor,
     streamPartId: StreamPartID,
     simulator: Simulator
-): Promise<[ DiscoveryLayerNode, ContentDeliveryLayerNode ]> => {
+): Promise<[DiscoveryLayerNode, ContentDeliveryLayerNode]> => {
     const mockCm = new SimulatorTransport(localPeerDescriptor, simulator)
     await mockCm.start()
     const discoveryLayerNode = new DhtNode({
@@ -77,7 +80,7 @@ export const createStreamMessage = (
         sequenceNumber: sequenceNumber ?? 0,
         timestamp: timestamp ?? Date.now(),
         publisherId: toUserIdRaw(publisherId),
-        messageChainId: 'messageChain0',
+        messageChainId: 'messageChain0'
     }
     const msg: StreamMessage = {
         messageId,
@@ -116,7 +119,7 @@ export const createMockContentDeliveryRpcRemote = (remotePeerDescriptor?: PeerDe
 export const createMockHandshakeRpcRemote = (): HandshakeRpcRemote => {
     return new HandshakeRpcRemote(
         createMockPeerDescriptor(),
-        createMockPeerDescriptor(), 
+        createMockPeerDescriptor(),
         new RpcCommunicator(),
         HandshakeRpcClient
     )

@@ -4,9 +4,7 @@ import { DnsHandler, DnsRequest, DnsResponse, Packet, createServer } from 'dns2'
 import { Database, Subdomain } from './Database'
 import { Logger } from '@streamr/utils'
 
-type AsyncDnsHandler = (
-    ...args: Parameters<DnsHandler>
-) => Promise<void>
+type AsyncDnsHandler = (...args: Parameters<DnsHandler>) => Promise<void>
 
 const logger = new Logger(module)
 
@@ -22,7 +20,6 @@ export const NXDOMAIN = 3
 // TODO: which DNS query types should we support? A query is the most important one and it works.
 // However the others do not appear to work as intended at least based on DNS queries.
 export class DnsServer {
-
     private server?: any
     private readonly domainName: string
     private readonly ownHostName: string
@@ -55,7 +52,7 @@ export class DnsServer {
             refresh: 86400,
             retry: 7200,
             expiration: 3600000,
-            minimum: 172800,
+            minimum: 172800
         } as unknown)
         send(response)
     }
@@ -81,7 +78,6 @@ export class DnsServer {
         send: (response: DnsResponse) => void,
         response: DnsResponse
     ): Promise<void> => {
-
         const name = mixedCaseName.toLowerCase()
         logger.info('handleTextQuery() ' + name)
 
@@ -124,8 +120,11 @@ export class DnsServer {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    private handleAAAAQuery = async (mixedCaseName: string, send: (response: DnsResponse) => void,
-        response: DnsResponse): Promise<void> => {
+    private handleAAAAQuery = async (
+        mixedCaseName: string,
+        send: (response: DnsResponse) => void,
+        response: DnsResponse
+    ): Promise<void> => {
         logger.info('handleAAAAQuery() ' + mixedCaseName)
         send(response)
     }
@@ -155,7 +154,6 @@ export class DnsServer {
         send: (response: DnsResponse) => void,
         response: DnsResponse
     ): Promise<void> => {
-
         const name = mixedCaseName.toLowerCase()
         logger.info('handleAQuery() ' + name)
 
@@ -201,8 +199,10 @@ export class DnsServer {
         send(response)
     }
 
-    private handleQuery: AsyncDnsHandler = async (request: DnsRequest, send: (response: DnsResponse) => void): Promise<void> => {
-
+    private handleQuery: AsyncDnsHandler = async (
+        request: DnsRequest,
+        send: (response: DnsResponse) => void
+    ): Promise<void> => {
         const response = Packet.createResponseFromRequest(request)
         // @ts-ignore private field
         response.header.aa = 1

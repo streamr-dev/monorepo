@@ -28,7 +28,6 @@ interface DhtNodeRpcLocalOptions {
 const logger = new Logger(module)
 
 export class DhtNodeRpcLocal implements IDhtNodeRpc {
-
     private readonly options: DhtNodeRpcLocalOptions
 
     constructor(options: DhtNodeRpcLocalOptions) {
@@ -38,11 +37,9 @@ export class DhtNodeRpcLocal implements IDhtNodeRpc {
     // TODO rename to getClosestNeighbors (breaking change)
     async getClosestPeers(request: ClosestPeersRequest, context: ServerCallContext): Promise<ClosestPeersResponse> {
         this.options.addContact((context as DhtCallContext).incomingSourceDescriptor!)
-        const peers = getClosestNodes(
-            toDhtAddress(request.nodeId), 
-            this.options.getNeighbors(),
-            { maxCount: this.options.peerDiscoveryQueryBatchSize }
-        )
+        const peers = getClosestNodes(toDhtAddress(request.nodeId), this.options.getNeighbors(), {
+            maxCount: this.options.peerDiscoveryQueryBatchSize
+        })
         const response = {
             peers,
             requestId: request.requestId
@@ -51,9 +48,15 @@ export class DhtNodeRpcLocal implements IDhtNodeRpc {
     }
 
     // TODO rename to getClosestRingContacts (breaking change)
-    async getClosestRingPeers(request: ClosestRingPeersRequest, context: ServerCallContext): Promise<ClosestRingPeersResponse> {
+    async getClosestRingPeers(
+        request: ClosestRingPeersRequest,
+        context: ServerCallContext
+    ): Promise<ClosestRingPeersResponse> {
         this.options.addContact((context as DhtCallContext).incomingSourceDescriptor!)
-        const closestContacts = this.options.getClosestRingContactsTo(request.ringId as RingIdRaw, this.options.peerDiscoveryQueryBatchSize)
+        const closestContacts = this.options.getClosestRingContactsTo(
+            request.ringId as RingIdRaw,
+            this.options.peerDiscoveryQueryBatchSize
+        )
         const response = {
             leftPeers: closestContacts.left,
             rightPeers: closestContacts.right,

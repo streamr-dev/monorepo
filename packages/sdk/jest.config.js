@@ -6,7 +6,5 @@ module.exports = {
         './test/test-utils/customMatchers.ts',
         '@streamr/test-utils/setupCustomMatchers'
     ]),
-    modulePathIgnorePatterns: [
-        '<rootDir>/dist/package.json',
-    ]
+    modulePathIgnorePatterns: ['<rootDir>/dist/package.json']
 }

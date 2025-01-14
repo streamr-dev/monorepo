@@ -16,7 +16,7 @@ const chain = 'polygon'
 
 const LIT_PROTOCOL_CONNECT_INTERVAL = 60 * 60 * 1000 // 1h
 
-const formEvmContractConditions = (streamRegistryChainAddress: string, streamId: StreamID) => ([
+const formEvmContractConditions = (streamRegistryChainAddress: string, streamId: StreamID) => [
     {
         contractAddress: streamRegistryChainAddress,
         chain,
@@ -50,10 +50,10 @@ const formEvmContractConditions = (streamRegistryChainAddress: string, streamId:
         returnValueTest: {
             key: 'userHasPermission',
             comparator: '=',
-            value: 'true',
-        },
+            value: 'true'
+        }
     }
-])
+]
 
 const signAuthMessage = async (authentication: Authentication) => {
     const domain = 'dummy.com'
@@ -83,14 +83,12 @@ const signAuthMessage = async (authentication: Authentication) => {
  */
 @scoped(Lifecycle.ContainerScoped)
 export class LitProtocolFacade {
-
     private litNodeClient?: LitCore
     private readonly config: Pick<StrictStreamrClientConfig, 'contracts' | 'encryption'>
     private readonly authentication: Authentication
     private readonly logger: Logger
     private connectLitNodeClient?: () => Promise<void>
 
-    /* eslint-disable indent */
     constructor(
         @inject(ConfigInjectionToken) config: Pick<StrictStreamrClientConfig, 'contracts' | 'encryption'>,
         @inject(AuthenticationInjectionToken) authentication: Authentication,
@@ -108,7 +106,10 @@ export class LitProtocolFacade {
                 debug: this.config.encryption.litProtocolLogging
             })
             // Add a rate limiter to avoid calling `connect` each time we want to use lit protocol as this would cause an unnecessary handshake.
-            this.connectLitNodeClient = withRateLimit(() => this.litNodeClient!.connect(), LIT_PROTOCOL_CONNECT_INTERVAL)
+            this.connectLitNodeClient = withRateLimit(
+                () => this.litNodeClient!.connect(),
+                LIT_PROTOCOL_CONNECT_INTERVAL
+            )
         }
         await this.connectLitNodeClient!()
         return this.litNodeClient
@@ -121,7 +122,10 @@ export class LitProtocolFacade {
             const authSig = await signAuthMessage(this.authentication)
             const client = await this.getLitNodeClient()
             const encryptedSymmetricKey = await client.saveEncryptionKey({
-                evmContractConditions: formEvmContractConditions(this.config.contracts.streamRegistryChainAddress, streamId),
+                evmContractConditions: formEvmContractConditions(
+                    this.config.contracts.streamRegistryChainAddress,
+                    streamId
+                ),
                 symmetricKey,
                 authSig,
                 chain
@@ -144,7 +148,10 @@ export class LitProtocolFacade {
             const authSig = await signAuthMessage(this.authentication)
             const client = await this.getLitNodeClient()
             const symmetricKey = await client.getEncryptionKey({
-                evmContractConditions: formEvmContractConditions(this.config.contracts.streamRegistryChainAddress, streamId),
+                evmContractConditions: formEvmContractConditions(
+                    this.config.contracts.streamRegistryChainAddress,
+                    streamId
+                ),
                 toDecrypt: groupKeyId,
                 chain,
                 authSig

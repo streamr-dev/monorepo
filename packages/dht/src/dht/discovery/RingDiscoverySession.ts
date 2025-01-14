@@ -5,7 +5,13 @@ import { PeerDescriptor } from '../../../generated/packages/dht/protos/DhtRpc'
 import { DhtNodeRpcRemote } from '../DhtNodeRpcRemote'
 import { PeerManager } from '../PeerManager'
 import { RingContacts } from '../contact/RingContactList'
-import { RingId, RingIdRaw, getLeftDistance, getRingIdFromPeerDescriptor, getRingIdFromRaw } from '../contact/ringIdentifiers'
+import {
+    RingId,
+    RingIdRaw,
+    getLeftDistance,
+    getRingIdFromPeerDescriptor,
+    getRingIdFromRaw
+} from '../contact/ringIdentifiers'
 
 const logger = new Logger(module)
 
@@ -20,7 +26,6 @@ interface RingDiscoverySessionOptions {
 }
 
 export class RingDiscoverySession {
-
     public readonly id = v4()
     private noProgressCounter = 0
     private ongoingRequests: Set<DhtAddress> = new Set()
@@ -71,10 +76,14 @@ export class RingDiscoverySession {
         )
         this.addContacts(contacts.left.concat(contacts.right))
         const newClosestContacts = this.options.peerManager.getClosestRingContactsTo(this.options.targetId, 1)
-        const newClosestLeftDistance = getLeftDistance(this.targetIdAsRingId,
-            getRingIdFromPeerDescriptor(newClosestContacts.left[0].getPeerDescriptor()))
-        const newClosestRightDistance = getLeftDistance(this.targetIdAsRingId,
-            getRingIdFromPeerDescriptor(newClosestContacts.right[0].getPeerDescriptor()))
+        const newClosestLeftDistance = getLeftDistance(
+            this.targetIdAsRingId,
+            getRingIdFromPeerDescriptor(newClosestContacts.left[0].getPeerDescriptor())
+        )
+        const newClosestRightDistance = getLeftDistance(
+            this.targetIdAsRingId,
+            getRingIdFromPeerDescriptor(newClosestContacts.right[0].getPeerDescriptor())
+        )
         if (newClosestLeftDistance >= oldClosestLeftDistance && newClosestRightDistance >= oldClosestRightDistance) {
             this.noProgressCounter++
         }
@@ -97,8 +106,10 @@ export class RingDiscoverySession {
             this.options.parallelism,
             this.options.contactedPeers
         )
-        if ((uncontacted.left.length === 0 && uncontacted.right.length === 0)
-            || this.noProgressCounter >= this.options.noProgressLimit) {
+        if (
+            (uncontacted.left.length === 0 && uncontacted.right.length === 0) ||
+            this.noProgressCounter >= this.options.noProgressLimit
+        ) {
             this.doneGate.open()
             return
         }
@@ -143,6 +154,11 @@ export class RingDiscoverySession {
         setImmediate(() => {
             this.findMoreContacts()
         })
-        await withTimeout(this.doneGate.waitUntilOpen(), timeout, 'discovery session timed out', this.options.abortSignal)
+        await withTimeout(
+            this.doneGate.waitUntilOpen(),
+            timeout,
+            'discovery session timed out',
+            this.options.abortSignal
+        )
     }
 }

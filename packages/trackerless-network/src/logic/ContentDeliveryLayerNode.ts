@@ -4,7 +4,7 @@ import {
     ITransport,
     ListeningRpcCommunicator,
     PeerDescriptor,
-    toNodeId,
+    toNodeId
 } from '@streamr/dht'
 import { Logger, StreamPartID, addManagedEventListener } from '@streamr/utils'
 import { EventEmitter } from 'eventemitter3'
@@ -15,7 +15,7 @@ import {
     MessageRef,
     StreamMessage,
     TemporaryConnectionRequest,
-    TemporaryConnectionResponse,
+    TemporaryConnectionResponse
 } from '../../generated/packages/trackerless-network/protos/NetworkRpc'
 import { ContentDeliveryRpcClient } from '../../generated/packages/trackerless-network/protos/NetworkRpc.client'
 import { ContentDeliveryRpcLocal } from './ContentDeliveryRpcLocal'
@@ -70,7 +70,6 @@ const RANDOM_NODE_VIEW_SIZE = 20
 const logger = new Logger(module)
 
 export class ContentDeliveryLayerNode extends EventEmitter<Events> {
-
     private started = false
     private readonly duplicateDetectors: Map<string, DuplicateMessageDetector>
     private options: StrictContentDeliveryLayerNodeOptions
@@ -86,16 +85,18 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
             localPeerDescriptor: this.options.localPeerDescriptor,
             streamPartId: this.options.streamPartId,
             rpcCommunicator: this.options.rpcCommunicator,
-            markAndCheckDuplicate: (msg: MessageID, prev?: MessageRef) => markAndCheckDuplicate(this.duplicateDetectors, msg, prev),
+            markAndCheckDuplicate: (msg: MessageID, prev?: MessageRef) =>
+                markAndCheckDuplicate(this.duplicateDetectors, msg, prev),
             broadcast: (message: StreamMessage, previousNode?: DhtAddress) => this.broadcast(message, previousNode),
             onLeaveNotice: (remoteNodeId: DhtAddress, sourceIsStreamEntryPoint: boolean) => {
                 if (this.abortController.signal.aborted) {
                     return
                 }
-                const contact = this.options.nearbyNodeView.get(remoteNodeId)
-                ?? this.options.randomNodeView.get(remoteNodeId)
-                ?? this.options.neighbors.get(remoteNodeId)
-                ?? this.options.proxyConnectionRpcLocal?.getConnection(remoteNodeId)?.remote
+                const contact =
+                    this.options.nearbyNodeView.get(remoteNodeId) ??
+                    this.options.randomNodeView.get(remoteNodeId) ??
+                    this.options.neighbors.get(remoteNodeId) ??
+                    this.options.proxyConnectionRpcLocal?.getConnection(remoteNodeId)?.remote
                 // TODO: check integrity of notifier?
                 if (contact) {
                     this.options.discoveryLayerNode.removeContact(remoteNodeId)
@@ -111,7 +112,8 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
                     this.emit('entryPointLeaveDetected')
                 }
             },
-            markForInspection: (remoteNodeId: DhtAddress, messageId: MessageID) => this.options.inspector.markMessage(remoteNodeId, messageId)
+            markForInspection: (remoteNodeId: DhtAddress, messageId: MessageID) =>
+                this.options.inspector.markMessage(remoteNodeId, messageId)
         })
     }
 
@@ -120,7 +122,7 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
         this.registerDefaultServerMethods()
         addManagedEventListener(
             this.options.discoveryLayerNode,
-            'nearbyContactAdded', 
+            'nearbyContactAdded',
             () => this.onNearbyContactAdded(),
             this.abortController.signal
         )
@@ -197,14 +199,29 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
     }
 
     private registerDefaultServerMethods(): void {
-        this.options.rpcCommunicator.registerRpcNotification(StreamMessage, 'sendStreamMessage',
-            (msg: StreamMessage, context) => this.contentDeliveryRpcLocal.sendStreamMessage(msg, context))
-        this.options.rpcCommunicator.registerRpcNotification(LeaveStreamPartNotice, 'leaveStreamPartNotice',
-            (req: LeaveStreamPartNotice, context) => this.contentDeliveryRpcLocal.leaveStreamPartNotice(req, context))
-        this.options.rpcCommunicator.registerRpcMethod(TemporaryConnectionRequest, TemporaryConnectionResponse, 'openConnection',
-            (req: TemporaryConnectionRequest, context) => this.options.temporaryConnectionRpcLocal.openConnection(req, context))
-        this.options.rpcCommunicator.registerRpcNotification(CloseTemporaryConnection, 'closeConnection',
-            (req: TemporaryConnectionRequest, context) => this.options.temporaryConnectionRpcLocal.closeConnection(req, context))
+        this.options.rpcCommunicator.registerRpcNotification(
+            StreamMessage,
+            'sendStreamMessage',
+            (msg: StreamMessage, context) => this.contentDeliveryRpcLocal.sendStreamMessage(msg, context)
+        )
+        this.options.rpcCommunicator.registerRpcNotification(
+            LeaveStreamPartNotice,
+            'leaveStreamPartNotice',
+            (req: LeaveStreamPartNotice, context) => this.contentDeliveryRpcLocal.leaveStreamPartNotice(req, context)
+        )
+        this.options.rpcCommunicator.registerRpcMethod(
+            TemporaryConnectionRequest,
+            TemporaryConnectionResponse,
+            'openConnection',
+            (req: TemporaryConnectionRequest, context) =>
+                this.options.temporaryConnectionRpcLocal.openConnection(req, context)
+        )
+        this.options.rpcCommunicator.registerRpcNotification(
+            CloseTemporaryConnection,
+            'closeConnection',
+            (req: TemporaryConnectionRequest, context) =>
+                this.options.temporaryConnectionRpcLocal.closeConnection(req, context)
+        )
     }
 
     private onRingContactsUpdated(): void {
@@ -213,24 +230,30 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
             return
         }
         const contacts = this.options.discoveryLayerNode.getRingContacts()
-        this.options.leftNodeView.replaceAll(contacts.left.map((peer) => 
-            new ContentDeliveryRpcRemote(
-                this.options.localPeerDescriptor,
-                peer,
-                this.options.rpcCommunicator,
-                ContentDeliveryRpcClient,
-                this.options.rpcRequestTimeout
+        this.options.leftNodeView.replaceAll(
+            contacts.left.map(
+                (peer) =>
+                    new ContentDeliveryRpcRemote(
+                        this.options.localPeerDescriptor,
+                        peer,
+                        this.options.rpcCommunicator,
+                        ContentDeliveryRpcClient,
+                        this.options.rpcRequestTimeout
+                    )
             )
-        ))
-        this.options.rightNodeView.replaceAll(contacts.right.map((peer) =>
-            new ContentDeliveryRpcRemote(
-                this.options.localPeerDescriptor,
-                peer,
-                this.options.rpcCommunicator,
-                ContentDeliveryRpcClient,
-                this.options.rpcRequestTimeout
+        )
+        this.options.rightNodeView.replaceAll(
+            contacts.right.map(
+                (peer) =>
+                    new ContentDeliveryRpcRemote(
+                        this.options.localPeerDescriptor,
+                        peer,
+                        this.options.rpcCommunicator,
+                        ContentDeliveryRpcClient,
+                        this.options.rpcRequestTimeout
+                    )
             )
-        ))
+        )
     }
 
     private onNearbyContactAdded(): void {
@@ -255,15 +278,18 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
     }
 
     private updateNearbyNodeView(nodes: PeerDescriptor[]) {
-        this.options.nearbyNodeView.replaceAll(Array.from(nodes).map((descriptor) =>
-            new ContentDeliveryRpcRemote(
-                this.options.localPeerDescriptor,
-                descriptor,
-                this.options.rpcCommunicator,
-                ContentDeliveryRpcClient,
-                this.options.rpcRequestTimeout
+        this.options.nearbyNodeView.replaceAll(
+            Array.from(nodes).map(
+                (descriptor) =>
+                    new ContentDeliveryRpcRemote(
+                        this.options.localPeerDescriptor,
+                        descriptor,
+                        this.options.rpcCommunicator,
+                        ContentDeliveryRpcClient,
+                        this.options.rpcRequestTimeout
+                    )
             )
-        ))
+        )
         for (const descriptor of this.options.discoveryLayerNode.getNeighbors()) {
             if (this.options.nearbyNodeView.size() >= this.options.nodeViewSize) {
                 break
@@ -285,15 +311,18 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
             return
         }
         const randomContacts = this.options.discoveryLayerNode.getRandomContacts(RANDOM_NODE_VIEW_SIZE)
-        this.options.randomNodeView.replaceAll(randomContacts.map((descriptor) =>
-            new ContentDeliveryRpcRemote(
-                this.options.localPeerDescriptor,
-                descriptor,
-                this.options.rpcCommunicator,
-                ContentDeliveryRpcClient,
-                this.options.rpcRequestTimeout
+        this.options.randomNodeView.replaceAll(
+            randomContacts.map(
+                (descriptor) =>
+                    new ContentDeliveryRpcRemote(
+                        this.options.localPeerDescriptor,
+                        descriptor,
+                        this.options.rpcCommunicator,
+                        ContentDeliveryRpcClient,
+                        this.options.rpcRequestTimeout
+                    )
             )
-        ))
+        )
         if (this.options.neighbors.size() < this.options.neighborTargetCount) {
             this.options.neighborFinder.start()
         }
@@ -305,15 +334,18 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
             return
         }
         const randomContacts = this.options.discoveryLayerNode.getRandomContacts(RANDOM_NODE_VIEW_SIZE)
-        this.options.randomNodeView.replaceAll(randomContacts.map((descriptor) =>
-            new ContentDeliveryRpcRemote(
-                this.options.localPeerDescriptor,
-                descriptor,
-                this.options.rpcCommunicator,
-                ContentDeliveryRpcClient,
-                this.options.rpcRequestTimeout
+        this.options.randomNodeView.replaceAll(
+            randomContacts.map(
+                (descriptor) =>
+                    new ContentDeliveryRpcRemote(
+                        this.options.localPeerDescriptor,
+                        descriptor,
+                        this.options.rpcCommunicator,
+                        ContentDeliveryRpcClient,
+                        this.options.rpcRequestTimeout
+                    )
             )
-        ))
+        )
     }
 
     private onNodeDisconnected(peerDescriptor: PeerDescriptor): void {
@@ -360,8 +392,13 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
             markAndCheckDuplicate(this.duplicateDetectors, msg.messageId!, msg.previousMessageRef)
         }
         this.emit('message', msg)
-        const skipBackPropagation = previousNode !== undefined && !this.options.temporaryConnectionRpcLocal.hasNode(previousNode)
-        this.options.propagation.feedUnseenMessage(msg, this.getPropagationTargets(msg), skipBackPropagation ? previousNode : null)
+        const skipBackPropagation =
+            previousNode !== undefined && !this.options.temporaryConnectionRpcLocal.hasNode(previousNode)
+        this.options.propagation.feedUnseenMessage(
+            msg,
+            this.getPropagationTargets(msg),
+            skipBackPropagation ? previousNode : null
+        )
         this.messagesPropagated += 1
     }
 
@@ -372,7 +409,9 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
     private getPropagationTargets(msg: StreamMessage): DhtAddress[] {
         let propagationTargets = this.options.neighbors.getIds()
         if (this.options.proxyConnectionRpcLocal) {
-            propagationTargets = propagationTargets.concat(this.options.proxyConnectionRpcLocal.getPropagationTargets(msg))
+            propagationTargets = propagationTargets.concat(
+                this.options.proxyConnectionRpcLocal.getPropagationTargets(msg)
+            )
         }
         propagationTargets = propagationTargets.concat(this.options.temporaryConnectionRpcLocal.getNodes().getIds())
         return propagationTargets
@@ -420,5 +459,4 @@ export class ContentDeliveryLayerNode extends EventEmitter<Events> {
     private isStopped() {
         return this.abortController.signal.aborted
     }
-
 }

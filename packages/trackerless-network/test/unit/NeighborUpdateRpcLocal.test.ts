@@ -10,7 +10,6 @@ import { MockTransport } from '../utils/mock/MockTransport'
 import { createMockPeerDescriptor } from '../utils/utils'
 
 describe('NeighborUpdateRpcLocal', () => {
-
     const streamPartId = StreamPartIDUtils.parse('stream#0')
     const localPeerDescriptor = createMockPeerDescriptor()
     const neighborTargetCount = 4
@@ -24,12 +23,14 @@ describe('NeighborUpdateRpcLocal', () => {
 
     const addNeighbors = (count: number) => {
         for (let i = 0; i < count; i++) {
-            neighbors.add(new ContentDeliveryRpcRemote(
-                localPeerDescriptor,
-                createMockPeerDescriptor(),
-                rpcCommunicator,
-                ContentDeliveryRpcClient
-            ))
+            neighbors.add(
+                new ContentDeliveryRpcRemote(
+                    localPeerDescriptor,
+                    createMockPeerDescriptor(),
+                    rpcCommunicator,
+                    ContentDeliveryRpcClient
+                )
+            )
         }
     }
 
@@ -60,22 +61,28 @@ describe('NeighborUpdateRpcLocal', () => {
 
     it('response contains neighbor list of expected size', async () => {
         addNeighbors(neighborTargetCount)
-        const res = await rpcLocal.neighborUpdate({
-            streamPartId,
-            neighborDescriptors: [localPeerDescriptor],
-            removeMe: false
-        }, { incomingSourceDescriptor: createMockPeerDescriptor() } as any)
+        const res = await rpcLocal.neighborUpdate(
+            {
+                streamPartId,
+                neighborDescriptors: [localPeerDescriptor],
+                removeMe: false
+            },
+            { incomingSourceDescriptor: createMockPeerDescriptor() } as any
+        )
         expect(res.neighborDescriptors.length).toEqual(neighborTargetCount)
     })
 
     it('updates contacts based on callers neighbors', async () => {
         addNeighbors(neighborTargetCount)
         expect(nearbyNodeView.size()).toEqual(0)
-        await rpcLocal.neighborUpdate({
-            streamPartId,
-            neighborDescriptors: range(neighborTargetCount).map(() => createMockPeerDescriptor()),
-            removeMe: false
-        }, { incomingSourceDescriptor: createMockPeerDescriptor() } as any)
+        await rpcLocal.neighborUpdate(
+            {
+                streamPartId,
+                neighborDescriptors: range(neighborTargetCount).map(() => createMockPeerDescriptor()),
+                removeMe: false
+            },
+            { incomingSourceDescriptor: createMockPeerDescriptor() } as any
+        )
         expect(nearbyNodeView.size()).toEqual(4)
     })
 
@@ -88,21 +95,27 @@ describe('NeighborUpdateRpcLocal', () => {
             ContentDeliveryRpcClient
         )
         neighbors.add(neighbor)
-        const res = await rpcLocal.neighborUpdate({
-            streamPartId,
-            neighborDescriptors: [localPeerDescriptor],
-            removeMe: false
-        }, { incomingSourceDescriptor: caller } as any)
+        const res = await rpcLocal.neighborUpdate(
+            {
+                streamPartId,
+                neighborDescriptors: [localPeerDescriptor],
+                removeMe: false
+            },
+            { incomingSourceDescriptor: caller } as any
+        )
         expect(res.removeMe).toEqual(false)
     })
 
     it('asks to be removed if caller is not a neighbor', async () => {
         const caller = createMockPeerDescriptor()
-        const res = await rpcLocal.neighborUpdate({
-            streamPartId,
-            neighborDescriptors: [localPeerDescriptor],
-            removeMe: false
-        }, { incomingSourceDescriptor: caller } as any)
+        const res = await rpcLocal.neighborUpdate(
+            {
+                streamPartId,
+                neighborDescriptors: [localPeerDescriptor],
+                removeMe: false
+            },
+            { incomingSourceDescriptor: caller } as any
+        )
         expect(res.removeMe).toEqual(true)
     })
 
@@ -116,11 +129,17 @@ describe('NeighborUpdateRpcLocal', () => {
         )
         neighbors.add(neighbor)
         addNeighbors(neighborTargetCount)
-        const res = await rpcLocal.neighborUpdate({
-            streamPartId,
-            neighborDescriptors: [localPeerDescriptor, ...range(neighborTargetCount).map(() => createMockPeerDescriptor())],
-            removeMe: false
-        }, { incomingSourceDescriptor: caller } as any)
+        const res = await rpcLocal.neighborUpdate(
+            {
+                streamPartId,
+                neighborDescriptors: [
+                    localPeerDescriptor,
+                    ...range(neighborTargetCount).map(() => createMockPeerDescriptor())
+                ],
+                removeMe: false
+            },
+            { incomingSourceDescriptor: caller } as any
+        )
         expect(res.removeMe).toEqual(true)
         expect(neighbors.has(toNodeId(caller))).toEqual(false)
     })
@@ -128,12 +147,14 @@ describe('NeighborUpdateRpcLocal', () => {
     it('does not ask to be removed if there is an ongoing handshake to the caller', async () => {
         const caller = createMockPeerDescriptor()
         ongoingHandshakes.add(toNodeId(caller))
-        const res = await rpcLocal.neighborUpdate({
-            streamPartId,
-            neighborDescriptors: [localPeerDescriptor],
-            removeMe: false
-        }, { incomingSourceDescriptor: caller } as any)
+        const res = await rpcLocal.neighborUpdate(
+            {
+                streamPartId,
+                neighborDescriptors: [localPeerDescriptor],
+                removeMe: false
+            },
+            { incomingSourceDescriptor: caller } as any
+        )
         expect(res.removeMe).toEqual(false)
     })
-
 })

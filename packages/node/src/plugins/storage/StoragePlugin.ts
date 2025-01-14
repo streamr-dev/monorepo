@@ -1,4 +1,10 @@
-import { Stream, StreamMessage, StreamMessageType, StreamrClient, formStorageNodeAssignmentStreamId } from '@streamr/sdk'
+import {
+    Stream,
+    StreamMessage,
+    StreamMessageType,
+    StreamrClient,
+    formStorageNodeAssignmentStreamId
+} from '@streamr/sdk'
 import { EthereumAddress, Logger, MetricsContext, executeSafePromise, toEthereumAddress } from '@streamr/utils'
 import { Schema } from 'ajv'
 import { ApiPluginConfig, Plugin } from '../../Plugin'
@@ -35,7 +41,6 @@ const isStorableMessage = (msg: StreamMessage): boolean => {
 }
 
 export class StoragePlugin extends Plugin<StoragePluginConfig> {
-
     private streamrClient?: StreamrClient
     private cassandra?: Storage
     private storageConfig?: StorageConfig
@@ -43,7 +48,8 @@ export class StoragePlugin extends Plugin<StoragePluginConfig> {
 
     async start(streamrClient: StreamrClient): Promise<void> {
         this.streamrClient = streamrClient
-        const clusterId = this.pluginConfig.cluster.clusterAddress ?? toEthereumAddress(await this.streamrClient.getUserId())
+        const clusterId =
+            this.pluginConfig.cluster.clusterAddress ?? toEthereumAddress(await this.streamrClient.getUserId())
         const assignmentStream = await this.streamrClient.getStream(formStorageNodeAssignmentStreamId(clusterId))
         const metricsContext = await this.streamrClient.getNode().getMetricsContext()
         this.cassandra = await this.startCassandraStorage(metricsContext)

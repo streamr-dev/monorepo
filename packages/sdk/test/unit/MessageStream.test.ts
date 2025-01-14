@@ -14,18 +14,20 @@ import { randomUserId } from '@streamr/test-utils'
 const PUBLISHER_ID = randomUserId()
 
 describe('MessageStream', () => {
-
     const streamId = toStreamID('streamId')
     let messageSigner: MessageSigner
 
     const createMockMessage = async () => {
-        return await messageSigner.createSignedMessage({
-            messageId: new MessageID(streamId, 0, 0, 0, PUBLISHER_ID, 'msgChainId'),
-            messageType: StreamMessageType.MESSAGE,
-            content: utf8ToBinary(JSON.stringify(Msg())),
-            contentType: ContentType.JSON,
-            encryptionType: EncryptionType.NONE,
-        }, SignatureType.SECP256K1)
+        return await messageSigner.createSignedMessage(
+            {
+                messageId: new MessageID(streamId, 0, 0, 0, PUBLISHER_ID, 'msgChainId'),
+                messageType: StreamMessageType.MESSAGE,
+                content: utf8ToBinary(JSON.stringify(Msg())),
+                contentType: ContentType.JSON,
+                encryptionType: EncryptionType.NONE
+            },
+            SignatureType.SECP256K1
+        )
     }
 
     beforeEach(async () => {
@@ -43,7 +45,15 @@ describe('MessageStream', () => {
         await waitForCalls(onMessage, 2)
         // TODO could implement test so that it doesn't call convertStreamMessageToMessage?
         // (if we don't test the convertStreamMessageToMessage logic elsewhere)
-        expect(onMessage).toHaveBeenNthCalledWith(1, msg1.getParsedContent(), omit(convertStreamMessageToMessage(msg1), 'content'))
-        expect(onMessage).toHaveBeenNthCalledWith(2, msg2.getParsedContent(), omit(convertStreamMessageToMessage(msg2), 'content'))
+        expect(onMessage).toHaveBeenNthCalledWith(
+            1,
+            msg1.getParsedContent(),
+            omit(convertStreamMessageToMessage(msg1), 'content')
+        )
+        expect(onMessage).toHaveBeenNthCalledWith(
+            2,
+            msg2.getParsedContent(),
+            omit(convertStreamMessageToMessage(msg2), 'content')
+        )
     })
 })

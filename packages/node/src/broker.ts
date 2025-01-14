@@ -30,8 +30,9 @@ export const createBroker = async (configWithoutDefaults: Config): Promise<Broke
             ...config.client.network,
             controlLayer: {
                 ...config.client.network?.controlLayer,
-                geoIpDatabaseFolder: config.client.network?.controlLayer?.geoIpDatabaseFolder ??
-                    '~/.streamr/geoipdatabases' // TODO: more cleaner solution?
+                // TODO: more cleaner solution?
+                geoIpDatabaseFolder:
+                    config.client.network?.controlLayer?.geoIpDatabaseFolder ?? '~/.streamr/geoipdatabases'
             }
         }
     })
@@ -64,9 +65,11 @@ export const createBroker = async (configWithoutDefaults: Config): Promise<Broke
             logger.info(`Plugins: ${JSON.stringify(plugins.map((p) => p.name))}`)
 
             if (!config.client.network?.controlLayer?.webrtcAllowPrivateAddresses) {
-                logger.warn('WebRTC private address probing is disabled. ' +
-                    'This makes it impossible to create network layer connections directly via local routers ' +
-                    'More info: https://github.com/streamr-dev/network-monorepo/wiki/WebRTC-private-addresses')
+                logger.warn(
+                    'WebRTC private address probing is disabled. ' +
+                        'This makes it impossible to create network layer connections directly via local routers ' +
+                        'More info: https://github.com/streamr-dev/network-monorepo/wiki/WebRTC-private-addresses'
+                )
             }
         },
         stop: async () => {

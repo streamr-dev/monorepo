@@ -19,7 +19,6 @@ const MAX_FAILED_HOPS = 2
 const ROUTING_TABLE_MAX_SIZE = 20
 
 export class RoutingRemoteContact extends Contact {
-
     private routerRpcRemote: RouterRpcRemote
     private recursiveOperationRpcRemote: RecursiveOperationRpcRemote
 
@@ -61,7 +60,11 @@ export interface RoutingSessionEvents {
     stopped: () => void
 }
 
-export enum RoutingMode { ROUTE, FORWARD, RECURSIVE }
+export enum RoutingMode {
+    ROUTE,
+    FORWARD,
+    RECURSIVE
+}
 
 interface RoutingSessionOptions {
     rpcCommunicator: RoutingRpcCommunicator
@@ -75,7 +78,6 @@ interface RoutingSessionOptions {
 }
 
 export class RoutingSession extends EventEmitter<RoutingSessionEvents> {
-
     public readonly sessionId = v4()
     private ongoingRequests: Set<DhtAddress> = new Set()
     private contactedPeers: Set<DhtAddress> = new Set()
@@ -109,7 +111,12 @@ export class RoutingSession extends EventEmitter<RoutingSessionEvents> {
             logger.trace('routing failed, emitting routingFailed sessionId: ' + this.sessionId)
             this.emitFailure()
         } else {
-            logger.trace('routing failed, retrying to route sessionId: ' + this.sessionId + ' failedHopCounter: ' + this.failedHopCounter)
+            logger.trace(
+                'routing failed, retrying to route sessionId: ' +
+                    this.sessionId +
+                    ' failedHopCounter: ' +
+                    this.failedHopCounter
+            )
             this.sendMoreRequests(contacts)
         }
     }
@@ -172,17 +179,22 @@ export class RoutingSession extends EventEmitter<RoutingSessionEvents> {
                 allowToContainReferenceId: true,
                 nodeIdDistanceLimit: previousId
             })
-            const contacts = this.options.getConnections()
-                .map((peer) => new RoutingRemoteContact(
-                    peer,
-                    this.options.localPeerDescriptor,
-                    this.options.rpcCommunicator
-                ))
+            const contacts = this.options
+                .getConnections()
+                .map(
+                    (peer) =>
+                        new RoutingRemoteContact(peer, this.options.localPeerDescriptor, this.options.rpcCommunicator)
+                )
             routingTable.addContacts(contacts)
             this.options.routingTablesCache.set(targetId, routingTable, previousId)
         }
-        return routingTable.getClosestContacts()
-            .filter((contact) => !this.contactedPeers.has(contact.getNodeId()) && !this.options.excludedNodeIds.has(contact.getNodeId()))
+        return routingTable
+            .getClosestContacts()
+            .filter(
+                (contact) =>
+                    !this.contactedPeers.has(contact.getNodeId()) &&
+                    !this.options.excludedNodeIds.has(contact.getNodeId())
+            )
     }
 
     sendMoreRequests(uncontacted: RoutingRemoteContact[]): void {
@@ -194,9 +206,11 @@ export class RoutingSession extends EventEmitter<RoutingSessionEvents> {
             this.emitFailure()
             return
         }
-        while ((this.ongoingRequests.size < this.options.parallelism) && (uncontacted.length > 0) && !this.stopped) {
+        while (this.ongoingRequests.size < this.options.parallelism && uncontacted.length > 0 && !this.stopped) {
             const nextPeer = uncontacted.shift()
-            logger.trace(`Sending routeMessage request to contact: ${toNodeId(nextPeer!.getPeerDescriptor())} (sessionId=${this.sessionId})`)
+            logger.trace(
+                `Sending routeMessage request to contact: ${toNodeId(nextPeer!.getPeerDescriptor())} (sessionId=${this.sessionId})`
+            )
             this.contactedPeers.add(nextPeer!.getNodeId())
             this.ongoingRequests.add(nextPeer!.getNodeId())
             this.addParallelRootIfSource(nextPeer!.getNodeId())
@@ -219,8 +233,8 @@ export class RoutingSession extends EventEmitter<RoutingSessionEvents> {
 
     private addParallelRootIfSource(nodeId: DhtAddress) {
         if (
-            this.options.mode === RoutingMode.RECURSIVE
-            && areEqualPeerDescriptors(this.options.localPeerDescriptor, this.options.routedMessage.sourcePeer!)
+            this.options.mode === RoutingMode.RECURSIVE &&
+            areEqualPeerDescriptors(this.options.localPeerDescriptor, this.options.routedMessage.sourcePeer!)
         ) {
             this.options.routedMessage.parallelRootNodeIds.push(nodeId)
         }
@@ -228,8 +242,8 @@ export class RoutingSession extends EventEmitter<RoutingSessionEvents> {
 
     private deleteParallelRootIfSource(nodeId: DhtAddress) {
         if (
-            this.options.mode === RoutingMode.RECURSIVE
-            && areEqualPeerDescriptors(this.options.localPeerDescriptor, this.options.routedMessage.sourcePeer!)
+            this.options.mode === RoutingMode.RECURSIVE &&
+            areEqualPeerDescriptors(this.options.localPeerDescriptor, this.options.routedMessage.sourcePeer!)
         ) {
             pull(this.options.routedMessage.parallelRootNodeIds, nodeId)
         }

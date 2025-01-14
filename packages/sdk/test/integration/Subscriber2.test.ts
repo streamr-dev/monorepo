@@ -15,30 +15,33 @@ import { FakeEnvironment } from '../test-utils/fake/FakeEnvironment'
 import { getPublishTestStreamMessages } from '../test-utils/publish'
 import { createTestStream } from '../test-utils/utils'
 import { MessageID } from './../../src/protocol/MessageID'
-import { ContentType, EncryptionType, SignatureType, StreamMessage, StreamMessageType } from './../../src/protocol/StreamMessage'
+import {
+    ContentType,
+    EncryptionType,
+    SignatureType,
+    StreamMessage,
+    StreamMessageType
+} from './../../src/protocol/StreamMessage'
 
 const MAX_ITEMS = 3
 const NUM_MESSAGES = 8
 
 const collect2 = async (
     iterator: AsyncIterable<Message>,
-    fn: (item: {
-        msg: Message
-        received: Message[]
-    }) => Promise<void>
+    fn: (item: { msg: Message; received: Message[] }) => Promise<void>
 ): Promise<Message[]> => {
     const received: Message[] = []
     for await (const msg of iterator) {
         received.push(msg)
         await fn({
-            msg, received,
+            msg,
+            received
         })
     }
     return received
 }
 
 describe('Subscriber', () => {
-
     let client: StreamrClient
     let streamId: StreamID
     let publishTestMessages: ReturnType<typeof getPublishTestStreamMessages>
@@ -52,13 +55,23 @@ describe('Subscriber', () => {
     }
 
     const createMockMessage = async (content: Uint8Array, timestamp: number) => {
-        return await messageSigner.createSignedMessage({
-            messageId: new MessageID(streamId, 0, timestamp, 0, toUserId(await publisher.getUserId()), 'msgChainId'),
-            messageType: StreamMessageType.MESSAGE,
-            content,
-            contentType: ContentType.JSON,
-            encryptionType: EncryptionType.NONE,
-        }, SignatureType.SECP256K1)
+        return await messageSigner.createSignedMessage(
+            {
+                messageId: new MessageID(
+                    streamId,
+                    0,
+                    timestamp,
+                    0,
+                    toUserId(await publisher.getUserId()),
+                    'msgChainId'
+                ),
+                messageType: StreamMessageType.MESSAGE,
+                content,
+                contentType: ContentType.JSON,
+                encryptionType: EncryptionType.NONE
+            },
+            SignatureType.SECP256K1
+        )
     }
 
     beforeAll(async () => {
@@ -133,9 +146,7 @@ describe('Subscriber', () => {
             const sub = await client.subscribe(streamId)
             const c1 = collect(sub)
 
-            await expect(async () => (
-                collect(sub)
-            )).rejects.toThrow()
+            await expect(async () => collect(sub)).rejects.toThrow()
             await sub.unsubscribe()
             const m = await c1
 
@@ -161,7 +172,7 @@ describe('Subscriber', () => {
                 expect(await getSubscriptionCount(streamId)).toBe(1)
 
                 const published = await publishTestMessages(NUM_MESSAGES, {
-                    timestamp: 111111,
+                    timestamp: 111111
                 })
 
                 const onErrorHandler = jest.fn()
@@ -205,7 +216,7 @@ describe('Subscriber', () => {
                 expect(await getSubscriptionCount(streamId)).toBe(1)
 
                 const published = await publishTestMessages(NUM_MESSAGES, {
-                    timestamp: 111111,
+                    timestamp: 111111
                 })
 
                 const onErrorHandler = jest.fn()
@@ -236,7 +247,7 @@ describe('Subscriber', () => {
                 })
 
                 const published = await publishTestMessages(NUM_MESSAGES, {
-                    timestamp: 111111,
+                    timestamp: 111111
                 })
 
                 const onErrorHandler = jest.fn()
@@ -258,7 +269,7 @@ describe('Subscriber', () => {
 
                 let count = 0
                 const published = await publishTestMessages(NUM_MESSAGES, {
-                    timestamp: 111111,
+                    timestamp: 111111
                 })
                 const received1: Message[] = []
                 await expect(async () => {
@@ -291,7 +302,7 @@ describe('Subscriber', () => {
                 sub1.onError.listen(onError1)
 
                 const published = await publishTestMessages(NUM_MESSAGES, {
-                    timestamp: 111111,
+                    timestamp: 111111
                 })
                 await until(() => onError1.mock.calls.length > 0)
 
@@ -319,7 +330,7 @@ describe('Subscriber', () => {
                 sub2.onError.listen(onError2)
 
                 const published = await publishTestMessages(NUM_MESSAGES, {
-                    timestamp: 111111,
+                    timestamp: 111111
                 })
 
                 const received = await collect(sub2, NUM_MESSAGES)
@@ -340,7 +351,7 @@ describe('Subscriber', () => {
                 const nodeId = await publisher.getNodeId()
                 const node = environment.getNetwork().getNode(nodeId)!
                 for (let i = 0; i < NUM_MESSAGES; i++) {
-                    const content = (i === MAX_ITEMS) ? 'invalid-json' : JSON.stringify({ foo: i })
+                    const content = i === MAX_ITEMS ? 'invalid-json' : JSON.stringify({ foo: i })
                     const msg = await createMockMessage(utf8ToBinary(content), i)
                     await node.broadcast(StreamMessageTranslator.toProtobuf(msg))
                     published.push(msg)
@@ -362,10 +373,9 @@ describe('Subscriber', () => {
                     }
                 }
                 clearTimeout(t)
-                expect(received.map((m) => m.signature)).toEqual([
-                    ...published.slice(0, MAX_ITEMS),
-                    ...published.slice(MAX_ITEMS + 1)
-                ].map((m) => m.signature))
+                expect(received.map((m) => m.signature)).toEqual(
+                    [...published.slice(0, MAX_ITEMS), ...published.slice(MAX_ITEMS + 1)].map((m) => m.signature)
+                )
                 expect(onSubscriptionError).toHaveBeenCalledTimes(1)
             })
         })
@@ -450,10 +460,7 @@ describe('Subscriber', () => {
         })
 
         it('can subscribe to stream multiple times in parallel, get updates then unsubscribe', async () => {
-            const [sub1, sub2] = await Promise.all([
-                client.subscribe(streamId),
-                client.subscribe(streamId),
-            ])
+            const [sub1, sub2] = await Promise.all([client.subscribe(streamId), client.subscribe(streamId)])
 
             expect(await getSubscriptionCount(streamId)).toBe(2)
             const published = await publishTestMessages()
@@ -536,10 +543,7 @@ describe('Subscriber', () => {
             for await (const m of sub) {
                 received.push(m)
                 if (received.length === MAX_ITEMS) {
-                    await Promise.all([
-                        sub.return(),
-                        sub.unsubscribe(),
-                    ])
+                    await Promise.all([sub.return(), sub.unsubscribe()])
                     expect(await getSubscriptionCount(streamId)).toBe(0)
                 }
             }
@@ -556,11 +560,7 @@ describe('Subscriber', () => {
             for await (const m of sub) {
                 received.push(m)
                 if (received.length === MAX_ITEMS) {
-                    const tasks = [
-                        sub.unsubscribe(),
-                        sub.unsubscribe(),
-                        sub.unsubscribe(),
-                    ]
+                    const tasks = [sub.unsubscribe(), sub.unsubscribe(), sub.unsubscribe()]
                     await Promise.all(tasks)
                     expect(await getSubscriptionCount(streamId)).toBe(0)
                 }
@@ -644,7 +644,8 @@ describe('Subscriber', () => {
                     gotOne.resolve(undefined)
                 }),
                 collect2(sub2, async ({ received }) => {
-                    if (!didGetOne) { // don't delay unsubscribe
+                    if (!didGetOne) {
+                        // don't delay unsubscribe
                         await gotOne
                     }
 
@@ -652,9 +653,11 @@ describe('Subscriber', () => {
                         await client.unsubscribe(streamId)
                         sub1ReceivedAtUnsubscribe = sub1Received.slice()
                     }
-                }),
+                })
             ])
-            expect(received1.map((m) => m.signature)).toEqual(published.slice(0, sub1ReceivedAtUnsubscribe.length).map((m) => m.signature))
+            expect(received1.map((m) => m.signature)).toEqual(
+                published.slice(0, sub1ReceivedAtUnsubscribe.length).map((m) => m.signature)
+            )
             expect(received2.map((m) => m.signature)).toEqual(published.slice(0, MAX_ITEMS).map((m) => m.signature))
             expect(sub1ReceivedAtUnsubscribe).toEqual(sub1Received)
             expect(await getSubscriptionCount(streamId)).toBe(0)
@@ -673,7 +676,7 @@ describe('Subscriber', () => {
                         sub2ReceivedAtUnsubscribe = received.slice()
                         await sub2.unsubscribe()
                     }
-                }),
+                })
             ])
             expect(received2.map((m) => m.signature)).toEqual(published.slice(0, MAX_ITEMS).map((m) => m.signature))
             expect(received1.map((m) => m.signature)).toEqual(published.map((m) => m.signature))
@@ -692,7 +695,7 @@ describe('Subscriber', () => {
                     if (received.length === MAX_ITEMS) {
                         await sub2.unsubscribe()
                     }
-                }),
+                })
             ])
 
             expect(received1.map((m) => m.signature)).toEqual(published.slice(0, MAX_ITEMS - 1).map((m) => m.signature))

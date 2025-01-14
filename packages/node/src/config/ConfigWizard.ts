@@ -9,10 +9,7 @@ import omit from 'lodash/omit'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 import { z } from 'zod'
-import {
-    CURRENT_CONFIGURATION_VERSION,
-    formSchemaUrl,
-} from '../config/migration'
+import { CURRENT_CONFIGURATION_VERSION, formSchemaUrl } from '../config/migration'
 import { generateMnemonicFromAddress } from '../helpers/generateMnemonicFromAddress'
 import * as MqttConfigSchema from '../plugins/mqtt/config.schema.json'
 import * as WebsocketConfigSchema from '../plugins/websocket/config.schema.json'
@@ -43,11 +40,13 @@ export async function start(): Promise<void> {
 
         const operator = await getOperatorAddress()
 
-        const operatorPlugins = operator ? {
-            operator: {
-                operatorContractAddress: operator,
-            },
-        } : {}
+        const operatorPlugins = operator
+            ? {
+                  operator: {
+                      operatorContractAddress: operator
+                  }
+              }
+            : {}
 
         const { http, ...pubsubPlugins } = await getPubsubPlugins()
 
@@ -57,7 +56,7 @@ export async function start(): Promise<void> {
          */
         if (http) {
             Object.assign(pubsubPlugins, {
-                http: omit(http, 'port'),
+                http: omit(http, 'port')
             })
         }
 
@@ -73,18 +72,18 @@ export async function start(): Promise<void> {
             $schema: formSchemaUrl(CURRENT_CONFIGURATION_VERSION),
             client: {
                 auth: {
-                    privateKey,
+                    privateKey
                 },
-                environment: environmentId,
+                environment: environmentId
             },
             plugins: {
                 ...operatorPlugins,
-                ...pubsubPlugins,
+                ...pubsubPlugins
             },
             httpServer,
             apiAuthentication: {
-                keys: [apiKey],
-            },
+                keys: [apiKey]
+            }
         }
 
         persistConfig(storagePath, config)
@@ -98,20 +97,13 @@ export async function start(): Promise<void> {
 
         if (operator) {
             const resume = animateLine((spinner) =>
-                style(
-                    `> Your node address has *${spinner} MATIC* _– checking balance…_`
-                )
+                style(`> Your node address has *${spinner} MATIC* _– checking balance…_`)
             )
 
             try {
-                const balance = await getNativeBalance(
-                    environmentId,
-                    nodeAddress
-                )
+                const balance = await getNativeBalance(environmentId, nodeAddress)
 
-                const content = `Your node address has *${Number(
-                    formatEther(balance)
-                ).toFixed(2)} MATIC*`
+                const content = `Your node address has *${Number(formatEther(balance)).toFixed(2)} MATIC*`
 
                 resume()
 
@@ -125,7 +117,7 @@ export async function start(): Promise<void> {
             } catch {
                 resume()
 
-                log('> x Failed to fetch node\'s balance')
+                log("> x Failed to fetch node's balance")
             }
         }
 
@@ -139,18 +131,13 @@ export async function start(): Promise<void> {
             )
 
             try {
-                const nodes = await getOperatorNodeAddresses(
-                    environmentId,
-                    operator
-                )
+                const nodes = await getOperatorNodeAddresses(environmentId, operator)
 
                 resume()
 
                 if (nodes !== undefined) {
                     if (!nodes.includes(nodeAddress.toLowerCase())) {
-                        log(
-                            '> ! You will need to pair your node with your Operator:'
-                        )
+                        log('> ! You will need to pair your node with your Operator:')
                     } else {
                         log('> Your node has been paired with your Operator:')
                     }
@@ -194,9 +181,7 @@ export async function start(): Promise<void> {
  * Generates a mnemonic for a given private key.
  */
 export function getNodeMnemonic(privateKey: string): string {
-    return generateMnemonicFromAddress(
-        toEthereumAddress(new Wallet(privateKey).address)
-    )
+    return generateMnemonicFromAddress(toEthereumAddress(new Wallet(privateKey).address))
 }
 
 /**
@@ -204,9 +189,8 @@ export function getNodeMnemonic(privateKey: string): string {
  */
 async function getPrivateKey(): Promise<string> {
     const privateKeySource = await select<'Generate' | 'Import'>({
-        message:
-            'Do you want to generate a new Ethereum private key or import an existing one?',
-        choices: [{ value: 'Generate' }, { value: 'Import' }],
+        message: 'Do you want to generate a new Ethereum private key or import an existing one?',
+        choices: [{ value: 'Generate' }, { value: 'Import' }]
     })
 
     const privateKey = await (async () => {
@@ -224,7 +208,7 @@ async function getPrivateKey(): Promise<string> {
                 } catch (_) {
                     return 'Invalid private key provided.'
                 }
-            },
+            }
         })
     })()
 
@@ -236,7 +220,7 @@ async function getPrivateKey(): Promise<string> {
             default: false,
             transformer(value) {
                 return value ? `Your node's private key: ${privateKey}` : 'no'
-            },
+            }
         })
     }
 
@@ -248,16 +232,15 @@ async function getPrivateKey(): Promise<string> {
  */
 async function getEnvironmentId(): Promise<EnvironmentId> {
     return select<EnvironmentId>({
-        message:
-            'Which network do you want to configure your node to connect to?',
+        message: 'Which network do you want to configure your node to connect to?',
         choices: [
             { value: 'polygon', name: 'Streamr 1.0 mainnet + Polygon' },
             {
                 value: 'polygonAmoy',
-                name: 'Streamr 1.0 testnet + Polygon Amoy testnet',
-            },
+                name: 'Streamr 1.0 testnet + Polygon Amoy testnet'
+            }
         ],
-        default: 'polygon',
+        default: 'polygon'
     })
 }
 
@@ -268,9 +251,8 @@ async function getEnvironmentId(): Promise<EnvironmentId> {
  */
 async function getOperatorAddress(): Promise<string | undefined> {
     const setupOperator = await confirm({
-        message:
-            'Do you wish to participate in earning rewards by staking on stream Sponsorships?',
-        default: true,
+        message: 'Do you wish to participate in earning rewards by staking on stream Sponsorships?',
+        default: true
     })
 
     if (!setupOperator) {
@@ -281,7 +263,7 @@ async function getOperatorAddress(): Promise<string | undefined> {
         message: 'Enter your Operator address:',
         validate(value) {
             return isAddress(value) ? true : 'Invalid ethereum address'
-        },
+        }
     })
 
     return operator.toLowerCase()
@@ -296,7 +278,7 @@ type PubsubPluginKey = 'websocket' | 'mqtt' | 'http'
 const DEFAULT_PORTS: Record<PubsubPluginKey, number> = {
     websocket: WebsocketConfigSchema.properties.port.default,
     mqtt: MqttConfigSchema.properties.port.default,
-    http: BrokerConfigSchema.properties.httpServer.properties.port.default,
+    http: BrokerConfigSchema.properties.httpServer.properties.port.default
 }
 
 /**
@@ -304,9 +286,8 @@ const DEFAULT_PORTS: Record<PubsubPluginKey, number> = {
  */
 async function getPubsubPlugins(): Promise<Partial<Record<PubsubPluginKey, PubsubPlugin>>> {
     const setupPubsub = await confirm({
-        message:
-            'Do you wish to use your node for data publishing/subscribing?',
-        default: true,
+        message: 'Do you wish to use your node for data publishing/subscribing?',
+        default: true
     })
 
     if (!setupPubsub) {
@@ -318,8 +299,8 @@ async function getPubsubPlugins(): Promise<Partial<Record<PubsubPluginKey, Pubsu
         choices: [
             { value: 'websocket', name: 'WebSocket' },
             { value: 'mqtt', name: 'MQTT' },
-            { value: 'http', name: 'HTTP' },
-        ],
+            { value: 'http', name: 'HTTP' }
+        ]
     })
 
     const pubsubPlugins: Awaited<ReturnType<typeof getPubsubPlugins>> = {}
@@ -335,8 +316,7 @@ async function getPubsubPlugins(): Promise<Partial<Record<PubsubPluginKey, Pubsu
                     try {
                         z.coerce
                             .number({
-                                invalid_type_error:
-                                    'Non-numeric value provided',
+                                invalid_type_error: 'Non-numeric value provided'
                             })
                             .int('Non-integer value provided')
                             .min(1024)
@@ -345,17 +325,13 @@ async function getPubsubPlugins(): Promise<Partial<Record<PubsubPluginKey, Pubsu
                                 const [pluginKey] =
                                     Object.entries(pubsubPlugins).find(
                                         ([pluginKey, plugin]) =>
-                                            value ===
-                                            (plugin.port ??
-                                                DEFAULT_PORTS[
-                                                    pluginKey as PubsubPluginKey
-                                                ])
+                                            value === (plugin.port ?? DEFAULT_PORTS[pluginKey as PubsubPluginKey])
                                     ) ?? []
 
                                 if (pluginKey) {
                                     ctx.addIssue({
                                         code: z.ZodIssueCode.custom,
-                                        message: `Port ${value} is taken by ${pluginKey}`,
+                                        message: `Port ${value} is taken by ${pluginKey}`
                                     })
                                 }
                             })
@@ -363,11 +339,9 @@ async function getPubsubPlugins(): Promise<Partial<Record<PubsubPluginKey, Pubsu
 
                         return true
                     } catch (e: unknown) {
-                        return (e as z.ZodError).issues
-                            .map(({ message }) => message)
-                            .join(', ')
+                        return (e as z.ZodError).issues.map(({ message }) => message).join(', ')
                     }
-                },
+                }
             })
         )
 
@@ -384,14 +358,14 @@ async function getStoragePath(): Promise<string> {
     while (true) {
         const path = await input({
             message: 'Select a path to store the generated config in',
-            default: getDefaultFile(),
+            default: getDefaultFile()
         })
 
         const proceed =
             !existsSync(path) ||
             (await confirm({
                 message: `The selected destination ${path} already exists. Do you want to overwrite it?`,
-                default: false,
+                default: false
             }))
 
         if (proceed) {
@@ -408,7 +382,7 @@ function persistConfig(storagePath: string, config: ConfigFile): void {
 
     if (!existsSync(dirPath)) {
         mkdirSync(dirPath, {
-            recursive: true,
+            recursive: true
         })
     }
 
@@ -421,10 +395,7 @@ function persistConfig(storagePath: string, config: ConfigFile): void {
  * Gets a wallet balance of the network-native token for the given
  * wallet address.
  */
-async function getNativeBalance(
-    environmentId: EnvironmentId,
-    address: string
-): Promise<bigint> {
+async function getNativeBalance(environmentId: EnvironmentId, address: string): Promise<bigint> {
     const url = streamrConfig[environmentId].rpcEndpoints[0]?.url
 
     if (!url || !/^https?:/i.test(url)) {
@@ -447,18 +418,15 @@ async function getOperatorNodeAddresses(
     const resp = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
-            query: `query { operator(id: "${operatorAddress}") { nodes } }`,
-        }),
+            query: `query { operator(id: "${operatorAddress}") { nodes } }`
+        })
     })
 
     const { data } = z
         .object({
             data: z.object({
-                operator: z.union([
-                    z.null(),
-                    z.object({ nodes: z.array(z.string()) }),
-                ]),
-            }),
+                operator: z.union([z.null(), z.object({ nodes: z.array(z.string()) })])
+            })
         })
         .parse(await resp.json())
 
@@ -528,7 +496,7 @@ function style(message: string): string {
     const filters: [RegExp, chalk.Chalk][] = [
         [/\*\*([^*]+)\*\*/g, chalk.bold],
         [/\*([^*]+)\*/g, chalk.whiteBright],
-        [/_([^_]+)_/g, chalk.gray],
+        [/_([^_]+)_/g, chalk.gray]
     ]
 
     for (const [regexp, colorer] of filters) {
@@ -536,18 +504,16 @@ function style(message: string): string {
     }
 
     return result
-        .replace(
-            /^[^\S\r\n]*(>?)[^\S\r\n]*([!x~]?)[^\S\r\n]*/gim,
-            (_, indent, decorator) =>
-                [
-                    indent && chalk.bgGray(' '),
-                    decorator === '!' && chalk.yellowBright.bold(' ! '),
-                    decorator === 'x' && chalk.redBright.bold(' ✗ '),
-                    decorator === '~' && chalk.greenBright.bold(' ✓ '),
-                    decorator === '' && '   ',
-                ]
-                    .filter(Boolean)
-                    .join('')
+        .replace(/^[^\S\r\n]*(>?)[^\S\r\n]*([!x~]?)[^\S\r\n]*/gim, (_, indent, decorator) =>
+            [
+                indent && chalk.bgGray(' '),
+                decorator === '!' && chalk.yellowBright.bold(' ! '),
+                decorator === 'x' && chalk.redBright.bold(' ✗ '),
+                decorator === '~' && chalk.greenBright.bold(' ✓ '),
+                decorator === '' && '   '
+            ]
+                .filter(Boolean)
+                .join('')
         )
         .trim()
 }

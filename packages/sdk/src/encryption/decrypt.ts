@@ -11,7 +11,7 @@ import { StreamrClientError } from '../StreamrClientError'
 export const decrypt = async (
     streamMessage: StreamMessageAESEncrypted,
     groupKeyManager: GroupKeyManager,
-    destroySignal: DestroySignal,
+    destroySignal: DestroySignal
 ): Promise<StreamMessage> => {
     if (destroySignal.isDestroyed()) {
         return streamMessage
@@ -27,7 +27,11 @@ export const decrypt = async (
         if (destroySignal.isDestroyed()) {
             return streamMessage
         }
-        throw new StreamrClientError(`Could not get encryption key ${streamMessage.groupKeyId}`, 'DECRYPT_ERROR', streamMessage)
+        throw new StreamrClientError(
+            `Could not get encryption key ${streamMessage.groupKeyId}`,
+            'DECRYPT_ERROR',
+            streamMessage
+        )
     }
     if (destroySignal.isDestroyed()) {
         return streamMessage

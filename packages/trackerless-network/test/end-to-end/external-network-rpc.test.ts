@@ -1,11 +1,13 @@
 import { NetworkNode } from '../../src/NetworkNode'
 import { NetworkStack } from '../../src/NetworkStack'
-import { StreamPartHandshakeRequest, StreamPartHandshakeResponse } from '../../generated/packages/trackerless-network/protos/NetworkRpc'
+import {
+    StreamPartHandshakeRequest,
+    StreamPartHandshakeResponse
+} from '../../generated/packages/trackerless-network/protos/NetworkRpc'
 import { HandshakeRpcClient } from '../../generated/packages/trackerless-network/protos/NetworkRpc.client'
 import { createMockPeerDescriptor } from '../utils/utils'
 
 describe('ExternalNetworkRpc', () => {
-
     let clientNode: NetworkNode
     let serverNode: NetworkNode
 
@@ -39,7 +41,6 @@ describe('ExternalNetworkRpc', () => {
 
         await serverNode.start()
         await clientNode.start()
-
     })
 
     afterEach(() => {
@@ -61,7 +62,5 @@ describe('ExternalNetworkRpc', () => {
             targetDescriptor: serverPeerDescriptor
         })
         expect(response.requestId).toEqual(requestId)
-
     })
-
 })

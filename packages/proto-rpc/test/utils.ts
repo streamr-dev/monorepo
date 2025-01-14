@@ -14,7 +14,10 @@ import { IDhtRpcService } from './proto/TestProtos.server'
 interface IDhtRpcWithError extends IDhtRpcService {
     throwPingError: (request: PingRequest, _context: ServerCallContext) => Promise<PingResponse>
     respondPingWithTimeout: (request: PingRequest, _context: ServerCallContext) => Promise<PingResponse>
-    throwGetClosestPeersError: (request: ClosestPeersRequest, _context: ServerCallContext) => Promise<ClosestPeersResponse>
+    throwGetClosestPeersError: (
+        request: ClosestPeersRequest,
+        _context: ServerCallContext
+    ) => Promise<ClosestPeersResponse>
     throwRouteMessageError: (request: RouteMessageWrapper, _context: ServerCallContext) => Promise<RouteMessageAck>
 }
 
@@ -60,10 +63,16 @@ export const MockDhtRpc: IDhtRpcWithError = {
             }, 2000)
         })
     },
-    async throwGetClosestPeersError(_urequest: ClosestPeersRequest, _context: ServerCallContext): Promise<ClosestPeersResponse> {
+    async throwGetClosestPeersError(
+        _urequest: ClosestPeersRequest,
+        _context: ServerCallContext
+    ): Promise<ClosestPeersResponse> {
         throw new Error()
     },
-    async throwRouteMessageError(_urequest: RouteMessageWrapper, _context: ServerCallContext): Promise<RouteMessageAck> {
+    async throwRouteMessageError(
+        _urequest: RouteMessageWrapper,
+        _context: ServerCallContext
+    ): Promise<RouteMessageAck> {
         throw new Error()
     }
 }
@@ -82,21 +91,19 @@ export const generateId = (stringId: string): Uint8Array => {
 export const getMockPeers = (): PeerDescriptor[] => {
     const n1: PeerDescriptor = {
         nodeId: generateId('Neighbor1'),
-        type: NodeType.NODEJS,
+        type: NodeType.NODEJS
     }
     const n2: PeerDescriptor = {
         nodeId: generateId('Neighbor2'),
-        type: NodeType.NODEJS,
+        type: NodeType.NODEJS
     }
     const n3: PeerDescriptor = {
         nodeId: generateId('Neighbor3'),
-        type: NodeType.NODEJS,
+        type: NodeType.NODEJS
     }
     const n4: PeerDescriptor = {
         nodeId: generateId('Neighbor4'),
-        type: NodeType.NODEJS,
+        type: NodeType.NODEJS
     }
-    return [
-        n1, n2, n3, n4
-    ]
+    return [n1, n2, n3, n4]
 }

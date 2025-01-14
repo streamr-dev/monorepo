@@ -16,7 +16,6 @@ interface CertificateAndKey {
 }
 
 export class CertificateCreator {
-
     private accountPrivateKey?: Buffer
     private accountPrivateKeyPath: string
     private readonly acmeDirectoryUrl: string
@@ -57,7 +56,7 @@ export class CertificateCreator {
         const [key, csr] = await acme.crypto.createCsr({
             commonName: fqdn
         })
-       
+
         logger.debug('Creating certificate')
         let cert: string
         let keyAuth: string
@@ -67,14 +66,18 @@ export class CertificateCreator {
                 email: 'autocertifier@streamr.network',
                 termsOfServiceAgreed: true,
                 challengePriority: [DNS_01_CHALLENGE],
-                challengeCreateFn: async (authz: acme.Authorization, _challenge: Challenge, keyAuthorization: string) => {
+                challengeCreateFn: async (
+                    authz: acme.Authorization,
+                    _challenge: Challenge,
+                    keyAuthorization: string
+                ) => {
                     // this value must be saved for the challengeRemoveFn
                     keyAuth = keyAuthorization
                     await this.challengeManager.createChallenge(authz.identifier.value, keyAuthorization)
                 },
                 challengeRemoveFn: async (authz: acme.Authorization) => {
                     await this.challengeManager.deleteChallenge(authz.identifier.value, keyAuth)
-                },
+                }
             })
         } catch (e) {
             logger.error('Failed to create certificate: ' + e.message)
@@ -103,5 +106,4 @@ export class CertificateCreator {
         }
         return false
     }
-
 }

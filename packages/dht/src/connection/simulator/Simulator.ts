@@ -11,7 +11,12 @@ import { DhtAddress, toNodeId } from '../../identifiers'
 
 const logger = new Logger(module)
 
-export enum LatencyType { NONE = 'NONE', RANDOM = 'RANDOM', REAL = 'REAL', FIXED = 'FIXED' }
+export enum LatencyType {
+    NONE = 'NONE',
+    RANDOM = 'RANDOM',
+    REAL = 'REAL',
+    FIXED = 'FIXED'
+}
 
 // One-way 'pipe' of messages
 
@@ -21,7 +26,8 @@ class Association {
     private lastOperationAt: number = 0
     private closing = false
 
-    constructor(sourceConnection: SimulatorConnection,
+    constructor(
+        sourceConnection: SimulatorConnection,
         destinationConnection?: SimulatorConnection,
         public connectedCallback?: (error?: string) => void
     ) {
@@ -68,8 +74,8 @@ class ConnectOperation extends SimulatorOperation {
         executionTime: number,
         association: Association,
         public sourceConnection: SimulatorConnection,
-        public targetDescriptor: PeerDescriptor) {
-
+        public targetDescriptor: PeerDescriptor
+    ) {
         super(executionTime, association)
     }
 }
@@ -84,8 +90,7 @@ class SendOperation extends SimulatorOperation {
     }
 }
 
-class CloseOperation extends SimulatorOperation {
-}
+class CloseOperation extends SimulatorOperation {}
 
 export class Simulator {
     private stopped = false
@@ -99,13 +104,15 @@ export class Simulator {
     private loopCounter = 0
     private MAX_LOOPS = 1000
 
-    private operationQueue: Heap<SimulatorOperation> = new Heap<SimulatorOperation>((a: SimulatorOperation, b: SimulatorOperation) => {
-        if ((a.executionTime - b.executionTime) === 0) {
-            return (a.objectId - b.objectId)
-        } else {
-            return (a.executionTime - b.executionTime)
+    private operationQueue: Heap<SimulatorOperation> = new Heap<SimulatorOperation>(
+        (a: SimulatorOperation, b: SimulatorOperation) => {
+            if (a.executionTime - b.executionTime === 0) {
+                return a.objectId - b.objectId
+            } else {
+                return a.executionTime - b.executionTime
+            }
         }
-    })
+    )
 
     private simulatorTimeout?: NodeJS.Timeout
 
@@ -117,7 +124,7 @@ export class Simulator {
             this.latencyTable = getRegionDelayMatrix()
         }
 
-        if ((this.latencyType === LatencyType.FIXED) && (this.fixedLatency === undefined)) {
+        if (this.latencyType === LatencyType.FIXED && this.fixedLatency === undefined) {
             throw new Error('LatencyType.FIXED requires the desired latency to be given as second parameter')
         }
 
@@ -134,7 +141,11 @@ export class Simulator {
         this.scheduleOperation = this.scheduleOperation.bind(this)
     }
 
-    private generateExecutionTime(association: Association, sourceRegion: number | undefined, targetRegion: number | undefined): number {
+    private generateExecutionTime(
+        association: Association,
+        sourceRegion: number | undefined,
+        targetRegion: number | undefined
+    ): number {
         let executionTime = Date.now() + this.getLatency(sourceRegion, targetRegion)
         if (association.getLastOperationAt() > executionTime) {
             executionTime = association.getLastOperationAt()
@@ -151,7 +162,6 @@ export class Simulator {
         }
 
         if (this.latencyType === LatencyType.REAL) {
-
             if (sourceRegion === undefined || targetRegion === undefined || sourceRegion > 15 || targetRegion > 15) {
                 logger.error('invalid region index given to Simulator')
                 throw new Error('invalid region index given to Simulator')
@@ -167,7 +177,6 @@ export class Simulator {
     }
 
     public accept(sourceConnection: SimulatorConnection, targetConnection: SimulatorConnection): void {
-
         const sourceAssociation = this.associations.get(sourceConnection.connectionId)
 
         if (!sourceAssociation) {
@@ -199,7 +208,6 @@ export class Simulator {
     }
 
     private executeCloseOperation(operation: CloseOperation): void {
-
         if (this.stopped) {
             return
         }
@@ -214,7 +222,6 @@ export class Simulator {
 
         if (!target || !counterAssociation) {
             this.associations.delete(operation.association.sourceConnection.connectionId)
-
         } else if (!counterAssociation.isClosing()) {
             target.handleIncomingDisconnection()
             this.close(target)
@@ -226,20 +233,17 @@ export class Simulator {
     }
 
     private executeSendOperation(operation: SendOperation): void {
-
         if (this.stopped) {
             return
         }
 
         const target = operation.association.destinationConnection
         target!.handleIncomingData(operation.data)
-
     }
 
     private executeQueuedOperations(): void {
         const currentTime = Date.now()
-        while (this.operationQueue.size() > 0
-            && this.operationQueue.peek()!.executionTime <= currentTime) {
+        while (this.operationQueue.size() > 0 && this.operationQueue.peek()!.executionTime <= currentTime) {
             const operation = this.operationQueue.pop()
 
             if (operation instanceof ConnectOperation) {
@@ -288,10 +292,13 @@ export class Simulator {
         this.scheduleNextTimeout()
     }
 
-    public connect(sourceConnection: SimulatorConnection, targetDescriptor: PeerDescriptor, connectedCallback: (error?: string) => void): void {
-
+    public connect(
+        sourceConnection: SimulatorConnection,
+        targetDescriptor: PeerDescriptor,
+        connectedCallback: (error?: string) => void
+    ): void {
         if (this.stopped) {
-            logger.error('connect() called on a stopped simulator ' + (new Error().stack))
+            logger.error('connect() called on a stopped simulator ' + new Error().stack)
             return
         }
         debugVars.simulatorHeapSize = this.operationQueue.size()
@@ -299,17 +306,19 @@ export class Simulator {
         const association = new Association(sourceConnection, undefined, connectedCallback)
         this.associations.set(sourceConnection.connectionId, association)
 
-        const executionTime = this.generateExecutionTime(association, sourceConnection.localPeerDescriptor.region, targetDescriptor.region)
+        const executionTime = this.generateExecutionTime(
+            association,
+            sourceConnection.localPeerDescriptor.region,
+            targetDescriptor.region
+        )
         association.setLastOperationAt(executionTime)
 
-        const operation = new ConnectOperation(executionTime, association,
-            sourceConnection, targetDescriptor)
+        const operation = new ConnectOperation(executionTime, association, sourceConnection, targetDescriptor)
 
         this.scheduleOperation(operation)
     }
 
     public close(sourceConnection: SimulatorConnection): void {
-
         if (this.stopped) {
             return
         }
@@ -321,9 +330,11 @@ export class Simulator {
 
         association.setClosing()
 
-        const executionTime = this.generateExecutionTime(association,
+        const executionTime = this.generateExecutionTime(
+            association,
             sourceConnection.localPeerDescriptor.region,
-            sourceConnection.getPeerDescriptor()?.region)
+            sourceConnection.getPeerDescriptor()?.region
+        )
         association.setLastOperationAt(executionTime)
 
         const operation = new CloseOperation(executionTime, association)
@@ -332,7 +343,6 @@ export class Simulator {
     }
 
     public send(sourceConnection: SimulatorConnection, data: Uint8Array): void {
-
         if (this.stopped) {
             return
         }
@@ -347,9 +357,11 @@ export class Simulator {
             return
         }
 
-        const executionTime = this.generateExecutionTime(association,
+        const executionTime = this.generateExecutionTime(
+            association,
             sourceConnection.localPeerDescriptor.region,
-            association.destinationConnection!.localPeerDescriptor.region)
+            association.destinationConnection!.localPeerDescriptor.region
+        )
 
         association.setLastOperationAt(executionTime)
 

@@ -18,14 +18,10 @@ function formCacheKey(contractAddress: EthereumAddress, signerUserId: UserID): C
 
 @scoped(Lifecycle.ContainerScoped)
 export class ERC1271ContractFacade {
-
     private readonly contractsByAddress: Mapping<EthereumAddress, ERC1271Contract>
     private readonly publisherCache = new MapWithTtl<CacheKey, boolean>(() => CACHE_TTL)
 
-    constructor(
-        contractFactory: ContractFactory,
-        rpcProviderSource: RpcProviderSource
-    ) {
+    constructor(contractFactory: ContractFactory, rpcProviderSource: RpcProviderSource) {
         this.contractsByAddress = createLazyMap<EthereumAddress, ERC1271Contract>({
             valueFactory: async (address) => {
                 return contractFactory.createReadContract(
@@ -38,7 +34,11 @@ export class ERC1271ContractFacade {
         })
     }
 
-    async isValidSignature(contractAddress: EthereumAddress, payload: Uint8Array, signature: Uint8Array): Promise<boolean> {
+    async isValidSignature(
+        contractAddress: EthereumAddress,
+        payload: Uint8Array,
+        signature: Uint8Array
+    ): Promise<boolean> {
         const recoveredSignerUserId = toUserId(recoverSignerUserId(signature, payload))
         const cacheKey = formCacheKey(contractAddress, recoveredSignerUserId)
         const cachedValue = this.publisherCache.get(cacheKey)

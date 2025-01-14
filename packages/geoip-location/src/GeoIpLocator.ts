@@ -15,7 +15,7 @@ const DEFAULT_DB_CHECK_INTERVAL = 30 * 24 * 60 * 60 * 1000
 // 24 hours in milliseconds
 const DEFAULT_DB_CHECK_ERROR_INTERVAL = 24 * 60 * 60 * 1000
 
-export class GeoIpLocator { 
+export class GeoIpLocator {
     private abortController: AbortController
     private readonly geoIpDatabaseFolder: string
     private readonly dbCheckInterval: number
@@ -43,10 +43,20 @@ export class GeoIpLocator {
     private checkDatabase: () => Promise<void> = async () => {
         if (this.reader === undefined) {
             // if we do not have a reader, create a new one in any case
-            this.reader = await downloadGeoIpDatabase(this.geoIpDatabaseFolder, true, this.abortController.signal, this.mirrorUrl)
+            this.reader = await downloadGeoIpDatabase(
+                this.geoIpDatabaseFolder,
+                true,
+                this.abortController.signal,
+                this.mirrorUrl
+            )
         } else {
             // if we already have a reader, create a new one only if db has changed
-            const newReader = await downloadGeoIpDatabase(this.geoIpDatabaseFolder, false, this.abortController.signal, this.mirrorUrl)
+            const newReader = await downloadGeoIpDatabase(
+                this.geoIpDatabaseFolder,
+                false,
+                this.abortController.signal,
+                this.mirrorUrl
+            )
             if (newReader !== undefined) {
                 this.reader = newReader
             }
@@ -64,7 +74,7 @@ export class GeoIpLocator {
             } catch (err) {
                 logger.warn('GeoIpLocator: GeoIP database check failed', { err })
                 this.scheduleCheck(this.dbCheckErrorInterval)
-            } 
+            }
         }, timeout)
     }
 
@@ -90,7 +100,7 @@ export class GeoIpLocator {
         }
 
         // If ip is falsy, the library will crash
-        // this might happen despite the ts typings because the ip address 
+        // this might happen despite the ts typings because the ip address
         // comes from the ws server socket and is not under our control
         if (!ip) {
             return undefined

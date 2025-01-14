@@ -3,7 +3,6 @@ import { MessageRef } from './MessageRef'
 import { validateIsNotNegativeInteger } from './validations'
 
 export class MessageID {
-
     readonly streamId: StreamID
     readonly streamPartition: number
     readonly timestamp: number

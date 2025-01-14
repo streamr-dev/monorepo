@@ -46,7 +46,11 @@ import { createCacheMap, Mapping } from '../utils/Mapping'
 import { ChainEventPoller } from './ChainEventPoller'
 import { ContractFactory } from './ContractFactory'
 import { ObservableContract, initContractEventGateway, waitForTx } from './contract'
-import { InternalSearchStreamsPermissionFilter, SearchStreamsOrderBy, searchStreams as _searchStreams } from './searchStreams'
+import {
+    InternalSearchStreamsPermissionFilter,
+    SearchStreamsOrderBy,
+    searchStreams as _searchStreams
+} from './searchStreams'
 
 /*
  * On-chain registry of stream metadata and permissions.
@@ -75,7 +79,7 @@ const validatePermissionAssignments = (assignments: InternalPermissionAssignment
         // In the StreamRegistry v5 contract, these permissions can only be assigned to users
         // who have EthereumAddress as their userId. Also public permission is not allowed
         // for these users.
-        const ADMIN_PERMISSION_TYPES = [StreamPermission.EDIT, StreamPermission.DELETE, StreamPermission.GRANT] 
+        const ADMIN_PERMISSION_TYPES = [StreamPermission.EDIT, StreamPermission.DELETE, StreamPermission.GRANT]
         const adminPermissions = intersection(assignment.permissions, ADMIN_PERMISSION_TYPES)
         if (adminPermissions.length > 0) {
             const createError = (prefix: string) => {
@@ -114,7 +118,6 @@ const invalidateCache = (
 
 @scoped(Lifecycle.ContainerScoped)
 export class StreamRegistry {
-
     private streamRegistryContract?: ObservableContract<StreamRegistryContract>
     private readonly streamRegistryContractReadonly: ObservableContract<StreamRegistryContract>
     private readonly contractFactory: ContractFactory
@@ -154,11 +157,18 @@ export class StreamRegistry {
             this.rpcProviderSource.getProvider(),
             'streamRegistry'
         )
-        const chainEventPoller = new ChainEventPoller(this.rpcProviderSource.getSubProviders().map((p) => {
-            return contractFactory.createEventContract(toEthereumAddress(this.config.contracts.streamRegistryChainAddress), StreamRegistryArtifact, p)
-        }), config.contracts.pollInterval)
+        const chainEventPoller = new ChainEventPoller(
+            this.rpcProviderSource.getSubProviders().map((p) => {
+                return contractFactory.createEventContract(
+                    toEthereumAddress(this.config.contracts.streamRegistryChainAddress),
+                    StreamRegistryArtifact,
+                    p
+                )
+            }),
+            config.contracts.pollInterval
+        )
         initContractEventGateway({
-            sourceName: 'StreamCreated', 
+            sourceName: 'StreamCreated',
             sourceEmitter: chainEventPoller,
             targetName: 'streamCreated',
             targetEmitter: eventEmitter,
@@ -184,7 +194,7 @@ export class StreamRegistry {
         this.subscriberCache = createCacheMap({
             valueFactory: ([streamId, userId]) => {
                 return this.isStreamPublisherOrSubscriber_nonCached(streamId, userId, StreamPermission.SUBSCRIBE)
-            }, 
+            },
             ...config.cache
         })
         this.publicSubscribePermissionCache = createCacheMap({
@@ -229,7 +239,14 @@ export class StreamRegistry {
                 know what the actual error was. (Most likely it has nothing to do with timeout
                 -> we don't use the error from until(), but throw an explicit error instead.)
             */
-            await waitForTx(this.streamRegistryContract!.createStreamWithENS(domain, path, JSON.stringify(metadata), ethersOverrides))
+            await waitForTx(
+                this.streamRegistryContract!.createStreamWithENS(
+                    domain,
+                    path,
+                    JSON.stringify(metadata),
+                    ethersOverrides
+                )
+            )
             try {
                 await until(
                     async () => this.streamExistsOnChain(streamId),
@@ -248,7 +265,10 @@ export class StreamRegistry {
         this.populateMetadataCache(streamId, metadata)
     }
 
-    private async ensureStreamIdInNamespaceOfAuthenticatedUser(address: EthereumAddress, streamId: StreamID): Promise<void> {
+    private async ensureStreamIdInNamespaceOfAuthenticatedUser(
+        address: EthereumAddress,
+        streamId: StreamID
+    ): Promise<void> {
         const userAddress = toEthereumAddress(await this.authentication.getUserId())
         if (address !== userAddress) {
             throw new Error(`stream id "${streamId}" not in namespace of authenticated user "${userAddress}"`)
@@ -258,11 +278,9 @@ export class StreamRegistry {
     async setStreamMetadata(streamId: StreamID, metadata: StreamMetadata): Promise<void> {
         await this.connectToContract()
         const ethersOverrides = await getEthersOverrides(this.rpcProviderSource, this.config)
-        await waitForTx(this.streamRegistryContract!.updateStreamMetadata(
-            streamId,
-            JSON.stringify(metadata),
-            ethersOverrides
-        ))
+        await waitForTx(
+            this.streamRegistryContract!.updateStreamMetadata(streamId, JSON.stringify(metadata), ethersOverrides)
+        )
         this.populateMetadataCache(streamId, metadata)
     }
 
@@ -270,10 +288,7 @@ export class StreamRegistry {
         const streamId = await this.streamIdBuilder.toStreamID(streamIdOrPath)
         await this.connectToContract()
         const ethersOverrides = await getEthersOverrides(this.rpcProviderSource, this.config)
-        await waitForTx(this.streamRegistryContract!.deleteStream(
-            streamId,
-            ethersOverrides
-        ))
+        await waitForTx(this.streamRegistryContract!.deleteStream(streamId, ethersOverrides))
         invalidateCache(this.metadataCache, streamId)
         this.invalidatePermissionCaches(streamId)
     }
@@ -294,16 +309,12 @@ export class StreamRegistry {
         return parseMetadata(metadata)
     }
 
-    async* searchStreams(
+    async *searchStreams(
         term: string | undefined,
         permissionFilter: InternalSearchStreamsPermissionFilter | undefined,
         orderBy: SearchStreamsOrderBy
     ): AsyncGenerator<StreamID> {
-        const queryResult = _searchStreams(
-            term,
-            permissionFilter,
-            orderBy,
-            this.theGraphClient)
+        const queryResult = _searchStreams(term, permissionFilter, orderBy, this.theGraphClient)
         for await (const item of queryResult) {
             const id = toStreamID(item.stream.id)
             this.populateMetadataCache(id, parseMetadata(item.stream.metadata))
@@ -319,10 +330,14 @@ export class StreamRegistry {
         return this.getStreamPublishersOrSubscribersList(streamIdOrPath, 'subscribeExpiration')
     }
 
-    private async* getStreamPublishersOrSubscribersList(streamIdOrPath: string, fieldName: string): AsyncIterable<UserID> {
+    private async *getStreamPublishersOrSubscribersList(
+        streamIdOrPath: string,
+        fieldName: string
+    ): AsyncIterable<UserID> {
         const streamId = await this.streamIdBuilder.toStreamID(streamIdOrPath)
         const backendResults = this.theGraphClient.queryEntities<StreamPublisherOrSubscriberItem>(
-            (lastId: string, pageSize: number) => StreamRegistry.buildStreamPublishersOrSubscribersQuery(streamId, fieldName, lastId, pageSize)
+            (lastId: string, pageSize: number) =>
+                StreamRegistry.buildStreamPublishersOrSubscribersQuery(streamId, fieldName, lastId, pageSize)
         )
         /*
          * There can be orphaned permission entities if a stream is deleted (currently
@@ -332,10 +347,7 @@ export class StreamRegistry {
          * no longer needed
          */
         const validItems = filter<StreamPublisherOrSubscriberItem>(backendResults, (p) => (p as any).stream !== null)
-        yield* map<StreamPublisherOrSubscriberItem, UserID>(
-            validItems,
-            (item) => toUserId(item.userId)
-        )
+        yield* map<StreamPublisherOrSubscriberItem, UserID>(validItems, (item) => toUserId(item.userId))
     }
 
     private static buildStreamPublishersOrSubscribersQuery(
@@ -384,9 +396,10 @@ export class StreamRegistry {
 
     async getPermissions(streamIdOrPath: string): Promise<InternalPermissionAssignment[]> {
         const streamId = await this.streamIdBuilder.toStreamID(streamIdOrPath)
-        const queryResults = await collect(this.theGraphClient.queryEntities<PermissionQueryResult>(
-            (lastId: string, pageSize: number) => {
-                const query = `{
+        const queryResults = await collect(
+            this.theGraphClient.queryEntities<PermissionQueryResult>(
+                (lastId: string, pageSize: number) => {
+                    const query = `{
                     stream (id: "${streamId}") {
                         id
                         metadata
@@ -401,25 +414,26 @@ export class StreamRegistry {
                         }
                     }
                 }`
-                return { query }
-            }, 
-            (response: any) => {
-                if (response.stream !== null) {
-                    return response.stream.permissions
-                } else {
-                    throw new StreamrClientError('Stream not found: id=' + streamId, 'STREAM_NOT_FOUND')
+                    return { query }
+                },
+                (response: any) => {
+                    if (response.stream !== null) {
+                        return response.stream.permissions
+                    } else {
+                        throw new StreamrClientError('Stream not found: id=' + streamId, 'STREAM_NOT_FOUND')
+                    }
                 }
-            }
-        ))
+            )
+        )
         const assignments: InternalPermissionAssignment[] = []
         queryResults.forEach((permissionResult: PermissionQueryResult) => {
             const permissions = convertChainPermissionsToStreamPermissions(permissionResult)
             /*
-            * There can be query results, which don't contain any permissions. That happens if a
-            * user revokes all permissions from a stream. Currently we don't remove these empty assignments
-            * from The Graph index. TODO remove the "permission.length > 0" if/when we implement the
-            * empty assignments cleanup in The Graph.
-            */
+             * There can be query results, which don't contain any permissions. That happens if a
+             * user revokes all permissions from a stream. Currently we don't remove these empty assignments
+             * from The Graph index. TODO remove the "permission.length > 0" if/when we implement the
+             * empty assignments cleanup in The Graph.
+             */
             if (permissions.length > 0) {
                 if (permissionResult.userId === PUBLIC_PERMISSION_USER_ID) {
                     assignments.push({
@@ -440,26 +454,38 @@ export class StreamRegistry {
     async grantPermissions(streamIdOrPath: string, ...assignments: InternalPermissionAssignment[]): Promise<void> {
         validatePermissionAssignments(assignments)
         const overrides = await getEthersOverrides(this.rpcProviderSource, this.config)
-        return this.updatePermissions(streamIdOrPath, (streamId: StreamID, userId: UserID | undefined, solidityType: bigint) => {
-            return (userId === undefined)
-                ? this.streamRegistryContract!.grantPublicPermission(streamId, solidityType, overrides)
-                : this.streamRegistryContract!.grantPermissionForUserId(streamId, userId, solidityType, overrides)
-        }, ...assignments)
+        return this.updatePermissions(
+            streamIdOrPath,
+            (streamId: StreamID, userId: UserID | undefined, solidityType: bigint) => {
+                return userId === undefined
+                    ? this.streamRegistryContract!.grantPublicPermission(streamId, solidityType, overrides)
+                    : this.streamRegistryContract!.grantPermissionForUserId(streamId, userId, solidityType, overrides)
+            },
+            ...assignments
+        )
     }
 
     async revokePermissions(streamIdOrPath: string, ...assignments: InternalPermissionAssignment[]): Promise<void> {
         validatePermissionAssignments(assignments)
         const overrides = await getEthersOverrides(this.rpcProviderSource, this.config)
-        return this.updatePermissions(streamIdOrPath, (streamId: StreamID, userId: UserID | undefined, solidityType: bigint) => {
-            return (userId === undefined)
-                ? this.streamRegistryContract!.revokePublicPermission(streamId, solidityType, overrides)
-                : this.streamRegistryContract!.revokePermissionForUserId(streamId, userId, solidityType, overrides)
-        }, ...assignments)
+        return this.updatePermissions(
+            streamIdOrPath,
+            (streamId: StreamID, userId: UserID | undefined, solidityType: bigint) => {
+                return userId === undefined
+                    ? this.streamRegistryContract!.revokePublicPermission(streamId, solidityType, overrides)
+                    : this.streamRegistryContract!.revokePermissionForUserId(streamId, userId, solidityType, overrides)
+            },
+            ...assignments
+        )
     }
 
     private async updatePermissions(
         streamIdOrPath: string,
-        createTransaction: (streamId: StreamID, userId: UserID | undefined, solidityType: bigint) => Promise<ContractTransactionResponse>,
+        createTransaction: (
+            streamId: StreamID,
+            userId: UserID | undefined,
+            solidityType: bigint
+        ) => Promise<ContractTransactionResponse>,
         ...assignments: InternalPermissionAssignment[]
     ): Promise<void> {
         const streamId = await this.streamIdBuilder.toStreamID(streamIdOrPath)
@@ -475,10 +501,12 @@ export class StreamRegistry {
         }
     }
 
-    async setPermissions(...items: {
-        streamId: string
-        assignments: InternalPermissionAssignment[]
-    }[]): Promise<void> {
+    async setPermissions(
+        ...items: {
+            streamId: string
+            assignments: InternalPermissionAssignment[]
+        }[]
+    ): Promise<void> {
         const streamIds: StreamID[] = []
         const targets: (UserID | typeof PUBLIC_PERMISSION_USER_ID)[][] = []
         const chainPermissions: ChainPermissions[][] = []
@@ -487,12 +515,16 @@ export class StreamRegistry {
             const streamId = await this.streamIdBuilder.toStreamID(item.streamId)
             this.invalidatePermissionCaches(streamId)
             streamIds.push(streamId)
-            targets.push(item.assignments.map((assignment) => {
-                return isPublicPermissionAssignment(assignment) ? PUBLIC_PERMISSION_USER_ID : assignment.userId
-            }))
-            chainPermissions.push(item.assignments.map((assignment) => {
-                return convertStreamPermissionsToChainPermission(assignment.permissions)
-            }))
+            targets.push(
+                item.assignments.map((assignment) => {
+                    return isPublicPermissionAssignment(assignment) ? PUBLIC_PERMISSION_USER_ID : assignment.userId
+                })
+            )
+            chainPermissions.push(
+                item.assignments.map((assignment) => {
+                    return convertStreamPermissionsToChainPermission(assignment.permissions)
+                })
+            )
         }
         await this.connectToContract()
         const ethersOverrides = await getEthersOverrides(this.rpcProviderSource, this.config)
@@ -505,7 +537,11 @@ export class StreamRegistry {
         await waitForTx(txToSubmit)
     }
 
-    private async isStreamPublisherOrSubscriber_nonCached(streamId: StreamID, userId: UserID, permission: StreamPermission): Promise<boolean> {
+    private async isStreamPublisherOrSubscriber_nonCached(
+        streamId: StreamID,
+        userId: UserID,
+        permission: StreamPermission
+    ): Promise<boolean> {
         try {
             return await this.hasPermission({ streamId, userId, permission, allowPublic: true })
         } catch (err) {
@@ -536,7 +572,7 @@ export class StreamRegistry {
     populateMetadataCache(streamId: StreamID, metadata: StreamMetadata): void {
         this.metadataCache.set(streamId, metadata)
     }
-    
+
     invalidatePermissionCaches(streamId: StreamID): void {
         this.logger.trace('Clear permission caches for stream', { streamId })
         invalidateCache(this.publisherCache, streamId)

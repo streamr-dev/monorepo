@@ -1,4 +1,13 @@
-import { EthereumAddress, toEthereumAddress, toUserId, UserID, until, waitForEvent, Logger, retry } from '@streamr/utils'
+import {
+    EthereumAddress,
+    toEthereumAddress,
+    toUserId,
+    UserID,
+    until,
+    waitForEvent,
+    Logger,
+    retry
+} from '@streamr/utils'
 import crypto, { randomBytes } from 'crypto'
 import { AbstractSigner, Contract, JsonRpcProvider, parseEther, Provider, TransactionResponse, Wallet } from 'ethers'
 import { EventEmitter, once } from 'events'
@@ -33,7 +42,7 @@ export const waitForStreamToEnd = (stream: Readable): Promise<unknown[]> => {
 
 // internal
 const runAndWait = async (
-    operations: (() => void) | ((() => void)[]),
+    operations: (() => void) | (() => void)[],
     waitedEvents: [emitter: EventEmitter, event: Event] | [emitter: EventEmitter, event: Event][],
     timeout: number,
     promiseFn: (args: Promise<unknown>[]) => Promise<unknown[]>
@@ -48,12 +57,14 @@ const runAndWait = async (
     }
 
     const promise = promiseFn(evs.map(([emitter, event]) => waitForEvent(emitter, event, timeout)))
-    ops.forEach((op) => { op() })
+    ops.forEach((op) => {
+        op()
+    })
     return promise
 }
 
 /**
- * Run functions and wait for events to be emitted within timeout. Returns a promise created with Promise.all() 
+ * Run functions and wait for events to be emitted within timeout. Returns a promise created with Promise.all()
  * and waitForEvent() calls. Calls the functions after creating the promise.
  *
  * @param operations function(s) to call
@@ -63,7 +74,7 @@ const runAndWait = async (
  * within timeout. Otherwise rejected.
  */
 export const runAndWaitForEvents = async (
-    operations: (() => void) | ((() => void)[]), 
+    operations: (() => void) | (() => void)[],
     waitedEvents: [emitter: EventEmitter, event: Event] | [emitter: EventEmitter, event: Event][],
     timeout = 5000
 ): Promise<unknown[]> => {
@@ -71,7 +82,7 @@ export const runAndWaitForEvents = async (
 }
 
 /**
- * Run functions and wait for one of the events to be emitted within timeout. Returns a promise created with Promise.race() 
+ * Run functions and wait for one of the events to be emitted within timeout. Returns a promise created with Promise.race()
  * and waitForEvent() calls. Calls the functions after creating the promise.
  *
  * @param operations function(s) to call
@@ -81,8 +92,8 @@ export const runAndWaitForEvents = async (
  * within timeout. Otherwise rejected.
  */
 export const runAndRaceEvents = async (
-    operations: (() => void) | ((() => void)[]), 
-    waitedEvents: [emitter: EventEmitter, event: Event] | [emitter: EventEmitter, event: Event][], 
+    operations: (() => void) | (() => void)[],
+    waitedEvents: [emitter: EventEmitter, event: Event] | [emitter: EventEmitter, event: Event][],
     timeout = 5000
 ): Promise<unknown[]> => {
     return runAndWait(operations, waitedEvents, timeout, Promise.race.bind(Promise))
@@ -183,7 +194,6 @@ export function describeOnlyInNodeJs(...args: Parameters<typeof describe>): void
 }
 
 export class Queue<T> {
-
     private readonly items: T[] = []
 
     push(item: T): void {
@@ -211,7 +221,7 @@ export class Queue<T> {
 export const startTestServer = async (
     endpoint: string,
     onRequest: (req: express.Request, res: express.Response) => Promise<void>
-): Promise<{ url: string, stop: () => Promise<void> }> => {
+): Promise<{ url: string; stop: () => Promise<void> }> => {
     const app = express()
     app.get(endpoint, async (req, res) => {
         await onRequest(req, res)
@@ -231,9 +241,7 @@ export const startTestServer = async (
 // Get property names which have a Function-typed value i.e. a method
 type MethodNames<T> = {
     // undefined extends T[K] to handle optional properties
-    [K in keyof T]: (
-        (undefined extends T[K] ? never : T[K]) extends (...args: any[]) => any ? K : never
-    )
+    [K in keyof T]: (undefined extends T[K] ? never : T[K]) extends (...args: any[]) => any ? K : never
 }[keyof T]
 
 // Pick only methods of T
@@ -246,31 +254,37 @@ const TEST_CHAIN_CONFIG = CHAIN_CONFIG.dev2
 
 const getTestProvider = (): Provider => {
     return new JsonRpcProvider(TEST_CHAIN_CONFIG.rpcEndpoints[0].url, undefined, {
-        batchStallTime: 0,       // Don't batch requests, send them immediately
-        cacheTimeout: -1         // Do not employ result caching
+        batchStallTime: 0, // Don't batch requests, send them immediately
+        cacheTimeout: -1 // Do not employ result caching
     })
 }
 
-const getTestTokenContract = (adminWallet: Wallet): { mint: (targetAddress: string, amountWei: bigint) => Promise<TransactionResponse> } => {
-    const ABI = [{
-        inputs: [
-            {
-                internalType: 'address',
-                name: 'to',
-                type: 'address'
-            },
-            {
-                internalType: 'uint256',
-                name: 'amount',
-                type: 'uint256'
-            }
-        ],
-        name: 'mint',
-        outputs: [],
-        stateMutability: 'nonpayable',
-        type: 'function'
-    }]
-    return new Contract(TEST_CHAIN_CONFIG.contracts.DATA, ABI).connect(adminWallet) as unknown as { mint: () => Promise<TransactionResponse> }
+const getTestTokenContract = (
+    adminWallet: Wallet
+): { mint: (targetAddress: string, amountWei: bigint) => Promise<TransactionResponse> } => {
+    const ABI = [
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: 'to',
+                    type: 'address'
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'amount',
+                    type: 'uint256'
+                }
+            ],
+            name: 'mint',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function'
+        }
+    ]
+    return new Contract(TEST_CHAIN_CONFIG.contracts.DATA, ABI).connect(adminWallet) as unknown as {
+        mint: () => Promise<TransactionResponse>
+    }
 }
 
 const getTestAdminWallet = (provider: Provider): Wallet => {
@@ -289,10 +303,12 @@ export const generateWalletWithGasAndTokens = async (tokens = true): Promise<Wal
             if (tokens) {
                 await (await token.mint(newWallet.address, parseEther('1000000'))).wait()
             }
-            await (await adminWallet.sendTransaction({
-                to: newWallet.address,
-                value: parseEther('1')
-            })).wait()
+            await (
+                await adminWallet.sendTransaction({
+                    to: newWallet.address,
+                    value: parseEther('1')
+                })
+            ).wait()
         },
         (message: string, err: any) => {
             logger.debug(message, { err })
@@ -301,7 +317,7 @@ export const generateWalletWithGasAndTokens = async (tokens = true): Promise<Wal
         10,
         100
     )
-    return newWallet.connect(provider) as (Wallet & AbstractSigner<Provider>)
+    return newWallet.connect(provider) as Wallet & AbstractSigner<Provider>
 }
 
 export const fetchPrivateKeyWithGas = async (): Promise<string> => {

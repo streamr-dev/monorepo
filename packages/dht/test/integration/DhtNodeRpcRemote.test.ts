@@ -14,7 +14,6 @@ import { toNodeId } from '../../src/identifiers'
 const SERVICE_ID = 'test'
 
 describe('DhtNodeRpcRemote', () => {
-
     let rpcRemote: DhtNodeRpcRemote
     let clientRpcCommunicator: RpcCommunicator<DhtCallContext>
     let serverRpcCommunicator: RpcCommunicator<DhtCallContext>
@@ -25,7 +24,12 @@ describe('DhtNodeRpcRemote', () => {
     beforeEach(() => {
         clientRpcCommunicator = new RpcCommunicator()
         serverRpcCommunicator = new RpcCommunicator()
-        serverRpcCommunicator.registerRpcMethod(ClosestPeersRequest, ClosestPeersResponse, 'getClosestPeers', mockDhtRpc.getClosestPeers)
+        serverRpcCommunicator.registerRpcMethod(
+            ClosestPeersRequest,
+            ClosestPeersResponse,
+            'getClosestPeers',
+            mockDhtRpc.getClosestPeers
+        )
         serverRpcCommunicator.registerRpcMethod(PingRequest, PingResponse, 'ping', mockDhtRpc.ping)
         clientRpcCommunicator.setOutgoingMessageListener(async (message: RpcMessage) => {
             serverRpcCommunicator.handleIncomingMessage(message, new DhtCallContext())
@@ -58,9 +62,12 @@ describe('DhtNodeRpcRemote', () => {
     })
 
     it('getClosestPeers error path', async () => {
-        serverRpcCommunicator.registerRpcMethod(ClosestPeersRequest, ClosestPeersResponse, 'getClosestPeers', mockDhtRpc.throwGetClosestPeersError)
-        await expect(rpcRemote.getClosestPeers(toNodeId(clientPeerDescriptor)))
-            .rejects.toThrow('Closest peers error')
+        serverRpcCommunicator.registerRpcMethod(
+            ClosestPeersRequest,
+            ClosestPeersResponse,
+            'getClosestPeers',
+            mockDhtRpc.throwGetClosestPeersError
+        )
+        await expect(rpcRemote.getClosestPeers(toNodeId(clientPeerDescriptor))).rejects.toThrow('Closest peers error')
     })
-
 })

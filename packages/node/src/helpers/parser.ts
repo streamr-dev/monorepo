@@ -34,11 +34,15 @@ export const parseQueryParameter = <T>(name: string, query: ParsedQs, parser: (i
     }
 }
 
-export const parseQueryParameterArray = <T>(name: string, query: ParsedQs, parser: (input: string) => T): T[] | undefined => {
+export const parseQueryParameterArray = <T>(
+    name: string,
+    query: ParsedQs,
+    parser: (input: string) => T
+): T[] | undefined => {
     return parseQueryParameter(name, query, (input) => input.split(',').map((part) => parser(part)))
 }
 
-export const parseQueryAndBase = (str: string): { base: string, query: ParsedQs } => {
+export const parseQueryAndBase = (str: string): { base: string; query: ParsedQs } => {
     const queryParameterStartPos = str.lastIndexOf('?')
     if (queryParameterStartPos !== -1) {
         return {

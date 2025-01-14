@@ -2,11 +2,15 @@ import { isRunningInElectron, startTestServer, testOnlyInNodeJs } from '@streamr
 import { collect, toLengthPrefixedFrame, until } from '@streamr/utils'
 import express from 'express'
 import range from 'lodash/range'
-import { FetchHttpStreamResponseError, createQueryString, fetchLengthPrefixedFrameHttpBinaryStream, getEndpointUrl } from '../../src/utils/utils'
+import {
+    FetchHttpStreamResponseError,
+    createQueryString,
+    fetchLengthPrefixedFrameHttpBinaryStream,
+    getEndpointUrl
+} from '../../src/utils/utils'
 import { nextValue } from './../../src/utils/iterators'
 
 describe('utils', () => {
-
     describe('getEndpointUrl', () => {
         it('works', () => {
             const streamId = 'x/y'
@@ -27,7 +31,6 @@ describe('utils', () => {
     })
 
     describe('fetchLengthPrefixedFrameHttpBinaryStream', () => {
-
         it('happy path', async () => {
             const LINE_COUNT = 5
             const server = await startTestServer('/', async (_req: express.Request, res: express.Response) => {
@@ -50,7 +53,9 @@ describe('utils', () => {
                 res.write(toLengthPrefixedFrame(Buffer.from('foobar')))
             })
             const abortController = new AbortController()
-            const iterator = fetchLengthPrefixedFrameHttpBinaryStream(server.url, abortController.signal)[Symbol.asyncIterator]()
+            const iterator = fetchLengthPrefixedFrameHttpBinaryStream(server.url, abortController.signal)[
+                Symbol.asyncIterator
+            ]()
             const line = await nextValue(iterator)
             expect(line?.toString()).toBe('foobar')
             abortController.abort()
@@ -74,7 +79,9 @@ describe('utils', () => {
 
         it('invalid host', async () => {
             const iterator = fetchLengthPrefixedFrameHttpBinaryStream('http://mock.test')[Symbol.asyncIterator]()
-            await expect(() => nextValue(iterator)).rejects.toThrow(isRunningInElectron() ? /failed to fetch/i : /fetch failed/i)
+            await expect(() => nextValue(iterator)).rejects.toThrow(
+                isRunningInElectron() ? /failed to fetch/i : /fetch failed/i
+            )
         })
     })
 })

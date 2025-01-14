@@ -35,7 +35,7 @@ const stopInstances = async () => {
 const EXIT_EVENTS = [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `unhandledRejection`, `SIGTERM`]
 EXIT_EVENTS.forEach((event) => {
     process.on(event, async (eventArg) => {
-        const isError = (event === 'uncaughtException') || (event === 'unhandledRejection')
+        const isError = event === 'uncaughtException' || event === 'unhandledRejection'
         if (isError) {
             logger.error(`exit event: ${event}`, eventArg)
         }
@@ -51,7 +51,6 @@ if (typeof window === 'object') {
 }
 
 export class NetworkStack {
-
     private controlLayerNode?: ControlLayerNode
     private contentDeliveryManager?: ContentDeliveryManager
     private stopped = false
@@ -75,7 +74,10 @@ export class NetworkStack {
         instances.push(this)
     }
 
-    async joinStreamPart(streamPartId: StreamPartID, neighborRequirement?: { minCount: number, timeout: number }): Promise<void> {
+    async joinStreamPart(
+        streamPartId: StreamPartID,
+        neighborRequirement?: { minCount: number; timeout: number }
+    ): Promise<void> {
         if (this.getContentDeliveryManager().isProxiedStreamPart(streamPartId)) {
             throw new Error(`Cannot join to ${streamPartId} as proxy connections have been set`)
         }
@@ -83,7 +85,9 @@ export class NetworkStack {
         this.getContentDeliveryManager().joinStreamPart(streamPartId)
         if (neighborRequirement !== undefined) {
             await until(() => {
-                return this.getContentDeliveryManager().getNeighbors(streamPartId).length >= neighborRequirement.minCount
+                return (
+                    this.getContentDeliveryManager().getNeighbors(streamPartId).length >= neighborRequirement.minCount
+                )
             }, neighborRequirement.timeout)
         }
     }
@@ -91,8 +95,8 @@ export class NetworkStack {
     async broadcast(msg: StreamMessage): Promise<void> {
         const streamPartId = toStreamPartID(msg.messageId!.streamId as StreamID, msg.messageId!.streamPartition)
         if (
-            this.getContentDeliveryManager().isProxiedStreamPart(streamPartId, ProxyDirection.SUBSCRIBE) 
-            && (msg.body.oneofKind === 'contentMessage')
+            this.getContentDeliveryManager().isProxiedStreamPart(streamPartId, ProxyDirection.SUBSCRIBE) &&
+            msg.body.oneofKind === 'contentMessage'
         ) {
             throw new Error(`Cannot broadcast to ${streamPartId} as proxy subscribe connections have been set`)
         }
@@ -108,9 +112,11 @@ export class NetworkStack {
         await this.controlLayerNode!.start()
         logger.info(`Node id is ${toNodeId(this.controlLayerNode!.getLocalPeerDescriptor())}`)
         const connectionManager = this.controlLayerNode!.getTransport() as ConnectionManager
-        if ((this.options.layer0?.entryPoints?.some((entryPoint) => 
-            areEqualPeerDescriptors(entryPoint, this.controlLayerNode!.getLocalPeerDescriptor())
-        ))) {
+        if (
+            this.options.layer0?.entryPoints?.some((entryPoint) =>
+                areEqualPeerDescriptors(entryPoint, this.controlLayerNode!.getLocalPeerDescriptor())
+            )
+        ) {
             await this.controlLayerNode?.joinDht(this.options.layer0.entryPoints)
         } else if (doJoin) {
             // in practice there aren't be existing connections and therefore this always connects
@@ -119,7 +125,10 @@ export class NetworkStack {
         // TODO: remove undefined checks here. Assume that start is approproately awaited before stop is called.
         await this.contentDeliveryManager?.start(this.controlLayerNode!, connectionManager, connectionManager)
         if (this.contentDeliveryManager) {
-            const infoRpcCommunicator = new ListeningRpcCommunicator(NODE_INFO_RPC_SERVICE_ID, this.getConnectionManager())
+            const infoRpcCommunicator = new ListeningRpcCommunicator(
+                NODE_INFO_RPC_SERVICE_ID,
+                this.getConnectionManager()
+            )
             this.nodeInfoRpcLocal = new NodeInfoRpcLocal(this, infoRpcCommunicator)
             this.nodeInfoClient = new NodeInfoClient(
                 this.controlLayerNode!.getLocalPeerDescriptor(),
@@ -193,5 +202,4 @@ export class NetworkStack {
             this.controlLayerNode = undefined
         }
     }
-
 }

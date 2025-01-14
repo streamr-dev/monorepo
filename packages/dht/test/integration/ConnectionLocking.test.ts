@@ -11,17 +11,17 @@ import { toNodeId } from '../../src/identifiers'
 
 const createConnectionManager = (localPeerDescriptor: PeerDescriptor, transport: ITransport) => {
     return new ConnectionManager({
-        createConnectorFacade: () => new DefaultConnectorFacade({
-            transport,
-            createLocalPeerDescriptor: async () => localPeerDescriptor
-        }),
+        createConnectorFacade: () =>
+            new DefaultConnectorFacade({
+                transport,
+                createLocalPeerDescriptor: async () => localPeerDescriptor
+            }),
         metricsContext: new MetricsContext(),
         allowIncomingPrivateConnections: true
     })
 }
 
 describe('Connection Locking', () => {
-
     const mockPeerDescriptor1 = createMockPeerDescriptor({
         region: getRandomRegion()
     })
@@ -146,13 +146,14 @@ describe('Connection Locking', () => {
         expect(connectionManager2.hasLocalLockedConnection(nodeId1)).toEqual(true)
 
         connectionManager1.unlockConnection(mockPeerDescriptor2, 'testLock1')
-        await until(() =>
-            connectionManager1.hasRemoteLockedConnection(nodeId2)
-            && !connectionManager1.hasLocalLockedConnection(nodeId2)
-            && !connectionManager2.hasRemoteLockedConnection(nodeId1)
-            && connectionManager2.hasLocalLockedConnection(nodeId1)
+        await until(
+            () =>
+                connectionManager1.hasRemoteLockedConnection(nodeId2) &&
+                !connectionManager1.hasLocalLockedConnection(nodeId2) &&
+                !connectionManager2.hasRemoteLockedConnection(nodeId1) &&
+                connectionManager2.hasLocalLockedConnection(nodeId1)
         )
-        
+
         expect(connectionManager2.hasConnection(nodeId1)).toEqual(true)
         expect(connectionManager1.hasConnection(nodeId2)).toEqual(true)
     })
@@ -174,14 +175,16 @@ describe('Connection Locking', () => {
 
         //@ts-expect-error private field
         await connectionManager1.gracefullyDisconnectAsync(mockPeerDescriptor2)
-        
-        await until(() =>
-            !connectionManager1.hasRemoteLockedConnection(nodeId2)
-            && !connectionManager1.hasLocalLockedConnection(nodeId2)
+
+        await until(
+            () =>
+                !connectionManager1.hasRemoteLockedConnection(nodeId2) &&
+                !connectionManager1.hasLocalLockedConnection(nodeId2)
         )
-        await until(() =>
-            !connectionManager2.hasRemoteLockedConnection(nodeId1)
-            && !connectionManager2.hasLocalLockedConnection(nodeId1)
+        await until(
+            () =>
+                !connectionManager2.hasRemoteLockedConnection(nodeId1) &&
+                !connectionManager2.hasLocalLockedConnection(nodeId1)
         )
         await until(() => !connectionManager2.hasConnection(nodeId1))
         await until(() => !connectionManager1.hasConnection(nodeId2))

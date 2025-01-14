@@ -3,7 +3,8 @@ import {
     IceCandidate,
     PeerDescriptor,
     RtcAnswer,
-    RtcOffer, WebrtcConnectionRequest
+    RtcOffer,
+    WebrtcConnectionRequest
 } from '../../../generated/packages/dht/protos/DhtRpc'
 import { ITransport } from '../../transport/ITransport'
 import { ListeningRpcCommunicator } from '../../transport/ListeningRpcCommunicator'
@@ -60,7 +61,6 @@ export interface ConnectingConnection {
 }
 
 export class WebrtcConnector {
-
     private static readonly WEBRTC_CONNECTOR_SERVICE_ID = 'system/webrtc-connector'
     private readonly rpcCommunicator: ListeningRpcCommunicator
     private readonly ongoingConnectAttempts: Map<DhtAddress, ConnectingConnection> = new Map()
@@ -70,15 +70,19 @@ export class WebrtcConnector {
 
     constructor(options: WebrtcConnectorOptions) {
         this.options = options
-        this.rpcCommunicator = new ListeningRpcCommunicator(WebrtcConnector.WEBRTC_CONNECTOR_SERVICE_ID, options.transport, {
-            rpcRequestTimeout: 15000  // TODO use options option or named constant?
-        })
+        this.rpcCommunicator = new ListeningRpcCommunicator(
+            WebrtcConnector.WEBRTC_CONNECTOR_SERVICE_ID,
+            options.transport,
+            {
+                rpcRequestTimeout: 15000 // TODO use options option or named constant?
+            }
+        )
         this.registerLocalRpcMethods(options)
     }
 
     private registerLocalRpcMethods(options: WebrtcConnectorOptions) {
         const localRpc = new WebrtcConnectorRpcLocal({
-            connect: (targetPeerDescriptor: PeerDescriptor, doNotRequestConnection: boolean) => 
+            connect: (targetPeerDescriptor: PeerDescriptor, doNotRequestConnection: boolean) =>
                 this.connect(targetPeerDescriptor, doNotRequestConnection),
             onNewConnection: (connection: PendingConnection) => this.options.onNewConnection(connection),
             ongoingConnectAttempts: this.ongoingConnectAttempts,
@@ -86,7 +90,9 @@ export class WebrtcConnector {
             getLocalPeerDescriptor: () => this.localPeerDescriptor!,
             allowPrivateAddresses: options.allowPrivateAddresses ?? true
         })
-        this.rpcCommunicator.registerRpcNotification(WebrtcConnectionRequest, 'requestConnection',
+        this.rpcCommunicator.registerRpcNotification(
+            WebrtcConnectionRequest,
+            'requestConnection',
             async (_req: WebrtcConnectionRequest, context: ServerCallContext) => {
                 if (!this.stopped) {
                     return localRpc.requestConnection(context)
@@ -95,7 +101,9 @@ export class WebrtcConnector {
                 }
             }
         )
-        this.rpcCommunicator.registerRpcNotification(RtcOffer, 'rtcOffer',
+        this.rpcCommunicator.registerRpcNotification(
+            RtcOffer,
+            'rtcOffer',
             async (req: RtcOffer, context: ServerCallContext) => {
                 if (!this.stopped) {
                     return localRpc.rtcOffer(req, context)
@@ -104,7 +112,9 @@ export class WebrtcConnector {
                 }
             }
         )
-        this.rpcCommunicator.registerRpcNotification(RtcAnswer, 'rtcAnswer',
+        this.rpcCommunicator.registerRpcNotification(
+            RtcAnswer,
+            'rtcAnswer',
             async (req: RtcAnswer, context: ServerCallContext) => {
                 if (!this.stopped) {
                     return localRpc.rtcAnswer(req, context)
@@ -113,7 +123,9 @@ export class WebrtcConnector {
                 }
             }
         )
-        this.rpcCommunicator.registerRpcNotification(IceCandidate, 'iceCandidate',
+        this.rpcCommunicator.registerRpcNotification(
+            IceCandidate,
+            'iceCandidate',
             async (req: IceCandidate, context: ServerCallContext) => {
                 if (!this.stopped) {
                     return localRpc.iceCandidate(req, context)
@@ -141,7 +153,7 @@ export class WebrtcConnector {
 
         const localNodeId = toNodeId(this.localPeerDescriptor!)
         const targetNodeId = toNodeId(targetPeerDescriptor)
-        const offering = (getOfferer(localNodeId, targetNodeId) === 'local')
+        const offering = getOfferer(localNodeId, targetNodeId) === 'local'
         let pendingConnection: PendingConnection
         const remoteConnector = new WebrtcConnectorRpcRemote(
             this.localPeerDescriptor!,
@@ -170,7 +182,12 @@ export class WebrtcConnector {
             })
             handshaker.on('handshakeRequest', (_sourceDescriptor: PeerDescriptor, remoteVersion: string) => {
                 if (!isMaybeSupportedProtocolVersion(remoteVersion)) {
-                    rejectHandshake(pendingConnection!, connection, handshaker, HandshakeError.UNSUPPORTED_PROTOCOL_VERSION)
+                    rejectHandshake(
+                        pendingConnection!,
+                        connection,
+                        handshaker,
+                        HandshakeError.UNSUPPORTED_PROTOCOL_VERSION
+                    )
                 } else {
                     acceptHandshake(handshaker, pendingConnection, connection)
                 }
@@ -186,7 +203,7 @@ export class WebrtcConnector {
         connection.on('disconnected', delFunc)
         pendingConnection.on('disconnected', delFunc)
         pendingConnection.on('connected', delFunc)
-    
+
         connection.on('localCandidate', (candidate: string, mid: string) => {
             if (this.options.externalIp !== undefined) {
                 candidate = replaceInternalIpWithExternalIp(candidate, this.options.externalIp)
@@ -224,10 +241,12 @@ export class WebrtcConnector {
         this.stopped = true
 
         const attempts = Array.from(this.ongoingConnectAttempts.values())
-        await Promise.allSettled(attempts.map(async (conn) => {
-            conn.connection.destroy()
-            conn.managedConnection.close(false)
-        }))
+        await Promise.allSettled(
+            attempts.map(async (conn) => {
+                conn.connection.destroy()
+                conn.managedConnection.close(false)
+            })
+        )
 
         this.rpcCommunicator.destroy()
     }

@@ -16,7 +16,10 @@ import {
     ProxyDirection,
     StreamMessage
 } from '../../../generated/packages/trackerless-network/protos/NetworkRpc'
-import { ContentDeliveryRpcClient, ProxyConnectionRpcClient } from '../../../generated/packages/trackerless-network/protos/NetworkRpc.client'
+import {
+    ContentDeliveryRpcClient,
+    ProxyConnectionRpcClient
+} from '../../../generated/packages/trackerless-network/protos/NetworkRpc.client'
 import { ContentDeliveryRpcLocal } from '../ContentDeliveryRpcLocal'
 import { ContentDeliveryRpcRemote } from '../ContentDeliveryRpcRemote'
 import { DuplicateMessageDetector } from '../DuplicateMessageDetector'
@@ -27,7 +30,12 @@ import { markAndCheckDuplicate } from '../utils'
 import { ProxyConnectionRpcRemote } from './ProxyConnectionRpcRemote'
 
 // TODO use options option or named constant?
-export const retry = async <T>(task: () => Promise<T>, description: string, abortSignal: AbortSignal, delay = 10000): Promise<T> => {
+export const retry = async <T>(
+    task: () => Promise<T>,
+    description: string,
+    abortSignal: AbortSignal,
+    delay = 10000
+): Promise<T> => {
     while (true) {
         try {
             const result = await task()
@@ -70,7 +78,6 @@ const logger = new Logger(module)
 const SERVICE_ID = 'system/proxy-client'
 
 export class ProxyClient extends EventEmitter<Events> {
-
     private readonly rpcCommunicator: ListeningRpcCommunicator
     private readonly contentDeliveryRpcLocal: ContentDeliveryRpcLocal
     private readonly options: ProxyClientOptions
@@ -84,13 +91,17 @@ export class ProxyClient extends EventEmitter<Events> {
     constructor(options: ProxyClientOptions) {
         super()
         this.options = options
-        this.rpcCommunicator = new ListeningRpcCommunicator(formStreamPartContentDeliveryServiceId(options.streamPartId), options.transport)
+        this.rpcCommunicator = new ListeningRpcCommunicator(
+            formStreamPartContentDeliveryServiceId(options.streamPartId),
+            options.transport
+        )
         // TODO use options option or named constant?
         this.neighbors = new NodeList(toNodeId(this.options.localPeerDescriptor), 1000)
         this.contentDeliveryRpcLocal = new ContentDeliveryRpcLocal({
             localPeerDescriptor: this.options.localPeerDescriptor,
             streamPartId: this.options.streamPartId,
-            markAndCheckDuplicate: (msg: MessageID, prev?: MessageRef) => markAndCheckDuplicate(this.duplicateDetectors, msg, prev),
+            markAndCheckDuplicate: (msg: MessageID, prev?: MessageRef) =>
+                markAndCheckDuplicate(this.duplicateDetectors, msg, prev),
             broadcast: (message: StreamMessage, previousNode?: DhtAddress) => this.broadcast(message, previousNode),
             onLeaveNotice: (remoteNodeId: DhtAddress) => {
                 const contact = this.neighbors.get(remoteNodeId)
@@ -118,10 +129,16 @@ export class ProxyClient extends EventEmitter<Events> {
     }
 
     private registerDefaultServerMethods(): void {
-        this.rpcCommunicator.registerRpcNotification(StreamMessage, 'sendStreamMessage',
-            (msg: StreamMessage, context) => this.contentDeliveryRpcLocal.sendStreamMessage(msg, context))
-        this.rpcCommunicator.registerRpcNotification(LeaveStreamPartNotice, 'leaveStreamPartNotice',
-            (req: LeaveStreamPartNotice, context) => this.contentDeliveryRpcLocal.leaveStreamPartNotice(req, context))
+        this.rpcCommunicator.registerRpcNotification(
+            StreamMessage,
+            'sendStreamMessage',
+            (msg: StreamMessage, context) => this.contentDeliveryRpcLocal.sendStreamMessage(msg, context)
+        )
+        this.rpcCommunicator.registerRpcNotification(
+            LeaveStreamPartNotice,
+            'leaveStreamPartNotice',
+            (req: LeaveStreamPartNotice, context) => this.contentDeliveryRpcLocal.leaveStreamPartNotice(req, context)
+        )
     }
 
     async setProxies(
@@ -130,7 +147,13 @@ export class ProxyClient extends EventEmitter<Events> {
         userId: UserID,
         connectionCount?: number
     ): Promise<void> {
-        logger.trace('Setting proxies', { streamPartId: this.options.streamPartId, peerDescriptors: nodes, direction, userId, connectionCount })
+        logger.trace('Setting proxies', {
+            streamPartId: this.options.streamPartId,
+            peerDescriptors: nodes,
+            direction,
+            userId,
+            connectionCount
+        })
         if (connectionCount !== undefined && connectionCount > nodes.length) {
             throw new Error('Cannot set connectionCount above the size of the configured array of nodes')
         }
@@ -148,9 +171,11 @@ export class ProxyClient extends EventEmitter<Events> {
     }
 
     private async updateConnections(): Promise<void> {
-        await Promise.all(this.getInvalidConnections().map(async (id) => {
-            await this.closeConnection(id)
-        }))
+        await Promise.all(
+            this.getInvalidConnections().map(async (id) => {
+                await this.closeConnection(id)
+            })
+        )
         const connectionCountDiff = this.definition!.connectionCount - this.connections.size
         if (connectionCountDiff > 0) {
             await this.openRandomConnections(connectionCountDiff)
@@ -161,18 +186,20 @@ export class ProxyClient extends EventEmitter<Events> {
 
     private getInvalidConnections(): DhtAddress[] {
         return Array.from(this.connections.keys()).filter((id) => {
-            return !this.definition!.nodes.has(id)
-                || this.definition!.direction !== this.connections.get(id)!.direction
+            return !this.definition!.nodes.has(id) || this.definition!.direction !== this.connections.get(id)!.direction
         })
     }
 
     private async openRandomConnections(connectionCount: number): Promise<void> {
-        const proxiesToAttempt = sampleSize(Array.from(this.definition!.nodes.keys()).filter((id) =>
-            !this.connections.has(id)
-        ), connectionCount)
-        await Promise.all(proxiesToAttempt.map((id) =>
-            this.attemptConnection(id, this.definition!.direction, this.definition!.userId)
-        ))
+        const proxiesToAttempt = sampleSize(
+            Array.from(this.definition!.nodes.keys()).filter((id) => !this.connections.has(id)),
+            connectionCount
+        )
+        await Promise.all(
+            proxiesToAttempt.map((id) =>
+                this.attemptConnection(id, this.definition!.direction, this.definition!.userId)
+            )
+        )
     }
 
     private async attemptConnection(nodeId: DhtAddress, direction: ProxyDirection, userId: UserID): Promise<void> {
@@ -268,7 +295,7 @@ export class ProxyClient extends EventEmitter<Events> {
 
     public getDiagnosticInfo(): Record<string, unknown> {
         return {
-            neighbors: this.neighbors.getAll().map((neighbor) => neighbor.getPeerDescriptor()),
+            neighbors: this.neighbors.getAll().map((neighbor) => neighbor.getPeerDescriptor())
         }
     }
 
@@ -282,5 +309,4 @@ export class ProxyClient extends EventEmitter<Events> {
         this.connections.clear()
         this.abortController.abort()
     }
-
 }

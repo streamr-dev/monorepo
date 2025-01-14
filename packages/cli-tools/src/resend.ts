@@ -5,8 +5,11 @@ export const assertBothOrNoneDefined = <T extends object>(
     option2: keyof T,
     errorMessage: string,
     commandOptions: T
-): void | never => { 
-    if ((option1 in commandOptions && !(option2 in commandOptions)) || (option2 in commandOptions && !(option1 in commandOptions))) {
+): void | never => {
+    if (
+        (option1 in commandOptions && !(option2 in commandOptions)) ||
+        (option2 in commandOptions && !(option1 in commandOptions))
+    ) {
         console.error(`option ${errorMessage}`)
         process.exit(1)
     }
@@ -23,10 +26,13 @@ export const resend = async (
             console.info(JSON.stringify(message))
         }
         if (subscribe) {
-            await client.subscribe({
-                stream: streamId,
-                resend: resendOpts
-            }, handler)
+            await client.subscribe(
+                {
+                    stream: streamId,
+                    resend: resendOpts
+                },
+                handler
+            )
         } else {
             await client.resend(streamId, resendOpts, handler)
         }

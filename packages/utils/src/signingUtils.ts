@@ -34,7 +34,7 @@ function recoverPublicKey(signature: Uint8Array, payload: Uint8Array): Uint8Arra
         recoveryId,
         hash(payload),
         false,
-        Buffer.alloc,
+        Buffer.alloc
     )
 }
 

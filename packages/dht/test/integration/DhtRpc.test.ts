@@ -8,7 +8,6 @@ import { toNodeId } from '../../src/identifiers'
 import { DhtCallContext } from '../../src/rpc-protocol/DhtCallContext'
 
 describe('DhtRpc', () => {
-
     let rpcCommunicator1: RpcCommunicator<DhtCallContext>
     let rpcCommunicator2: RpcCommunicator<DhtCallContext>
     let client1: ProtoRpcClient<DhtNodeRpcClient>
@@ -24,10 +23,20 @@ describe('DhtRpc', () => {
 
     beforeEach(() => {
         rpcCommunicator1 = new RpcCommunicator()
-        rpcCommunicator1.registerRpcMethod(ClosestPeersRequest, ClosestPeersResponse, 'getClosestPeers', mockDhtRpc.getClosestPeers)
+        rpcCommunicator1.registerRpcMethod(
+            ClosestPeersRequest,
+            ClosestPeersResponse,
+            'getClosestPeers',
+            mockDhtRpc.getClosestPeers
+        )
 
         rpcCommunicator2 = new RpcCommunicator()
-        rpcCommunicator2.registerRpcMethod(ClosestPeersRequest, ClosestPeersResponse, 'getClosestPeers', mockDhtRpc.getClosestPeers)
+        rpcCommunicator2.registerRpcMethod(
+            ClosestPeersRequest,
+            ClosestPeersResponse,
+            'getClosestPeers',
+            mockDhtRpc.getClosestPeers
+        )
 
         rpcCommunicator1.setOutgoingMessageListener(async (message: RpcMessage) => {
             rpcCommunicator2.handleIncomingMessage(message, new DhtCallContext())
@@ -49,7 +58,7 @@ describe('DhtRpc', () => {
             { nodeId: peerDescriptor1.nodeId, requestId: '1' },
             {
                 sourceDescriptor: peerDescriptor1,
-                targetDescriptor: peerDescriptor2,
+                targetDescriptor: peerDescriptor2
             }
         )
         const res1 = await response1
@@ -77,9 +86,7 @@ describe('DhtRpc', () => {
                 targetDescriptor: peerDescriptor1
             }
         )
-        await expect(response2).rejects.toEqual(
-            new RpcError.RpcTimeout('Rpc request timed out')
-        )
+        await expect(response2).rejects.toEqual(new RpcError.RpcTimeout('Rpc request timed out'))
     }, 15000)
 
     it('Server side timeout', async () => {
@@ -95,7 +102,12 @@ describe('DhtRpc', () => {
             return response
         }
 
-        rpcCommunicator2.registerRpcMethod(ClosestPeersRequest, ClosestPeersResponse, 'getClosestPeers', respondGetClosestPeersWithTimeout)
+        rpcCommunicator2.registerRpcMethod(
+            ClosestPeersRequest,
+            ClosestPeersResponse,
+            'getClosestPeers',
+            respondGetClosestPeersWithTimeout
+        )
         const response = client2.getClosestPeers(
             { nodeId: peerDescriptor2.nodeId, requestId: '1' },
             {
@@ -103,19 +115,12 @@ describe('DhtRpc', () => {
                 targetDescriptor: peerDescriptor1
             }
         )
-        await expect(response).rejects.toEqual(
-            new RpcError.RpcTimeout('Server timed out on request')
-        )
+        await expect(response).rejects.toEqual(new RpcError.RpcTimeout('Server timed out on request'))
         clearTimeout(timeout!)
     })
 
     it('Server responds with error on unknown method', async () => {
-        const response = client2.ping(
-            { requestId: '1' },
-            { targetDescriptor: peerDescriptor1 }
-        )
-        await expect(response).rejects.toEqual(
-            new RpcError.UnknownRpcMethod('Server does not implement method ping')
-        )
+        const response = client2.ping({ requestId: '1' }, { targetDescriptor: peerDescriptor1 })
+        await expect(response).rejects.toEqual(new RpcError.UnknownRpcMethod('Server does not implement method ping'))
     })
 })

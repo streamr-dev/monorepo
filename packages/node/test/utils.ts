@@ -40,7 +40,7 @@ export const formConfig = ({
                     datacenter: 'datacenter1',
                     username: '',
                     password: '',
-                    keyspace: 'streamr_dev_v2',
+                    keyspace: 'streamr_dev_v2'
                 },
                 storageConfig: {
                     refreshInterval: storageConfigRefreshInterval
@@ -74,10 +74,7 @@ export const createEthereumAddress = (id: number): EthereumAddress => {
     return toEthereumAddress('0x' + padEnd(String(id), 40, '0'))
 }
 
-export const createClient = (
-    privateKey: string,
-    clientOptions?: StreamrClientConfig
-): StreamrClient => {
+export const createClient = (privateKey: string, clientOptions?: StreamrClientConfig): StreamrClient => {
     const opts = merge<StreamrClientConfig>(
         {
             environment: 'dev2',
@@ -93,7 +90,7 @@ export const createClient = (
 export const getTestName = (module: NodeModule): string => {
     const fileNamePattern = new RegExp('.*/(.*).test\\...')
     const groups = module.filename.match(fileNamePattern)
-    return (groups !== null) ? groups[1] : module.filename
+    return groups !== null ? groups[1] : module.filename
 }
 
 export const createTestStream = async (

@@ -34,7 +34,7 @@ const downloadNewDb = async (
         logger.debug('Downloading GeoIP database from: ' + url)
         response = await fetch(url, { keepalive: false, signal: abortSignal })
     } catch (e) {
-        // Catching and re-throwing as async exception 
+        // Catching and re-throwing as async exception
         // here is necessary, synch exceptions cannot be caught by the caller
         throw new Error('Fetch error when downloading ' + url + ', error: ' + e)
     }
@@ -95,7 +95,6 @@ const downloadNewDb = async (
     }
 
     logger.debug('Downloaded GeoIP database to: ' + dbFileInDbFolder)
-
 }
 
 const downloadRemoteHash = async (remoteHashUrl: string, abortSignal: AbortSignal): Promise<string> => {
@@ -106,7 +105,7 @@ const downloadRemoteHash = async (remoteHashUrl: string, abortSignal: AbortSigna
         logger.debug('Downloading GeoIP database hash from: ' + remoteHashUrl)
         response = await fetch(remoteHashUrl, { signal: abortSignal })
     } catch (e) {
-        // Catching and re-throwing as async exception 
+        // Catching and re-throwing as async exception
         // here is necessary, synch exceptions cannot be caught by the caller
         throw new Error('Fetch error when downloading ' + remoteHashUrl + ', error: ' + e)
     }
@@ -182,4 +181,3 @@ export const downloadGeoIpDatabase = async (
         return undefined
     }
 }
-

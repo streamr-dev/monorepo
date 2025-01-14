@@ -1,14 +1,14 @@
 import {
     AutoCertifierClient,
     HasSessionRequest,
-    HasSessionResponse, 
+    HasSessionResponse,
     CertifiedSubdomain,
     SERVICE_ID as AUTO_CERTIFIER_SERVICE_ID,
     HasSession
 } from '@streamr/autocertifier-client'
 import { ListeningRpcCommunicator } from '../../transport/ListeningRpcCommunicator'
 import { Logger, waitForEvent3 } from '@streamr/utils'
-import { ITransport } from '../../transport/ITransport' 
+import { ITransport } from '../../transport/ITransport'
 
 const START_TIMEOUT = 60 * 1000
 
@@ -17,19 +17,15 @@ const defaultAutoCertifierClientFactory = (
     autoCertifierUrl: string,
     autoCertifierRpcCommunicator: ListeningRpcCommunicator,
     wsServerPort: number
-) => new AutoCertifierClient(
-    configFile,
-    wsServerPort,
-    autoCertifierUrl, 
-    (_serviceId: string, rpcMethodName: string, method: HasSession) => {
-        autoCertifierRpcCommunicator.registerRpcMethod(
-            HasSessionRequest,
-            HasSessionResponse,
-            rpcMethodName,
-            method
-        )                       
-    }
-)
+) =>
+    new AutoCertifierClient(
+        configFile,
+        wsServerPort,
+        autoCertifierUrl,
+        (_serviceId: string, rpcMethodName: string, method: HasSession) => {
+            autoCertifierRpcCommunicator.registerRpcMethod(HasSessionRequest, HasSessionResponse, rpcMethodName, method)
+        }
+    )
 
 export interface IAutoCertifierClient {
     start(): Promise<void>
@@ -52,7 +48,6 @@ interface AutoCertifierClientFacadeOptions {
 const logger = new Logger(module)
 
 export class AutoCertifierClientFacade {
-
     private autoCertifierClient: IAutoCertifierClient
     private readonly rpcCommunicator: ListeningRpcCommunicator
     private readonly options: AutoCertifierClientFacadeOptions
@@ -60,13 +55,14 @@ export class AutoCertifierClientFacade {
     constructor(options: AutoCertifierClientFacadeOptions) {
         this.options = options
         this.rpcCommunicator = new ListeningRpcCommunicator(AUTO_CERTIFIER_SERVICE_ID, options.transport)
-        this.autoCertifierClient = options.createClientFactory ? options.createClientFactory() 
+        this.autoCertifierClient = options.createClientFactory
+            ? options.createClientFactory()
             : defaultAutoCertifierClientFactory(
-                options.configFile,
-                options.url,
-                this.rpcCommunicator,
-                options.wsServerPort
-            )
+                  options.configFile,
+                  options.url,
+                  this.rpcCommunicator,
+                  options.wsServerPort
+              )
     }
 
     async start(): Promise<void> {
@@ -85,5 +81,4 @@ export class AutoCertifierClientFacade {
         this.autoCertifierClient.stop()
         this.rpcCommunicator.destroy()
     }
-
 }

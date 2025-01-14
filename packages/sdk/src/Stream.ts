@@ -1,10 +1,4 @@
-import {
-    HexString,
-    StreamID,
-    StreamPartID,
-    toEthereumAddress,
-    toStreamPartID
-} from '@streamr/utils'
+import { HexString, StreamID, StreamPartID, toEthereumAddress, toStreamPartID } from '@streamr/utils'
 import { isNumber, isString } from 'lodash'
 import range from 'lodash/range'
 import { PublishMetadata } from '../src/publish/Publisher'
@@ -28,10 +22,7 @@ export class Stream {
     private readonly client: StreamrClient
 
     /** @internal */
-    constructor(
-        id: StreamID,
-        client: StreamrClient
-    ) {
+    constructor(id: StreamID, client: StreamrClient) {
         this.id = id
         this.client = client
     }
@@ -50,7 +41,9 @@ export class Stream {
      *
      * @category Important
      */
-    async hasPermission(query: Omit<UserPermissionQuery, 'streamId'> | Omit<PublicPermissionQuery, 'streamId'>): Promise<boolean> {
+    async hasPermission(
+        query: Omit<UserPermissionQuery, 'streamId'> | Omit<PublicPermissionQuery, 'streamId'>
+    ): Promise<boolean> {
         return this.client.hasPermission({
             streamId: this.id,
             ...query
@@ -86,10 +79,13 @@ export class Stream {
 
     /**
      * See {@link StreamrClient.addStreamToStorageNode | StreamrClient.addStreamToStorageNode}.
-     * 
+     *
      * @category Important
      */
-    async addToStorageNode(storageNodeAddress: HexString, opts: { wait: boolean, timeout?: number } = { wait: false }): Promise<void> {
+    async addToStorageNode(
+        storageNodeAddress: HexString,
+        opts: { wait: boolean; timeout?: number } = { wait: false }
+    ): Promise<void> {
         await this.client.addStreamToStorageNode(this.id, storageNodeAddress, opts)
     }
 
@@ -129,7 +125,7 @@ export class Stream {
 
     async setDescription(description: string): Promise<void> {
         await this.setMetadata({
-            ...await this.getMetadata(),
+            ...(await this.getMetadata()),
             description
         })
     }
@@ -151,7 +147,7 @@ export class Stream {
      */
     async setStorageDayCount(count: number): Promise<void> {
         await this.setMetadata({
-            ...await this.getMetadata(),
+            ...(await this.getMetadata()),
             storageDays: count
         })
     }

@@ -19,11 +19,10 @@ import { FakeChain, PUBLIC_PERMISSION_TARGET, PublicPermissionTarget, StreamRegi
 
 @scoped(Lifecycle.ContainerScoped)
 export class FakeStreamRegistry implements Methods<StreamRegistry> {
-
     private readonly chain: FakeChain
     private readonly streamIdBuilder: StreamIDBuilder
     private readonly authentication: Authentication
-    
+
     constructor(
         chain: FakeChain,
         streamIdBuilder: StreamIDBuilder,
@@ -109,7 +108,11 @@ export class FakeStreamRegistry implements Methods<StreamRegistry> {
         return this.updatePermissions(
             streamIdOrPath,
             assignments,
-            (registryItem: StreamRegistryItem, target: UserID | PublicPermissionTarget, permissions: StreamPermission[]) => {
+            (
+                registryItem: StreamRegistryItem,
+                target: UserID | PublicPermissionTarget,
+                permissions: StreamPermission[]
+            ) => {
                 const nonExistingPermissions = permissions.filter((p) => !registryItem.permissions.has(target, p))
                 registryItem.permissions.addAll(target, nonExistingPermissions)
             }
@@ -120,7 +123,11 @@ export class FakeStreamRegistry implements Methods<StreamRegistry> {
         return this.updatePermissions(
             streamIdOrPath,
             assignments,
-            (registryItem: StreamRegistryItem, target: UserID | PublicPermissionTarget, permissions: StreamPermission[]) => {
+            (
+                registryItem: StreamRegistryItem,
+                target: UserID | PublicPermissionTarget,
+                permissions: StreamPermission[]
+            ) => {
                 registryItem.permissions.removeAll(target, permissions)
             }
         )
@@ -141,22 +148,24 @@ export class FakeStreamRegistry implements Methods<StreamRegistry> {
             throw new Error('Stream not found')
         } else {
             for (const assignment of assignments) {
-                const target = isPublicPermissionAssignment(assignment)
-                    ? PUBLIC_PERMISSION_TARGET
-                    : assignment.userId
+                const target = isPublicPermissionAssignment(assignment) ? PUBLIC_PERMISSION_TARGET : assignment.userId
                 modifyRegistryItem(registryItem, target, assignment.permissions)
             }
         }
     }
 
-    async setPermissions(...streams: {
-        streamId: string
-        assignments: InternalPermissionAssignment[]
-    }[]): Promise<void> {
-        await Promise.all(streams.map(async (stream) => {
-            await this.revokePermissions(stream.streamId, ...await this.getPermissions(stream.streamId))
-            await this.grantPermissions(stream.streamId, ...stream.assignments)
-        }))
+    async setPermissions(
+        ...streams: {
+            streamId: string
+            assignments: InternalPermissionAssignment[]
+        }[]
+    ): Promise<void> {
+        await Promise.all(
+            streams.map(async (stream) => {
+                await this.revokePermissions(stream.streamId, ...(await this.getPermissions(stream.streamId)))
+                await this.grantPermissions(stream.streamId, ...stream.assignments)
+            })
+        )
     }
 
     hasPublicSubscribePermission(streamId: StreamID): Promise<boolean> {
@@ -186,7 +195,7 @@ export class FakeStreamRegistry implements Methods<StreamRegistry> {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    getOrCreateStream(_props: { id: string, partitions?: number }): Promise<Stream> {
+    getOrCreateStream(_props: { id: string; partitions?: number }): Promise<Stream> {
         throw new Error('not implemented')
     }
 
@@ -201,7 +210,10 @@ export class FakeStreamRegistry implements Methods<StreamRegistry> {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    searchStreams(_term: string | undefined, _permissionFilter: InternalSearchStreamsPermissionFilter | undefined): AsyncGenerator<StreamID> {
+    searchStreams(
+        _term: string | undefined,
+        _permissionFilter: InternalSearchStreamsPermissionFilter | undefined
+    ): AsyncGenerator<StreamID> {
         throw new Error('not implemented')
     }
 

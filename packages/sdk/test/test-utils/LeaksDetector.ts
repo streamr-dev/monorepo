@@ -11,20 +11,19 @@ export class LeaksDetector {
     private seen = new WeakSet()
     private didGC = false
 
-    ignoredKeys = new Set([
-        '/container',
-        '/childContainer',
-        'provider/formatter',
-        'providers/0/formatter'
-    ])
+    ignoredKeys = new Set(['/container', '/childContainer', 'provider/formatter', 'providers/0/formatter'])
 
     private counter = CounterId(this.id, { maxPrefixes: 1024 })
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     add(name: string, obj: any): void {
-        if (!obj || typeof obj !== 'object') { return }
+        if (!obj || typeof obj !== 'object') {
+            return
+        }
 
-        if (this.ignoredValues.has(obj)) { return }
+        if (this.ignoredValues.has(obj)) {
+            return
+        }
 
         this.resetGC()
         const leaksDetector = new LeakDetector(obj)
@@ -53,16 +52,22 @@ export class LeaksDetector {
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     ignore(obj: any): void {
-        if (!obj || typeof obj !== 'object') { return }
+        if (!obj || typeof obj !== 'object') {
+            return
+        }
         this.ignoredValues.add(obj)
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     ignoreAll(obj: any): void {
-        if (!obj || typeof obj !== 'object') { return }
+        if (!obj || typeof obj !== 'object') {
+            return
+        }
         const seen = new Set()
         this.walk([], obj, (_path, value) => {
-            if (seen.has(value)) { return false }
+            if (seen.has(value)) {
+                return false
+            }
             seen.add(value)
             this.ignore(value)
             return undefined
@@ -79,7 +84,9 @@ export class LeaksDetector {
         }
 
         let id = (() => {
-            if (value.id) { return value.id }
+            if (value.id) {
+                return value.id
+            }
             const pathString = path.join('/')
             const constructor = value.constructor?.name
             const type = constructor === 'Object' ? undefined : constructor
@@ -98,13 +105,19 @@ export class LeaksDetector {
         fn: (path: string[], obj: object, depth: number) => false | undefined,
         depth = 0
     ): void {
-        if (!obj || typeof obj !== 'object') { return }
+        if (!obj || typeof obj !== 'object') {
+            return
+        }
 
-        if (depth > 10) { return }
+        if (depth > 10) {
+            return
+        }
 
         const doContinue = fn(path, obj, depth)
 
-        if (doContinue === false) { return }
+        if (doContinue === false) {
+            return
+        }
 
         if (Array.isArray(obj)) {
             obj.forEach((value, key) => {
@@ -114,7 +127,9 @@ export class LeaksDetector {
         }
 
         for (const [key, value] of Object.entries(obj)) {
-            if (!value || typeof value !== 'object') { continue }
+            if (!value || typeof value !== 'object') {
+                continue
+            }
 
             this.walk([...path, `${key}`], value, fn, depth + 1)
         }
@@ -122,10 +137,14 @@ export class LeaksDetector {
 
     addAll(rootId: string, obj: object): void {
         this.walk([rootId], obj, (path, value) => {
-            if (this.ignoredValues.has(value)) { return false }
+            if (this.ignoredValues.has(value)) {
+                return false
+            }
             const pathString = path.join('/')
             for (const key of this.ignoredKeys) {
-                if (pathString.includes(key)) { return false } // stop walking
+                if (pathString.includes(key)) {
+                    return false
+                } // stop walking
             }
 
             const id = this.getID(path, value)
@@ -154,9 +173,13 @@ export class LeaksDetector {
         await Promise.allSettled(tasks)
         const results = (await Promise.all(tasks)).filter(Boolean) as string[]
 
-        const leaks = results.reduce((o, id) => Object.assign(o, {
-            [id]: [...(this.idToPaths.get(id) ?? [])],
-        }), {})
+        const leaks = results.reduce(
+            (o, id) =>
+                Object.assign(o, {
+                    [id]: [...(this.idToPaths.get(id) ?? [])]
+                }),
+            {}
+        )
 
         logger.debug(`checking for leaks with ${this.leakDetectors.size} items <<`)
         logger.debug(`${results.length} leaks.`)

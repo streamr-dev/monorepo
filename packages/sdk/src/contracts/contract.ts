@@ -5,7 +5,7 @@ import {
     Contract,
     ContractTransactionReceipt,
     ContractTransactionResponse,
-    FunctionFragment,
+    FunctionFragment
 } from 'ethers'
 import EventEmitter from 'eventemitter3'
 import without from 'lodash/without'
@@ -22,15 +22,13 @@ export type ObservableContract<T extends BaseContract> = T & {
     eventEmitter: EventEmitter<ContractEvent>
 }
 
-export async function waitForTx(
-    txToSubmit: Promise<TransactionResponse>
-): Promise<ContractTransactionReceipt> {
+export async function waitForTx(txToSubmit: Promise<TransactionResponse>): Promise<ContractTransactionReceipt> {
     const tx = await txToSubmit
     return tx.wait() as Promise<ContractTransactionReceipt> // cannot be null unless arg confirmations set to 0
 }
 
 const isTransactionResponse = (returnValue: any): returnValue is ContractTransactionResponse => {
-    return (returnValue.wait !== undefined && (typeof returnValue.wait === 'function'))
+    return returnValue.wait !== undefined && typeof returnValue.wait === 'function'
 }
 
 const createLogger = (eventEmitter: EventEmitter<ContractEvent>, loggerFactory: LoggerFactory): void => {
@@ -60,11 +58,7 @@ const createLogger = (eventEmitter: EventEmitter<ContractEvent>, loggerFactory: 
     })
 }
 
-const withErrorHandling = async <T>(
-    execute: () => Promise<T>,
-    methodName: string,
-    action: string
-): Promise<T> => {
+const withErrorHandling = async <T>(execute: () => Promise<T>, methodName: string, action: string): Promise<T> => {
     try {
         return await execute()
     } catch (e: any) {
@@ -74,7 +68,7 @@ const withErrorHandling = async <T>(
             undefined
         )
         const wrappedError = new Error(
-            `Error while ${action} contract call "${methodName}"${(suffixes.length > 0) ? ', ' + suffixes.join(', ') : ''}`
+            `Error while ${action} contract call "${methodName}"${suffixes.length > 0 ? ', ' + suffixes.join(', ') : ''}`
         )
         // @ts-expect-error unknown property
         wrappedError.reason = e
@@ -92,15 +86,27 @@ const createWrappedContractMethod = (
     const originalMethod = contract[methodName]
     const methodFullName = `${contractName}.${methodName}`
     const fn = async (...args: any) => {
-        const returnValue = await withErrorHandling(() => concurrencyLimit(() => {
-            eventEmitter.emit('onMethodExecute', methodFullName)
-            return originalMethod(...args)
-        }), methodFullName, 'executing')
+        const returnValue = await withErrorHandling(
+            () =>
+                concurrencyLimit(() => {
+                    eventEmitter.emit('onMethodExecute', methodFullName)
+                    return originalMethod(...args)
+                }),
+            methodFullName,
+            'executing'
+        )
         if (isTransactionResponse(returnValue)) {
             eventEmitter.emit('onTransactionSubmit', methodFullName, returnValue)
             const originalWait = returnValue.wait.bind(returnValue)
-            returnValue.wait = async (confirmations?: number, timeout?: number): Promise<null | ContractTransactionReceipt> => {
-                const receipt = await withErrorHandling(() => originalWait(confirmations, timeout), methodName, 'waiting transaction for')
+            returnValue.wait = async (
+                confirmations?: number,
+                timeout?: number
+            ): Promise<null | ContractTransactionReceipt> => {
+                const receipt = await withErrorHandling(
+                    () => originalWait(confirmations, timeout),
+                    methodName,
+                    'waiting transaction for'
+                )
                 eventEmitter.emit('onTransactionConfirm', methodFullName, receipt)
                 return receipt
             }

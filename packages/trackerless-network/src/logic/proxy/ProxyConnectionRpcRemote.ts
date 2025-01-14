@@ -1,12 +1,14 @@
 import { EXISTING_CONNECTION_TIMEOUT, RpcRemote } from '@streamr/dht'
 import { Logger, UserID, toUserIdRaw } from '@streamr/utils'
-import { ProxyConnectionRequest, ProxyDirection } from '../../../generated/packages/trackerless-network/protos/NetworkRpc'
+import {
+    ProxyConnectionRequest,
+    ProxyDirection
+} from '../../../generated/packages/trackerless-network/protos/NetworkRpc'
 import { ProxyConnectionRpcClient } from '../../../generated/packages/trackerless-network/protos/NetworkRpc.client'
 
 const logger = new Logger(module)
 
 export class ProxyConnectionRpcRemote extends RpcRemote<ProxyConnectionRpcClient> {
-
     async requestConnection(direction: ProxyDirection, userId: UserID): Promise<boolean> {
         const request: ProxyConnectionRequest = {
             direction,

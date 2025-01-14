@@ -1,5 +1,12 @@
 import { fastWallet, randomEthereumAddress } from '@streamr/test-utils'
-import { MAX_PARTITION_COUNT, keyToArrayIndex, merge, toEthereumAddress, toStreamID, utf8ToBinary } from '@streamr/utils'
+import {
+    MAX_PARTITION_COUNT,
+    keyToArrayIndex,
+    merge,
+    toEthereumAddress,
+    toStreamID,
+    utf8ToBinary
+} from '@streamr/utils'
 import { mock } from 'jest-mock-extended'
 import random from 'lodash/random'
 import { createPrivateKeyAuthentication } from '../../src/Authentication'
@@ -12,7 +19,13 @@ import { PublishMetadata } from '../../src/publish/Publisher'
 import { MessageSigner } from '../../src/signature/MessageSigner'
 import { SignatureValidator } from '../../src/signature/SignatureValidator'
 import { createGroupKeyQueue, createStreamRegistry } from '../test-utils/utils'
-import { ContentType, EncryptionType, SignatureType, StreamMessage, StreamMessageType } from './../../src/protocol/StreamMessage'
+import {
+    ContentType,
+    EncryptionType,
+    SignatureType,
+    StreamMessage,
+    StreamMessageType
+} from './../../src/protocol/StreamMessage'
 
 const WALLET = fastWallet()
 const STREAM_ID = toStreamID('/path', toEthereumAddress(WALLET.address))
@@ -38,7 +51,9 @@ const createMessageFactory = async (opts?: {
                     isStreamPublisher: true
                 }),
                 groupKeyQueue: await createGroupKeyQueue(authentication, GROUP_KEY),
-                signatureValidator: new SignatureValidator(opts?.erc1271ContractFacade ?? mock<ERC1271ContractFacade>()),
+                signatureValidator: new SignatureValidator(
+                    opts?.erc1271ContractFacade ?? mock<ERC1271ContractFacade>()
+                ),
                 messageSigner: new MessageSigner(authentication)
             },
             opts
@@ -47,20 +62,23 @@ const createMessageFactory = async (opts?: {
 }
 
 const createMessage = async (
-    opts: Omit<PublishMetadata, 'timestamp'> & { timestamp?: number, explicitPartition?: number },
+    opts: Omit<PublishMetadata, 'timestamp'> & { timestamp?: number; explicitPartition?: number },
     messageFactory: MessageFactory,
     content: unknown | Uint8Array = CONTENT
 ): Promise<StreamMessage> => {
-    return messageFactory.createMessage(content, merge(
-        {
-            timestamp: TIMESTAMP
-        },
-        opts
-    ), opts.explicitPartition)
+    return messageFactory.createMessage(
+        content,
+        merge(
+            {
+                timestamp: TIMESTAMP
+            },
+            opts
+        ),
+        opts.explicitPartition
+    )
 }
 
 describe('MessageFactory', () => {
-
     it('happy path', async () => {
         const messageFactory = await createMessageFactory()
         const msg = await createMessage({}, messageFactory)
@@ -92,9 +110,12 @@ describe('MessageFactory', () => {
         const messageFactory = await createMessageFactory({
             erc1271ContractFacade
         })
-        const msg = await createMessage({
-            erc1271Contract: contractAddress
-        }, messageFactory)
+        const msg = await createMessage(
+            {
+                erc1271Contract: contractAddress
+            },
+            messageFactory
+        )
         expect(msg).toMatchObject({
             messageId: {
                 msgChainId: expect.any(String),
@@ -124,18 +145,24 @@ describe('MessageFactory', () => {
             erc1271ContractFacade
         })
         await expect(() =>
-            createMessage({
-                erc1271Contract: contractAddress
-            }, messageFactory)
+            createMessage(
+                {
+                    erc1271Contract: contractAddress
+                },
+                messageFactory
+            )
         ).rejects.toThrow('Signature validation failed')
     })
 
     it('throws if given non-ethereum address as erc1271Contract', async () => {
         const messageFactory = await createMessageFactory()
         await expect(() =>
-            createMessage({
-                erc1271Contract: 'not-an-ethereum-address'
-            }, messageFactory)
+            createMessage(
+                {
+                    erc1271Contract: 'not-an-ethereum-address'
+                },
+                messageFactory
+            )
         ).rejects.toThrow('not a valid Ethereum address: "not-an-ethereum-address"')
     })
 
@@ -157,10 +184,13 @@ describe('MessageFactory', () => {
         const messageFactory = await createMessageFactory()
         const partitionKey = 'mock-partitionKey'
         const msgChainId = 'mock-msgChainId'
-        const msg = await createMessage({
-            partitionKey,
-            msgChainId
-        }, messageFactory)
+        const msg = await createMessage(
+            {
+                partitionKey,
+                msgChainId
+            },
+            messageFactory
+        )
         expect(msg).toMatchObject({
             messageId: {
                 msgChainId,
@@ -172,7 +202,11 @@ describe('MessageFactory', () => {
     it('next group key', async () => {
         const nextGroupKey = GroupKey.generate()
         const messageFactory = await createMessageFactory({
-            groupKeyQueue: await createGroupKeyQueue(createPrivateKeyAuthentication(WALLET.privateKey), GROUP_KEY, nextGroupKey)
+            groupKeyQueue: await createGroupKeyQueue(
+                createPrivateKeyAuthentication(WALLET.privateKey),
+                GROUP_KEY,
+                nextGroupKey
+            )
         })
         const msg = await createMessage({}, messageFactory)
         expect(msg.groupKeyId).toBe(GROUP_KEY.id)
@@ -189,9 +223,9 @@ describe('MessageFactory', () => {
                 isStreamPublisher: false
             })
         })
-        return expect(() =>
-            createMessage({}, messageFactory)
-        ).rejects.toThrow(/You don't have permission to publish to this stream/)
+        return expect(() => createMessage({}, messageFactory)).rejects.toThrow(
+            /You don't have permission to publish to this stream/
+        )
     })
 
     it('detects binary content', async () => {
@@ -203,15 +237,12 @@ describe('MessageFactory', () => {
     })
 
     describe('partitions', () => {
-
         it('out of range', async () => {
             const messageFactory = await createMessageFactory()
-            await expect(() =>
-                createMessage({ explicitPartition: -1 }, messageFactory)
-            ).rejects.toThrow(/out of range/)
-            await expect(() =>
-                createMessage({ explicitPartition: PARTITION_COUNT }, messageFactory)
-            ).rejects.toThrow(/out of range/)
+            await expect(() => createMessage({ explicitPartition: -1 }, messageFactory)).rejects.toThrow(/out of range/)
+            await expect(() => createMessage({ explicitPartition: PARTITION_COUNT }, messageFactory)).rejects.toThrow(
+                /out of range/
+            )
         })
 
         it('partition and partitionKey', async () => {
@@ -278,7 +309,10 @@ describe('MessageFactory', () => {
             const messageFactory = await createMessageFactory()
             const msg1 = await createMessage({ explicitPartition: 10 }, messageFactory)
             const msg2 = await createMessage({ partitionKey: 'mock-key' }, messageFactory)
-            const msg3 = await createMessage({ msgChainId: msg2.getMsgChainId(), explicitPartition: 20 }, messageFactory)
+            const msg3 = await createMessage(
+                { msgChainId: msg2.getMsgChainId(), explicitPartition: 20 },
+                messageFactory
+            )
             expect(msg2.messageId.msgChainId).not.toBe(msg1.messageId.msgChainId)
             expect(msg3.messageId.msgChainId).not.toBe(msg1.messageId.msgChainId)
             expect(msg2.prevMsgRef).toBe(undefined)

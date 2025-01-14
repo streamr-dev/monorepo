@@ -5,7 +5,6 @@ import { createEndpoint } from '../../../../src/plugins/http/publishEndpoint'
 const MOCK_STREAM_ID = 'mock-stream-id'
 
 describe('publishEndpoint', () => {
-
     let app: express.Express
     let streamrClient: any
 
@@ -18,7 +17,7 @@ describe('publishEndpoint', () => {
         app.route(endpoint.path)[endpoint.method](endpoint.requestHandlers)
         return app
     }
-    
+
     const postMessage = (msg: any, queryParams: any = {}) => {
         return request(app)
             .post(`/streams/${MOCK_STREAM_ID}`)
@@ -28,30 +27,37 @@ describe('publishEndpoint', () => {
     }
 
     const assertValidPublish = async ({
-        queryParams, 
+        queryParams,
         expectedTimestamp,
         expectedPartition,
         expectedPartitionKey
-    }: { 
+    }: {
         queryParams: any
         expectedTimestamp?: number
         expectedPartition?: number
         expectedPartitionKey?: string
     }) => {
-        await postMessage({
-            foo: 'bar'
-        }, queryParams).expect(200)
+        await postMessage(
+            {
+                foo: 'bar'
+            },
+            queryParams
+        ).expect(200)
         expect(streamrClient.publish).toHaveBeenCalledTimes(1)
-        expect(streamrClient.publish).toHaveBeenCalledWith({
-            streamId: MOCK_STREAM_ID,
-            streamPartition: expectedPartition
-        }, {
-            foo: 'bar'
-        }, {
-            timestamp: expectedTimestamp,
-            partitionKey: expectedPartitionKey,
-            msgChainId: expect.any(String)
-        })
+        expect(streamrClient.publish).toHaveBeenCalledWith(
+            {
+                streamId: MOCK_STREAM_ID,
+                streamPartition: expectedPartition
+            },
+            {
+                foo: 'bar'
+            },
+            {
+                timestamp: expectedTimestamp,
+                partitionKey: expectedPartitionKey,
+                msgChainId: expect.any(String)
+            }
+        )
     }
 
     beforeEach(() => {
@@ -93,12 +99,18 @@ describe('publishEndpoint', () => {
     })
 
     it('msgChainId constant between publish calls', async () => {
-        await postMessage({
-            foo: 1
-        }, {})
-        await postMessage({
-            foo: 2
-        }, {})
+        await postMessage(
+            {
+                foo: 1
+            },
+            {}
+        )
+        await postMessage(
+            {
+                foo: 2
+            },
+            {}
+        )
         expect(streamrClient.publish).toHaveBeenCalledTimes(2)
         const firstMessageMsgChainId = streamrClient.publish.mock.calls[0][2].msgChainId
         const secondMessageMsgChainId = streamrClient.publish.mock.calls[1][2].msgChainId
@@ -115,28 +127,40 @@ describe('publishEndpoint', () => {
     })
 
     it('invalid timestamp', async () => {
-        return await postMessage({}, {
-            timestamp: 'invalid-timestamp'
-        }).expect(400)
+        return await postMessage(
+            {},
+            {
+                timestamp: 'invalid-timestamp'
+            }
+        ).expect(400)
     })
 
     it('invalid partition: string', async () => {
-        return await postMessage({}, {
-            partition: 'invalid-number'
-        }).expect(400)
+        return await postMessage(
+            {},
+            {
+                partition: 'invalid-number'
+            }
+        ).expect(400)
     })
 
     it('invalid partition: negative number', async () => {
-        return await postMessage({}, {
-            partition: -123
-        }).expect(400)
+        return await postMessage(
+            {},
+            {
+                partition: -123
+            }
+        ).expect(400)
     })
 
     it('both partition and partitionKey', async () => {
-        return await postMessage({}, {
-            partition: 123,
-            partitionKey: 'foo'
-        }).expect(422)
+        return await postMessage(
+            {},
+            {
+                partition: 123,
+                partitionKey: 'foo'
+            }
+        ).expect(422)
     })
 
     it('publish error', async () => {

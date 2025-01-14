@@ -1,5 +1,11 @@
 import { Logger, areEqualBinaries } from '@streamr/utils'
-import { Message, PeerDescriptor, RouteMessageAck, RouteMessageError, RouteMessageWrapper } from '../../../generated/packages/dht/protos/DhtRpc'
+import {
+    Message,
+    PeerDescriptor,
+    RouteMessageAck,
+    RouteMessageError,
+    RouteMessageWrapper
+} from '../../../generated/packages/dht/protos/DhtRpc'
 import { IRouterRpc } from '../../../generated/packages/dht/protos/DhtRpc.server'
 import { DuplicateDetector } from './DuplicateDetector'
 import { RoutingMode } from './RoutingSession'
@@ -16,7 +22,10 @@ interface RouterRpcLocalOptions {
 
 const logger = new Logger(module)
 
-export const createRouteMessageAck = (routedMessage: RouteMessageWrapper, error?: RouteMessageError): RouteMessageAck => {
+export const createRouteMessageAck = (
+    routedMessage: RouteMessageWrapper,
+    error?: RouteMessageError
+): RouteMessageAck => {
     const ack: RouteMessageAck = {
         requestId: routedMessage.requestId,
         error
@@ -25,7 +34,6 @@ export const createRouteMessageAck = (routedMessage: RouteMessageWrapper, error?
 }
 
 export class RouterRpcLocal implements IRouterRpc {
-
     private readonly options: RouterRpcLocalOptions
 
     constructor(options: RouterRpcLocalOptions) {
@@ -34,8 +42,10 @@ export class RouterRpcLocal implements IRouterRpc {
 
     async routeMessage(routedMessage: RouteMessageWrapper): Promise<RouteMessageAck> {
         if (this.options.duplicateRequestDetector.isMostLikelyDuplicate(routedMessage.requestId)) {
-            logger.trace(`Routing message ${routedMessage.requestId} from ${toNodeId(routedMessage.sourcePeer!)} `
-                + `to ${toDhtAddress(routedMessage.target)} is likely a duplicate`)
+            logger.trace(
+                `Routing message ${routedMessage.requestId} from ${toNodeId(routedMessage.sourcePeer!)} ` +
+                    `to ${toDhtAddress(routedMessage.target)} is likely a duplicate`
+            )
             return createRouteMessageAck(routedMessage, RouteMessageError.DUPLICATE)
         }
         logger.trace(`Processing received routeMessage ${routedMessage.requestId}`)
@@ -52,8 +62,10 @@ export class RouterRpcLocal implements IRouterRpc {
 
     async forwardMessage(forwardMessage: RouteMessageWrapper): Promise<RouteMessageAck> {
         if (this.options.duplicateRequestDetector.isMostLikelyDuplicate(forwardMessage.requestId)) {
-            logger.trace(`Forwarding message ${forwardMessage.requestId} from ${toNodeId(forwardMessage.sourcePeer!)} `
-                + `to ${toDhtAddress(forwardMessage.target)} is likely a duplicate`)
+            logger.trace(
+                `Forwarding message ${forwardMessage.requestId} from ${toNodeId(forwardMessage.sourcePeer!)} ` +
+                    `to ${toDhtAddress(forwardMessage.target)} is likely a duplicate`
+            )
             return createRouteMessageAck(forwardMessage, RouteMessageError.DUPLICATE)
         }
         logger.trace(`Processing received forward routeMessage ${forwardMessage.requestId}`)
@@ -72,7 +84,10 @@ export class RouterRpcLocal implements IRouterRpc {
             this.options.handleMessage(forwardedMessage)
             return createRouteMessageAck(routedMessage)
         }
-        return this.options.doRouteMessage({ ...routedMessage, requestId: v4(), target: forwardedMessage.targetDescriptor!.nodeId })
+        return this.options.doRouteMessage({
+            ...routedMessage,
+            requestId: v4(),
+            target: forwardedMessage.targetDescriptor!.nodeId
+        })
     }
-
 }

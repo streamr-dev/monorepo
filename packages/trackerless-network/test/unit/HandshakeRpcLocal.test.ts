@@ -2,13 +2,19 @@ import { DhtAddress, NodeType, toNodeId, toDhtAddressRaw } from '@streamr/dht'
 import { StreamPartIDUtils } from '@streamr/utils'
 import { NodeList } from '../../src/logic/NodeList'
 import { HandshakeRpcLocal } from '../../src/logic/neighbor-discovery/HandshakeRpcLocal'
-import { InterleaveRequest, StreamPartHandshakeRequest } from '../../generated/packages/trackerless-network/protos/NetworkRpc'
-import { createMockContentDeliveryRpcRemote, createMockHandshakeRpcRemote, createMockPeerDescriptor } from '../utils/utils'
+import {
+    InterleaveRequest,
+    StreamPartHandshakeRequest
+} from '../../generated/packages/trackerless-network/protos/NetworkRpc'
+import {
+    createMockContentDeliveryRpcRemote,
+    createMockHandshakeRpcRemote,
+    createMockPeerDescriptor
+} from '../utils/utils'
 
 const STREAM_PART_ID = StreamPartIDUtils.parse('stream#0')
 
 describe('HandshakeRpcLocal', () => {
-
     let rpcLocal: HandshakeRpcLocal
 
     const localPeerDescriptor = createMockPeerDescriptor()
@@ -151,5 +157,4 @@ describe('HandshakeRpcLocal', () => {
         expect(res.accepted).toEqual(false)
         expect(handshakeWithInterleaving).toHaveBeenCalledTimes(0)
     })
-
 })

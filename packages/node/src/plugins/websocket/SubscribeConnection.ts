@@ -7,7 +7,6 @@ import { PayloadFormat } from '../../helpers/PayloadFormat'
 import { pTransaction, Logger } from '@streamr/utils'
 
 export class SubscribeConnection implements Connection {
-
     private readonly streamId: string
     private readonly partitions?: number[]
     private readonly subscriptions: Subscription[]
@@ -25,9 +24,10 @@ export class SubscribeConnection implements Connection {
         payloadFormat: PayloadFormat
     ): Promise<void> {
         const logger = new Logger(module, { socketId })
-        const streamPartDefinitions = (this.partitions !== undefined)
-            ? this.partitions.map((partition: number) => ({ id: this.streamId, partition }))
-            : [{ id: this.streamId }]
+        const streamPartDefinitions =
+            this.partitions !== undefined
+                ? this.partitions.map((partition: number) => ({ id: this.streamId, partition }))
+                : [{ id: this.streamId }]
 
         logger.debug('Subscribing to stream partitions', {
             streamId: this.streamId,
@@ -37,10 +37,12 @@ export class SubscribeConnection implements Connection {
             const payload = payloadFormat.createPayload(content as any, metadata)
             ws.send(payload)
         }
-        this.subscriptions.push(...await pTransaction(
-            streamPartDefinitions.map((sd) => streamrClient.subscribe(sd, msgCallback)),
-            (sub) => sub.unsubscribe()
-        ))
+        this.subscriptions.push(
+            ...(await pTransaction(
+                streamPartDefinitions.map((sd) => streamrClient.subscribe(sd, msgCallback)),
+                (sub) => sub.unsubscribe()
+            ))
+        )
 
         ws.once('close', async () => {
             try {

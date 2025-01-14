@@ -13,19 +13,16 @@ import { PushPipeline } from '../utils/PushPipeline'
 import { Resends } from './Resends'
 import { MessagePipelineOptions, createMessagePipeline as _createMessagePipeline } from './messagePipeline'
 
-type MessagePipelineFactoryOptions = MarkOptional<Omit<MessagePipelineOptions,
-    'resends' |
-    'groupKeyManager' |
-    'streamRegistry' |
-    'signatureValidator' |
-    'destroySignal' |
-    'loggerFactory'>,
-    'getStorageNodes' |
-    'config'>
+type MessagePipelineFactoryOptions = MarkOptional<
+    Omit<
+        MessagePipelineOptions,
+        'resends' | 'groupKeyManager' | 'streamRegistry' | 'signatureValidator' | 'destroySignal' | 'loggerFactory'
+    >,
+    'getStorageNodes' | 'config'
+>
 
 @scoped(Lifecycle.ContainerScoped)
 export class MessagePipelineFactory {
-
     private readonly resends: Resends
     private readonly streamStorageRegistry: StreamStorageRegistry
     private readonly streamRegistry: StreamRegistry
@@ -35,7 +32,6 @@ export class MessagePipelineFactory {
     private readonly destroySignal: DestroySignal
     private readonly loggerFactory: LoggerFactory
 
-    /* eslint-disable indent */
     constructor(
         @inject(delay(() => Resends)) resends: Resends,
         streamStorageRegistry: StreamStorageRegistry,
@@ -59,7 +55,8 @@ export class MessagePipelineFactory {
     createMessagePipeline(opts: MessagePipelineFactoryOptions): PushPipeline<StreamMessage, StreamMessage> {
         return _createMessagePipeline({
             ...opts,
-            getStorageNodes: opts.getStorageNodes ?? ((streamId: StreamID) => this.streamStorageRegistry.getStorageNodes(streamId)),
+            getStorageNodes:
+                opts.getStorageNodes ?? ((streamId: StreamID) => this.streamStorageRegistry.getStorageNodes(streamId)),
             resends: this.resends,
             streamRegistry: this.streamRegistry,
             signatureValidator: this.signatureValidator,

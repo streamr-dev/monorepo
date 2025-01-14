@@ -10,14 +10,13 @@ const logger = new Logger(module)
 
 // TODO: use a non-deprecated HTTP client that support async/await instead of request
 export class RestClient {
-
     private readonly baseUrl: string
 
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl
     }
 
-    // TODO: can be removed. 
+    // TODO: can be removed.
     // If the client creates the session we don't need to explicitly create a sessionId on the server side.
     // The server can run challanges based on a sessionId generated in each request.
     public async createSession(): Promise<string> {
@@ -31,7 +30,10 @@ export class RestClient {
         }
     }
 
-    public async createSubdomainAndCertificate(streamrWebSocketPort: number, sessionId: string): Promise<CertifiedSubdomain> {
+    public async createSubdomainAndCertificate(
+        streamrWebSocketPort: number,
+        sessionId: string
+    ): Promise<CertifiedSubdomain> {
         const url = this.baseUrl + '/certificates'
         const body: CreateCertifiedSubdomainRequest = {
             streamrWebSocketPort,
@@ -41,7 +43,12 @@ export class RestClient {
         return response
     }
 
-    public async updateCertificate(subdomain: string, streamrWebSocketPort: number, sessionId: string, token: string): Promise<CertifiedSubdomain> {
+    public async updateCertificate(
+        subdomain: string,
+        streamrWebSocketPort: number,
+        sessionId: string,
+        token: string
+    ): Promise<CertifiedSubdomain> {
         const url = this.baseUrl + '/certificates/' + encodeURIComponent(subdomain)
         const body: UpdateIpAndPortRequest = {
             token,
@@ -52,9 +59,22 @@ export class RestClient {
         return response
     }
 
-    public async updateSubdomainIp(subdomain: string, streamrWebSocketPort: number, sessionId: string, token: string): Promise<void> {
-        logger.debug('updateSubdomainIp() subdomain: ' + subdomain + ', streamrWebSocketPort:  ' + streamrWebSocketPort
-            + ', sessionId: ' + sessionId + ', token: ' + token)
+    public async updateSubdomainIp(
+        subdomain: string,
+        streamrWebSocketPort: number,
+        sessionId: string,
+        token: string
+    ): Promise<void> {
+        logger.debug(
+            'updateSubdomainIp() subdomain: ' +
+                subdomain +
+                ', streamrWebSocketPort:  ' +
+                streamrWebSocketPort +
+                ', sessionId: ' +
+                sessionId +
+                ', token: ' +
+                token
+        )
         const url = this.baseUrl + '/certificates/' + encodeURIComponent(subdomain) + '/ip'
         const body: UpdateIpAndPortRequest = {
             token,
@@ -67,16 +87,20 @@ export class RestClient {
     // eslint-disable-next-line class-methods-use-this
     private post<T>(url: string, body: any): Promise<T> {
         return new Promise((resolve, reject) => {
-            request.post(url, { json: body, rejectUnauthorized: false }, (error: any, response: Response, body: any) => {
-                if (error) {
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    reject(error)
-                } else if (response.statusCode >= 200 && response.statusCode < 300) {
-                    resolve(body)
-                } else {
-                    reject(new ServerError(body))
+            request.post(
+                url,
+                { json: body, rejectUnauthorized: false },
+                (error: any, response: Response, body: any) => {
+                    if (error) {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                        reject(error)
+                    } else if (response.statusCode >= 200 && response.statusCode < 300) {
+                        resolve(body)
+                    } else {
+                        reject(new ServerError(body))
+                    }
                 }
-            })
+            )
         })
     }
 
@@ -99,16 +123,20 @@ export class RestClient {
     // eslint-disable-next-line class-methods-use-this
     private patch<T>(url: string, body: any, timeout?: number): Promise<T> {
         return new Promise((resolve, reject) => {
-            request.patch(url, { json: body, rejectUnauthorized: false, timeout }, (error: any, response: Response, body: any) => {
-                if (error) {
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    reject(error)
-                } else if (response.statusCode >= 200 && response.statusCode < 300) {
-                    resolve(body)
-                } else {
-                    reject(new ServerError(body))
+            request.patch(
+                url,
+                { json: body, rejectUnauthorized: false, timeout },
+                (error: any, response: Response, body: any) => {
+                    if (error) {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                        reject(error)
+                    } else if (response.statusCode >= 200 && response.statusCode < 300) {
+                        resolve(body)
+                    } else {
+                        reject(new ServerError(body))
+                    }
                 }
-            })
+            )
         })
     }
 }

@@ -8,7 +8,6 @@ import { FakeEnvironment } from '../test-utils/fake/FakeEnvironment'
 import { fakeEntrypoint } from '../test-utils/fake/FakeOperatorRegistry'
 
 describe('NetworkNodeFacade', () => {
-
     let environment: FakeEnvironment
 
     beforeEach(() => {
@@ -20,7 +19,6 @@ describe('NetworkNodeFacade', () => {
     })
 
     describe('create/destroy', () => {
-
         let client: StreamrClient
 
         const getNode = (): Promise<Omit<NetworkNodeStub, 'start' | 'stop'>> => {
@@ -42,10 +40,7 @@ describe('NetworkNodeFacade', () => {
         })
 
         it('caches node with parallel calls', async () => {
-            const [node1, node2] = await Promise.all([
-                getNode(),
-                getNode()
-            ])
+            const [node1, node2] = await Promise.all([getNode(), getNode()])
             expect(node1).toBe(node2)
         })
 
@@ -60,10 +55,7 @@ describe('NetworkNodeFacade', () => {
 
             it('can call destroy multiple times', async () => {
                 await getNode()
-                await Promise.all([
-                    client.destroy(),
-                    client.destroy(),
-                ])
+                await Promise.all([client.destroy(), client.destroy()])
                 await client.destroy()
                 await expect(async () => {
                     await getNode()
@@ -79,10 +71,7 @@ describe('NetworkNodeFacade', () => {
 
             it('can destroy during start', async () => {
                 await expect(async () => {
-                    const tasks = [
-                        getNode(),
-                        client.destroy(),
-                    ]
+                    const tasks = [getNode(), client.destroy()]
                     await Promise.allSettled(tasks)
                     await Promise.all(tasks)
                 }).rejects.toThrowStreamrClientError({ code: 'CLIENT_DESTROYED' })

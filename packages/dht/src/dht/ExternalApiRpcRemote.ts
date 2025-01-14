@@ -1,11 +1,15 @@
 import { DhtAddress, toDhtAddressRaw } from '../identifiers'
 import { Any } from '../../generated/google/protobuf/any'
-import { DataEntry, ExternalFetchDataRequest, ExternalStoreDataRequest, PeerDescriptor } from '../../generated/packages/dht/protos/DhtRpc'
+import {
+    DataEntry,
+    ExternalFetchDataRequest,
+    ExternalStoreDataRequest,
+    PeerDescriptor
+} from '../../generated/packages/dht/protos/DhtRpc'
 import { ExternalApiRpcClient } from '../../generated/packages/dht/protos/DhtRpc.client'
 import { RpcRemote } from './contact/RpcRemote'
 
 export class ExternalApiRpcRemote extends RpcRemote<ExternalApiRpcClient> {
-
     async externalFetchData(key: DhtAddress): Promise<DataEntry[]> {
         const request: ExternalFetchDataRequest = {
             key: toDhtAddressRaw(key)

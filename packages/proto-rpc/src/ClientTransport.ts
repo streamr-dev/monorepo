@@ -50,7 +50,10 @@ export class ClientTransport extends EventEmitter<ClientTransportEvents> impleme
         return mergeRpcOptions(this.defaultOptions, options)
     }
 
-    private static createRequestHeaders(method: MethodInfo, notification?: boolean): {
+    private static createRequestHeaders(
+        method: MethodInfo,
+        notification?: boolean
+    ): {
         method: string
         request: string
         notification?: string
@@ -62,10 +65,16 @@ export class ClientTransport extends EventEmitter<ClientTransportEvents> impleme
         }
     }
 
-    unary<I extends object, O extends object>(method: MethodInfo<I, O>, input: I, options: ProtoRpcOptions): UnaryCall<I, O> {
+    unary<I extends object, O extends object>(
+        method: MethodInfo<I, O>,
+        input: I,
+        options: ProtoRpcOptions
+    ): UnaryCall<I, O> {
         if (!options?.isProtoRpc) {
-            // eslint-disable-next-line max-len
-            throw new Error('ProtoRpc ClientTransport can only be used with ProtoRpcClients. Please convert your protobuf-ts generated client to a ProtoRpcClient by calling toProtoRpcclient(yourClient).')
+            throw new Error(
+                // eslint-disable-next-line max-len
+                'ProtoRpc ClientTransport can only be used with ProtoRpcClients. Please convert your protobuf-ts generated client to a ProtoRpcClient by calling toProtoRpcclient(yourClient).'
+            )
         }
         const requestBody = Any.pack(input, method.I)
 
@@ -87,7 +96,7 @@ export class ClientTransport extends EventEmitter<ClientTransportEvents> impleme
             defHeader.promise,
             defMessage.promise,
             defStatus.promise,
-            defTrailer.promise,
+            defTrailer.promise
         )
 
         const deferredParser = (bytes: Uint8Array) => method.O.fromBinary(bytes)

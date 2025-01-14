@@ -2,13 +2,12 @@ import { SortedContactList } from '../../src/dht/contact/SortedContactList'
 import { DhtAddress, DhtAddressRaw, randomDhtAddress, toDhtAddress } from '../../src/identifiers'
 
 const createItem = (nodeId: DhtAddressRaw): { getNodeId: () => DhtAddress } => {
-    return { 
+    return {
         getNodeId: () => toDhtAddress(nodeId)
     }
 }
 
 describe('SortedContactList', () => {
-
     const item0 = createItem(new Uint8Array([0, 0, 0, 0]))
     const item1 = createItem(new Uint8Array([0, 0, 0, 1]))
     const item2 = createItem(new Uint8Array([0, 0, 0, 2]))
@@ -16,7 +15,11 @@ describe('SortedContactList', () => {
     const item4 = createItem(new Uint8Array([0, 0, 0, 4]))
 
     it('compares Ids correctly', async () => {
-        const list = new SortedContactList({ referenceId: item0.getNodeId(), maxSize: 10, allowToContainReferenceId: true })
+        const list = new SortedContactList({
+            referenceId: item0.getNodeId(),
+            maxSize: 10,
+            allowToContainReferenceId: true
+        })
         expect(list.compareIds(item0.getNodeId(), item0.getNodeId())).toBe(0)
         expect(list.compareIds(item1.getNodeId(), item1.getNodeId())).toBe(0)
         expect(list.compareIds(item0.getNodeId(), item1.getNodeId())).toBe(-1)
@@ -28,7 +31,11 @@ describe('SortedContactList', () => {
     })
 
     it('cannot exceed maxSize', async () => {
-        const list = new SortedContactList({ referenceId: item0.getNodeId(), maxSize: 3, allowToContainReferenceId: false })
+        const list = new SortedContactList({
+            referenceId: item0.getNodeId(),
+            maxSize: 3,
+            allowToContainReferenceId: false
+        })
         const onContactRemoved = jest.fn()
         list.on('contactRemoved', onContactRemoved)
         list.addContact(item1)
@@ -43,7 +50,11 @@ describe('SortedContactList', () => {
     })
 
     it('removing contacts', async () => {
-        const list = new SortedContactList({ referenceId: item0.getNodeId(), maxSize: 8, allowToContainReferenceId: false })
+        const list = new SortedContactList({
+            referenceId: item0.getNodeId(),
+            maxSize: 8,
+            allowToContainReferenceId: false
+        })
         const onContactRemoved = jest.fn()
         list.on('contactRemoved', onContactRemoved)
         list.removeContact(randomDhtAddress())
@@ -70,8 +81,8 @@ describe('SortedContactList', () => {
 
     it('get closest contacts', () => {
         const list = new SortedContactList({
-            referenceId: item0.getNodeId(), 
-            maxSize: 8, 
+            referenceId: item0.getNodeId(),
+            maxSize: 8,
             allowToContainReferenceId: false
         })
         list.addContact(item1)
@@ -86,8 +97,8 @@ describe('SortedContactList', () => {
 
     it('get furthest contacts', () => {
         const list = new SortedContactList({
-            referenceId: item0.getNodeId(), 
-            maxSize: 8, 
+            referenceId: item0.getNodeId(),
+            maxSize: 8,
             allowToContainReferenceId: false
         })
         list.addContact(item1)
@@ -101,7 +112,11 @@ describe('SortedContactList', () => {
     })
 
     it('does not emit contactAdded if contact did not fit the structure', () => {
-        const list = new SortedContactList({ referenceId: item0.getNodeId(), maxSize: 2, allowToContainReferenceId: false })
+        const list = new SortedContactList({
+            referenceId: item0.getNodeId(),
+            maxSize: 2,
+            allowToContainReferenceId: false
+        })
         const onContactAdded = jest.fn()
         list.on('contactAdded', onContactAdded)
         list.addContact(item1)
@@ -111,5 +126,4 @@ describe('SortedContactList', () => {
         expect(onContactAdded).toHaveBeenCalledTimes(2)
         expect(list.getClosestContacts().length).toEqual(2)
     })
-
 })

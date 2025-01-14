@@ -15,7 +15,7 @@ export async function inspectRandomNode(
     getRedundancyFactor: (operatorContractAddress: EthereumAddress) => Promise<number | undefined>,
     createOperatorFleetState: CreateOperatorFleetStateFn,
     abortSignal: AbortSignal,
-    findTargetFn = findTarget,
+    findTargetFn = findTarget
 ): Promise<void> {
     const traceId = randomString(6)
     const logger = new Logger(module, { traceId })
@@ -47,7 +47,9 @@ export async function inspectRandomNode(
         return
     }
 
-    const flagAlreadyRaised = await streamrClient.getOperator(target.operatorAddress).hasOpenFlag(target.sponsorshipAddress)
+    const flagAlreadyRaised = await streamrClient
+        .getOperator(target.operatorAddress)
+        .hasOpenFlag(target.sponsorshipAddress)
     if (flagAlreadyRaised) {
         logger.info('Not raising flag (target already has open flag)', { target })
         return

@@ -1,6 +1,12 @@
 import { Logger } from '@streamr/utils'
 import { RpcRemote } from '../dht/contact/RpcRemote'
-import { DisconnectMode, DisconnectNotice, LockRequest, UnlockRequest, SetPrivateRequest } from '../../generated/packages/dht/protos/DhtRpc'
+import {
+    DisconnectMode,
+    DisconnectNotice,
+    LockRequest,
+    UnlockRequest,
+    SetPrivateRequest
+} from '../../generated/packages/dht/protos/DhtRpc'
 import { ConnectionLockRpcClient } from '../../generated/packages/dht/protos/DhtRpc.client'
 import { LockID } from './ConnectionLockStates'
 import { toNodeId } from '../identifiers'
@@ -8,7 +14,6 @@ import { toNodeId } from '../identifiers'
 const logger = new Logger(module)
 
 export class ConnectionLockRpcRemote extends RpcRemote<ConnectionLockRpcClient> {
-
     public async lockRequest(lockId: LockID): Promise<boolean> {
         logger.trace(`Requesting locked connection to ${toNodeId(this.getPeerDescriptor())}`)
         const request: LockRequest = {
@@ -32,9 +37,11 @@ export class ConnectionLockRpcRemote extends RpcRemote<ConnectionLockRpcClient> 
         const options = this.formDhtRpcOptions({
             notification: true
         })
-        this.getClient().unlockRequest(request, options).catch((_e) => {
-            logger.trace('failed to send unlockRequest')
-        })
+        this.getClient()
+            .unlockRequest(request, options)
+            .catch((_e) => {
+                logger.trace('failed to send unlockRequest')
+            })
     }
 
     public async gracefulDisconnect(disconnectMode: DisconnectMode): Promise<void> {
@@ -45,7 +52,7 @@ export class ConnectionLockRpcRemote extends RpcRemote<ConnectionLockRpcClient> 
         const options = this.formDhtRpcOptions({
             connect: false,
             sendIfStopped: true,
-            timeout: 2000  // TODO use options option or named constant?
+            timeout: 2000 // TODO use options option or named constant?
         })
         await this.getClient().gracefulDisconnect(request, options)
     }

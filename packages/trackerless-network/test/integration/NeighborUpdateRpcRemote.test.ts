@@ -1,16 +1,8 @@
-import {
-    ListeningRpcCommunicator,
-    NodeType,
-    PeerDescriptor,
-    Simulator,
-    SimulatorTransport
-} from '@streamr/dht'
+import { ListeningRpcCommunicator, NodeType, PeerDescriptor, Simulator, SimulatorTransport } from '@streamr/dht'
 import { StreamPartIDUtils } from '@streamr/utils'
 import { NeighborUpdateRpcRemote } from '../../src/logic/neighbor-discovery/NeighborUpdateRpcRemote'
 import { NeighborUpdate } from '../../generated/packages/trackerless-network/protos/NetworkRpc'
-import {
-    NeighborUpdateRpcClient,
-} from '../../generated/packages/trackerless-network/protos/NetworkRpc.client'
+import { NeighborUpdateRpcClient } from '../../generated/packages/trackerless-network/protos/NetworkRpc.client'
 
 describe('NeighborUpdateRpcRemote', () => {
     let mockServerRpc: ListeningRpcCommunicator
@@ -51,20 +43,13 @@ describe('NeighborUpdateRpcRemote', () => {
                 }
                 const update: NeighborUpdate = {
                     streamPartId: StreamPartIDUtils.parse('stream#0'),
-                    neighborDescriptors: [
-                        node
-                    ],
+                    neighborDescriptors: [node],
                     removeMe: false
                 }
                 return update
             }
         )
-        rpcRemote = new NeighborUpdateRpcRemote(
-            clientNode,
-            serverNode,
-            clientRpc,
-            NeighborUpdateRpcClient
-        )
+        rpcRemote = new NeighborUpdateRpcRemote(clientNode, serverNode, clientRpc, NeighborUpdateRpcClient)
     })
 
     afterEach(async () => {

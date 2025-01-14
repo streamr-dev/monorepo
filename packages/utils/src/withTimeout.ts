@@ -3,9 +3,11 @@ import { asAbortable } from './asAbortable'
 export class TimeoutError extends Error {
     readonly code = 'TimeoutError'
     constructor(timeoutInMs: number, customErrorContext?: string) {
-        super(customErrorContext === undefined
-            ? `timed out after ${timeoutInMs} ms`
-            : `${customErrorContext} (timed out after ${timeoutInMs} ms)`)
+        super(
+            customErrorContext === undefined
+                ? `timed out after ${timeoutInMs} ms`
+                : `${customErrorContext} (timed out after ${timeoutInMs} ms)`
+        )
     }
 }
 

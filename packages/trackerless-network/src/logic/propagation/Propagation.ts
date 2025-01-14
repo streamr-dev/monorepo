@@ -65,7 +65,7 @@ export class Propagation {
 
     private sendAndAwaitThenMark({ message, source, handledNeighbors }: PropagationTask, neighborId: DhtAddress): void {
         if (!handledNeighbors.has(neighborId) && neighborId !== source) {
-            (async () => {
+            ;(async () => {
                 try {
                     await this.sendToNeighbor(neighborId, message)
                 } catch {

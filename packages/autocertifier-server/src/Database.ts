@@ -1,5 +1,3 @@
-/* eslint-disable quotes */
-
 import sqlite3 from 'sqlite3'
 import { open, Statement, Database as SqliteDatabase } from 'sqlite'
 import { Logger, filePathToNodeFormat } from '@streamr/utils'
@@ -8,7 +6,6 @@ import { DatabaseError, InvalidSubdomainOrToken } from '@streamr/autocertifier-c
 const logger = new Logger(module)
 
 export class Database {
-
     private db?: SqliteDatabase
     // TODO: create statements on demand when needed, no need to hold these as fields
     private createSubdomainStatement?: Statement
@@ -102,19 +99,29 @@ export class Database {
             driver: sqlite3.Database
         })
 
-        const result = await this.db.get("SELECT name FROM sqlite_master WHERE type='table' AND name=?", "subdomains")
+        const result = await this.db.get("SELECT name FROM sqlite_master WHERE type='table' AND name=?", 'subdomains')
 
         if (!result) {
             await this.createTables()
         }
 
-        this.createSubdomainStatement = await this.db.prepare("INSERT INTO subdomains (subdomainName, ip, port, token) VALUES (?, ?, ?, ?)")
-        this.getSubdomainStatement = await this.db.prepare("SELECT * FROM subdomains WHERE subdomainName = ?")
-        this.getAllSubdomainsStatement = await this.db.prepare("SELECT * FROM subdomains")
-        this.getSubdomainWithTokenStatement = await this.db.prepare("SELECT * FROM subdomains WHERE subdomainName = ? AND token = ?")
-        this.updateSubdomainIpStatement = await this.db.prepare("UPDATE subdomains SET ip = ?, port = ? WHERE subdomainName = ? AND token = ?")
-        this.getSubdomainAcmeChallengeStatement = await this.db.prepare("SELECT acmeChallenge FROM subdomains WHERE subdomainName = ?")
-        this.updateSubdomainAcmeChallengeStatement = await this.db.prepare("UPDATE subdomains SET acmeChallenge = ? WHERE subdomainName = ?")
+        this.createSubdomainStatement = await this.db.prepare(
+            'INSERT INTO subdomains (subdomainName, ip, port, token) VALUES (?, ?, ?, ?)'
+        )
+        this.getSubdomainStatement = await this.db.prepare('SELECT * FROM subdomains WHERE subdomainName = ?')
+        this.getAllSubdomainsStatement = await this.db.prepare('SELECT * FROM subdomains')
+        this.getSubdomainWithTokenStatement = await this.db.prepare(
+            'SELECT * FROM subdomains WHERE subdomainName = ? AND token = ?'
+        )
+        this.updateSubdomainIpStatement = await this.db.prepare(
+            'UPDATE subdomains SET ip = ?, port = ? WHERE subdomainName = ? AND token = ?'
+        )
+        this.getSubdomainAcmeChallengeStatement = await this.db.prepare(
+            'SELECT acmeChallenge FROM subdomains WHERE subdomainName = ?'
+        )
+        this.updateSubdomainAcmeChallengeStatement = await this.db.prepare(
+            'UPDATE subdomains SET acmeChallenge = ? WHERE subdomainName = ?'
+        )
 
         logger.info('Database is running')
     }

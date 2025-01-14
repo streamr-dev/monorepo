@@ -18,10 +18,14 @@ export const scheduleAtFixedRate = (
         const now = Date.now()
         invocationTime += interval
         if (now < invocationTime) {
-            setAbortableTimeout(async () => {
-                await task(invocationTime)
-                doneCb()
-            }, (invocationTime - now), abortSignal)
+            setAbortableTimeout(
+                async () => {
+                    await task(invocationTime)
+                    doneCb()
+                },
+                invocationTime - now,
+                abortSignal
+            )
         } else {
             doneCb()
         }
@@ -29,10 +33,7 @@ export const scheduleAtFixedRate = (
 }
 
 /** @internal */
-export const repeatScheduleTask = (
-    scheduleNextTask: (doneCb: () => void) => void,
-    abortSignal?: AbortSignal
-): void => {
+export const repeatScheduleTask = (scheduleNextTask: (doneCb: () => void) => void, abortSignal?: AbortSignal): void => {
     const scheduleNext = () => {
         if (!abortSignal?.aborted) {
             scheduleNextTask(scheduleNext)

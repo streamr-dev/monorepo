@@ -1,5 +1,10 @@
 import { Logger } from '@streamr/utils'
-import { PeerDescriptor, RouteMessageAck, RouteMessageError, RouteMessageWrapper } from '../../../generated/packages/dht/protos/DhtRpc'
+import {
+    PeerDescriptor,
+    RouteMessageAck,
+    RouteMessageError,
+    RouteMessageWrapper
+} from '../../../generated/packages/dht/protos/DhtRpc'
 import { IRecursiveOperationRpc } from '../../../generated/packages/dht/protos/DhtRpc.server'
 import { createRouteMessageAck } from '../routing/RouterRpcLocal'
 import { getPreviousPeer } from '../routing/getPreviousPeer'
@@ -15,7 +20,6 @@ interface RecursiveOperationRpcLocalOptions {
 }
 
 export class RecursiveOperationRpcLocal implements IRecursiveOperationRpc {
-
     private readonly options: RecursiveOperationRpcLocalOptions
 
     constructor(options: RecursiveOperationRpcLocalOptions) {

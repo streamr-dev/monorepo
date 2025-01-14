@@ -1,4 +1,11 @@
-import { ContentType, EncryptionType, MessageID, SignatureType, StreamMessage, convertBytesToStreamMessage } from '@streamr/sdk'
+import {
+    ContentType,
+    EncryptionType,
+    MessageID,
+    SignatureType,
+    StreamMessage,
+    convertBytesToStreamMessage
+} from '@streamr/sdk'
 import { randomUserId, waitForStreamToEnd } from '@streamr/test-utils'
 import { UserID, hexToBinary, toStreamID, utf8ToBinary, until, waitForEvent } from '@streamr/utils'
 import { Client } from 'cassandra-driver'
@@ -16,9 +23,11 @@ const MOCK_MSG_CHAIN_ID = 'msgChainId'
 const createMockMessage = (i: number) => {
     return new StreamMessage({
         messageId: new MessageID(toStreamID(MOCK_STREAM_ID), 0, i, 0, MOCK_PUBLISHER_ID, MOCK_MSG_CHAIN_ID),
-        content: utf8ToBinary(JSON.stringify({
-            value: i
-        })),
+        content: utf8ToBinary(
+            JSON.stringify({
+                value: i
+            })
+        ),
         signature: hexToBinary('0x1234'),
         contentType: ContentType.JSON,
         encryptionType: EncryptionType.NONE,
@@ -33,12 +42,11 @@ const REQUEST_TYPE_FROM = 'requestFrom'
 const REQUEST_TYPE_RANGE = 'requestRange'
 
 const streamToContentValues = async (resultStream: Readable) => {
-    const messages: Uint8Array[] = await waitForStreamToEnd(resultStream) as Uint8Array[]
+    const messages: Uint8Array[] = (await waitForStreamToEnd(resultStream)) as Uint8Array[]
     return messages.map(convertBytesToStreamMessage).map((message) => (message.getParsedContent() as any).value)
 }
 
 class ProxyClient {
-
     static ERROR = new Error('mock-error')
 
     private realClient: Client
@@ -48,7 +56,13 @@ class ProxyClient {
         this.realClient = realClient
     }
 
-    eachRow(query: string, params: any, options: any, rowCallback: any, resultCallback?: (err: Error | undefined, result: any) => void) {
+    eachRow(
+        query: string,
+        params: any,
+        options: any,
+        rowCallback: any,
+        resultCallback?: (err: Error | undefined, result: any) => void
+    ) {
         if (this.hasError(query)) {
             resultCallback!(ProxyClient.ERROR, undefined)
         } else {
@@ -85,22 +99,22 @@ class ProxyClient {
     }
 
     private hasError(query: string): boolean {
-        return (this.errorQueryId !== undefined) && query.includes(this.errorQueryId)
+        return this.errorQueryId !== undefined && query.includes(this.errorQueryId)
     }
 }
 
 describe('cassanda-queries', () => {
-
     let storage: Storage
     let realClient: Client
 
     const waitForStoredMessageCount = async (expectedCount: number) => {
         return until(async () => {
-            const result = await realClient.execute('SELECT COUNT(*) AS total FROM stream_data WHERE stream_id = ? ALLOW FILTERING', [
-                MOCK_STREAM_ID
-            ])
+            const result = await realClient.execute(
+                'SELECT COUNT(*) AS total FROM stream_data WHERE stream_id = ? ALLOW FILTERING',
+                [MOCK_STREAM_ID]
+            )
             const actualCount = result.rows[0].total.low
-            return (actualCount === expectedCount)
+            return actualCount === expectedCount
         })
     }
 
@@ -131,7 +145,6 @@ describe('cassanda-queries', () => {
     })
 
     describe('requestLast', () => {
-
         it('happy path', async () => {
             const resultStream = storage.requestLast(MOCK_STREAM_ID, 0, 2)
             const contentValues = await streamToContentValues(resultStream)
@@ -145,42 +158,49 @@ describe('cassanda-queries', () => {
         })
 
         it('bucket query error', async () => {
-            (storage.cassandraClient as any).setError('FROM bucket')
+            ;(storage.cassandraClient as any).setError('FROM bucket')
             const resultStream = storage.requestLast(MOCK_STREAM_ID, 0, 1)
-            const [ actualError ] = await waitForEvent(resultStream, 'error')
+            const [actualError] = await waitForEvent(resultStream, 'error')
             expect(actualError).toBe(ProxyClient.ERROR)
         })
 
         it('message count query error', async () => {
-            (storage.cassandraClient as any).setError('total FROM stream_data')
+            ;(storage.cassandraClient as any).setError('total FROM stream_data')
             const resultStream = storage.requestLast(MOCK_STREAM_ID, 0, 1)
-            const [ actualError ] = await waitForEvent(resultStream, 'error')
+            const [actualError] = await waitForEvent(resultStream, 'error')
             expect(actualError).toBe(ProxyClient.ERROR)
         })
 
         it('message query error', async () => {
-            (storage.cassandraClient as any).setError('payload FROM stream_data')
+            ;(storage.cassandraClient as any).setError('payload FROM stream_data')
             const resultStream = storage.requestLast(MOCK_STREAM_ID, 0, 1)
-            const [ actualError ] = await waitForEvent(resultStream, 'error')
+            const [actualError] = await waitForEvent(resultStream, 'error')
             expect(actualError).toBe(ProxyClient.ERROR)
         })
-
     })
 
     describe.each([
         [REQUEST_TYPE_FROM, undefined, undefined],
         [REQUEST_TYPE_FROM, MOCK_PUBLISHER_ID, undefined],
         [REQUEST_TYPE_RANGE, undefined, undefined],
-        [REQUEST_TYPE_RANGE, MOCK_PUBLISHER_ID, MOCK_MSG_CHAIN_ID],
+        [REQUEST_TYPE_RANGE, MOCK_PUBLISHER_ID, MOCK_MSG_CHAIN_ID]
     ])('%s, publisher: %p', (requestType: string, publisherId: UserID | undefined, msgChainId: string | undefined) => {
-
         const getResultStream = (streamId: string): Readable => {
             const minMockTimestamp = MOCK_MESSAGES[0].getTimestamp()
             const maxMockTimestamp = MOCK_MESSAGES[MOCK_MESSAGES.length - 1].getTimestamp()
             if (requestType === REQUEST_TYPE_FROM) {
                 return storage.requestFrom(streamId, 0, minMockTimestamp, 0, publisherId)
             } else if (requestType === REQUEST_TYPE_RANGE) {
-                return storage.requestRange(streamId, 0, minMockTimestamp, 0, maxMockTimestamp, 0, publisherId, msgChainId)
+                return storage.requestRange(
+                    streamId,
+                    0,
+                    minMockTimestamp,
+                    0,
+                    maxMockTimestamp,
+                    0,
+                    publisherId,
+                    msgChainId
+                )
             } else {
                 throw new Error('Assertion failed')
             }
@@ -199,19 +219,17 @@ describe('cassanda-queries', () => {
         })
 
         it('bucket query error', async () => {
-            (storage.cassandraClient as any).setError('FROM bucket')
+            ;(storage.cassandraClient as any).setError('FROM bucket')
             const resultStream = getResultStream(MOCK_STREAM_ID)
-            const [ actualError ] = await waitForEvent(resultStream, 'error')
+            const [actualError] = await waitForEvent(resultStream, 'error')
             expect(actualError).toBe(ProxyClient.ERROR)
         })
 
         it('message query error', async () => {
-            (storage.cassandraClient as any).setError('payload FROM stream_data')
+            ;(storage.cassandraClient as any).setError('payload FROM stream_data')
             const resultStream = getResultStream(MOCK_STREAM_ID)
-            const [ actualError ] = await waitForEvent(resultStream, 'error')
+            const [actualError] = await waitForEvent(resultStream, 'error')
             expect(actualError).toBe(ProxyClient.ERROR)
         })
-
     })
-
 })

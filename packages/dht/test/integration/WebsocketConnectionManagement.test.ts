@@ -11,19 +11,22 @@ import { toNodeId } from '../../src/identifiers'
 
 const SERVICE_ID = 'test'
 
-const createOptions = (localPeerDescriptor: PeerDescriptor, opts: Omit<DefaultConnectorFacadeOptions, 'createLocalPeerDescriptor'>) => {
+const createOptions = (
+    localPeerDescriptor: PeerDescriptor,
+    opts: Omit<DefaultConnectorFacadeOptions, 'createLocalPeerDescriptor'>
+) => {
     return {
-        createConnectorFacade: () => new DefaultConnectorFacade({
-            createLocalPeerDescriptor: async () => localPeerDescriptor,
-            ...opts
-        }),
+        createConnectorFacade: () =>
+            new DefaultConnectorFacade({
+                createLocalPeerDescriptor: async () => localPeerDescriptor,
+                ...opts
+            }),
         metricsContext: new MetricsContext(),
         allowIncomingPrivateConnections: false
     }
 }
 
 describe('Websocket Connection Management', () => {
-
     let wsServerManager: ConnectionManager
     let noWsServerManager: ConnectionManager
     let biggerNoWsServerManager: ConnectionManager
@@ -39,11 +42,11 @@ describe('Websocket Connection Management', () => {
     }
     const noWsServerConnectorPeerDescriptor: PeerDescriptor = {
         nodeId: new Uint8Array([1]),
-        type: NodeType.NODEJS,
+        type: NodeType.NODEJS
     }
     const biggerNoWsServerConnectorPeerDescriptor: PeerDescriptor = {
         nodeId: new Uint8Array([3]),
-        type: NodeType.NODEJS,
+        type: NodeType.NODEJS
     }
 
     let connectorTransport1: SimulatorTransport
@@ -51,7 +54,6 @@ describe('Websocket Connection Management', () => {
     let connectorTransport3: SimulatorTransport
 
     beforeEach(async () => {
-
         connectorTransport1 = new SimulatorTransport(wsServerConnectorPeerDescriptor, simulator)
         await connectorTransport1.start()
         connectorTransport2 = new SimulatorTransport(noWsServerConnectorPeerDescriptor, simulator)
@@ -146,7 +148,7 @@ describe('Websocket Connection Management', () => {
         ])
         expect(wsServerManager.hasConnection(toNodeId(dummyMessage.targetDescriptor!))).toBeFalse()
     }, 20000)
-    
+
     it('Can open connections to peer with server', async () => {
         const dummyMessage: Message = {
             serviceId: SERVICE_ID,
@@ -158,15 +160,11 @@ describe('Websocket Connection Management', () => {
             targetDescriptor: wsServerConnectorPeerDescriptor
         }
         await noWsServerManager.send(dummyMessage)
-        await until(
-            () => {
-                const nodeId = toNodeId(noWsServerConnectorPeerDescriptor)
-                return wsServerManager.hasConnection(nodeId)
-            }
-        )
-        await until(
-            () => noWsServerManager.hasConnection(toNodeId(wsServerConnectorPeerDescriptor))
-        )
+        await until(() => {
+            const nodeId = toNodeId(noWsServerConnectorPeerDescriptor)
+            return wsServerManager.hasConnection(nodeId)
+        })
+        await until(() => noWsServerManager.hasConnection(toNodeId(wsServerConnectorPeerDescriptor)))
     })
 
     it('Connecting to self throws', async () => {
@@ -179,13 +177,13 @@ describe('Websocket Connection Management', () => {
             messageId: 'mockerer',
             targetDescriptor: noWsServerConnectorPeerDescriptor
         }
-        await expect(noWsServerManager.send(dummyMessage))
-            .rejects
-            .toEqual(new Err.CannotConnectToSelf('Cannot send to self'))
+        await expect(noWsServerManager.send(dummyMessage)).rejects.toEqual(
+            new Err.CannotConnectToSelf('Cannot send to self')
+        )
 
         dummyMessage.targetDescriptor = wsServerConnectorPeerDescriptor
-        await expect(wsServerManager.send(dummyMessage))
-            .rejects
-            .toEqual(new Err.CannotConnectToSelf('Cannot send to self'))
+        await expect(wsServerManager.send(dummyMessage)).rejects.toEqual(
+            new Err.CannotConnectToSelf('Cannot send to self')
+        )
     })
 })

@@ -13,7 +13,10 @@ import {
     Metric,
     MetricsContext,
     MetricsDefinition,
-    RateMetric, StreamID, StreamPartID, StreamPartIDUtils,
+    RateMetric,
+    StreamID,
+    StreamPartID,
+    StreamPartIDUtils,
     UserID,
     toStreamPartID
 } from '@streamr/utils'
@@ -25,7 +28,10 @@ import { ContentDeliveryLayerNode } from './ContentDeliveryLayerNode'
 import { ControlLayerNode } from './ControlLayerNode'
 import { DiscoveryLayerNode } from './DiscoveryLayerNode'
 import { MAX_NODE_COUNT, PeerDescriptorStoreManager } from './PeerDescriptorStoreManager'
-import { MIN_NEIGHBOR_COUNT as NETWORK_SPLIT_AVOIDANCE_MIN_NEIGHBOR_COUNT, StreamPartNetworkSplitAvoidance } from './StreamPartNetworkSplitAvoidance'
+import {
+    MIN_NEIGHBOR_COUNT as NETWORK_SPLIT_AVOIDANCE_MIN_NEIGHBOR_COUNT,
+    StreamPartNetworkSplitAvoidance
+} from './StreamPartNetworkSplitAvoidance'
 import { StreamPartReconnect } from './StreamPartReconnect'
 import { createContentDeliveryLayerNode } from './createContentDeliveryLayerNode'
 import { ProxyClient } from './proxy/ProxyClient'
@@ -35,17 +41,20 @@ import { StreamPartitionInfo } from '../types'
 export type StreamPartDelivery = {
     broadcast: (msg: StreamMessage) => void
     stop: () => Promise<void>
-} & ({ 
-    proxied: false
-    discoveryLayerNode: DiscoveryLayerNode
-    node: ContentDeliveryLayerNode
-    networkSplitAvoidance: StreamPartNetworkSplitAvoidance
-    getDiagnosticInfo: () => Record<string, unknown>
-} | {
-    proxied: true
-    client: ProxyClient
-    getDiagnosticInfo: () => Record<string, unknown>
-})
+} & (
+    | {
+          proxied: false
+          discoveryLayerNode: DiscoveryLayerNode
+          node: ContentDeliveryLayerNode
+          networkSplitAvoidance: StreamPartNetworkSplitAvoidance
+          getDiagnosticInfo: () => Record<string, unknown>
+      }
+    | {
+          proxied: true
+          client: ProxyClient
+          getDiagnosticInfo: () => Record<string, unknown>
+      }
+)
 
 export interface Events {
     newMessage: (msg: StreamMessage) => void
@@ -68,11 +77,10 @@ export interface ContentDeliveryManagerOptions {
 }
 
 export const streamPartIdToDataKey = (streamPartId: StreamPartID): DhtAddress => {
-    return toDhtAddress(new Uint8Array((createHash('sha1').update(streamPartId).digest())))
+    return toDhtAddress(new Uint8Array(createHash('sha1').update(streamPartId).digest()))
 }
 
 export class ContentDeliveryManager extends EventEmitter<Events> {
-
     private transport?: ITransport
     private connectionLocker?: ConnectionLocker
     private controlLayerNode?: ControlLayerNode
@@ -96,7 +104,11 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
         this.metricsContext.addMetrics('node', this.metrics)
     }
 
-    async start(startedAndJoinedControlLayerNode: ControlLayerNode, transport: ITransport, connectionLocker: ConnectionLocker): Promise<void> {
+    async start(
+        startedAndJoinedControlLayerNode: ControlLayerNode,
+        transport: ITransport,
+        connectionLocker: ConnectionLocker
+    ): Promise<void> {
         if (this.started || this.destroyed) {
             return
         }
@@ -145,22 +157,24 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
             return
         }
         logger.debug(`Join stream part ${streamPartId}`)
-        const discoveryLayerNode = this.createDiscoveryLayerNode(streamPartId, this.knownStreamPartEntryPoints.get(streamPartId) ?? [])
+        const discoveryLayerNode = this.createDiscoveryLayerNode(
+            streamPartId,
+            this.knownStreamPartEntryPoints.get(streamPartId) ?? []
+        )
         const peerDescriptorStoreManager = new PeerDescriptorStoreManager({
             key: streamPartIdToDataKey(streamPartId),
             localPeerDescriptor: this.getPeerDescriptor(),
             fetchDataFromDht: (key) => this.controlLayerNode!.fetchDataFromDht(key),
             storeDataToDht: (key, data) => this.controlLayerNode!.storeDataToDht(key, data),
-            deleteDataFromDht: async (key, waitForCompletion) => this.controlLayerNode!.deleteDataFromDht(key, waitForCompletion)
+            deleteDataFromDht: async (key, waitForCompletion) =>
+                this.controlLayerNode!.deleteDataFromDht(key, waitForCompletion)
         })
         const networkSplitAvoidance = new StreamPartNetworkSplitAvoidance({
             discoveryLayerNode,
             discoverEntryPoints: async () => peerDescriptorStoreManager.fetchNodes()
         })
-        const node = this.createContentDeliveryLayerNode(
-            streamPartId,
-            discoveryLayerNode, 
-            () => peerDescriptorStoreManager.isLocalNodeStored()
+        const node = this.createContentDeliveryLayerNode(streamPartId, discoveryLayerNode, () =>
+            peerDescriptorStoreManager.isLocalNodeStored()
         )
         const streamPartReconnect = new StreamPartReconnect(discoveryLayerNode, peerDescriptorStoreManager)
         streamPart = {
@@ -183,7 +197,11 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
             this.emit('newMessage', message)
         })
         const handleEntryPointLeave = async () => {
-            if (this.destroyed || peerDescriptorStoreManager.isLocalNodeStored() || this.knownStreamPartEntryPoints.has(streamPartId)) {
+            if (
+                this.destroyed ||
+                peerDescriptorStoreManager.isLocalNodeStored() ||
+                this.knownStreamPartEntryPoints.has(streamPartId)
+            ) {
                 return
             }
             const entryPoints = await peerDescriptorStoreManager.fetchNodes()
@@ -207,10 +225,13 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
         })
     }
 
-    private async startLayersAndJoinDht(streamPartId: StreamPartID, peerDescriptorStoreManager: PeerDescriptorStoreManager): Promise<void> {
+    private async startLayersAndJoinDht(
+        streamPartId: StreamPartID,
+        peerDescriptorStoreManager: PeerDescriptorStoreManager
+    ): Promise<void> {
         logger.debug(`Start layers and join DHT for stream part ${streamPartId}`)
         const streamPart = this.streamParts.get(streamPartId)
-        if ((streamPart === undefined) || streamPart.proxied) {
+        if (streamPart === undefined || streamPart.proxied) {
             // leaveStreamPart has been called (or leaveStreamPart called, and then setProxies called)
             return
         }
@@ -228,7 +249,9 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
         } else {
             const entryPoints = await peerDescriptorStoreManager.fetchNodes()
             await Promise.all([
-                streamPart.discoveryLayerNode.joinDht(sampleSize(entryPoints, NETWORK_SPLIT_AVOIDANCE_MIN_NEIGHBOR_COUNT)),
+                streamPart.discoveryLayerNode.joinDht(
+                    sampleSize(entryPoints, NETWORK_SPLIT_AVOIDANCE_MIN_NEIGHBOR_COUNT)
+                ),
                 streamPart.discoveryLayerNode.joinRing()
             ])
             if (entryPoints.length < MAX_NODE_COUNT) {
@@ -247,9 +270,9 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
             serviceId: 'layer1::' + streamPartId,
             peerDescriptor: this.controlLayerNode!.getLocalPeerDescriptor(),
             entryPoints,
-            numberOfNodesPerKBucket: 4,  // TODO use options option or named constant?
+            numberOfNodesPerKBucket: 4, // TODO use options option or named constant?
             rpcRequestTimeout: EXISTING_CONNECTION_TIMEOUT,
-            dhtJoinTimeout: 20000,  // TODO use options option or named constant?
+            dhtJoinTimeout: 20000, // TODO use options option or named constant?
             periodicallyPingNeighbors: true,
             periodicallyPingRingContacts: true
         })
@@ -286,12 +309,12 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
         if (this.options.acceptProxyConnections) {
             throw new Error('cannot set proxies when acceptProxyConnections=true')
         }
-        const enable = (nodes.length > 0) && ((connectionCount === undefined) || (connectionCount > 0))
+        const enable = nodes.length > 0 && (connectionCount === undefined || connectionCount > 0)
         if (enable) {
             let client: ProxyClient
             const alreadyProxied = this.isProxiedStreamPart(streamPartId)
             if (alreadyProxied) {
-                client = (this.streamParts.get(streamPartId)! as { client: ProxyClient }).client 
+                client = (this.streamParts.get(streamPartId)! as { client: ProxyClient }).client
             } else {
                 client = this.createProxyClient(streamPartId)
                 this.streamParts.set(streamPartId, {
@@ -328,7 +351,7 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
 
     async inspect(peerDescriptor: PeerDescriptor, streamPartId: StreamPartID): Promise<boolean> {
         const streamPart = this.streamParts.get(streamPartId)
-        if ((streamPart !== undefined) && !streamPart.proxied) {
+        if (streamPart !== undefined && !streamPart.proxied) {
             return streamPart.node.inspect(peerDescriptor)
         }
         return false
@@ -338,7 +361,10 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
     getNodeInfo(): StreamPartitionInfo[] {
         const streamParts = Array.from(this.streamParts.entries()).filter(([_, node]) => node.proxied === false)
         return streamParts.map(([streamPartId]) => {
-            const stream = this.streamParts.get(streamPartId)! as { node: ContentDeliveryLayerNode, discoveryLayerNode: DiscoveryLayerNode }
+            const stream = this.streamParts.get(streamPartId)! as {
+                node: ContentDeliveryLayerNode
+                discoveryLayerNode: DiscoveryLayerNode
+            }
             return {
                 id: streamPartId,
                 controlLayerNeighbors: stream.discoveryLayerNode.getNeighbors(),
@@ -346,7 +372,6 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
                 contentDeliveryLayerNeighbors: stream.node.getInfos()
             }
         })
-
     }
 
     setStreamPartEntryPoints(streamPartId: StreamPartID, entryPoints: PeerDescriptor[]): void {
@@ -355,9 +380,11 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
 
     isProxiedStreamPart(streamPartId: StreamPartID, direction?: ProxyDirection): boolean {
         const streamPart = this.streamParts.get(streamPartId)
-        return (streamPart !== undefined)
-            && streamPart.proxied
-            && ((direction === undefined) || (streamPart.client.getDirection() === direction))
+        return (
+            streamPart !== undefined &&
+            streamPart.proxied &&
+            (direction === undefined || streamPart.client.getDirection() === direction)
+        )
     }
 
     getStreamPartDelivery(streamPartId: StreamPartID): StreamPartDelivery | undefined {
@@ -378,7 +405,7 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
 
     getNeighbors(streamPartId: StreamPartID): DhtAddress[] {
         const streamPart = this.streamParts.get(streamPartId)
-        return (streamPart !== undefined) && (streamPart.proxied === false)
+        return streamPart !== undefined && streamPart.proxied === false
             ? streamPart.node.getNeighbors().map((n) => toNodeId(n))
             : []
     }
@@ -389,7 +416,7 @@ export class ContentDeliveryManager extends EventEmitter<Events> {
 
     getDiagnosticInfo(): Record<string, unknown> {
         return {
-            streamParts: this.getStreamParts().map((id) => { 
+            streamParts: this.getStreamParts().map((id) => {
                 return {
                     id,
                     info: this.getStreamPartDelivery(id)!.getDiagnosticInfo()

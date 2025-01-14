@@ -67,12 +67,10 @@ const newToOldSignatureType = (type: NewSignatureType): OldSignatureType => {
         return OldSignatureType.ERC_1271
     }
     return OldSignatureType.SECP256K1
-
 }
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class StreamMessageTranslator {
-
     static toProtobuf(msg: OldStreamMessage): NewStreamMessage {
         const messageId: NewMessageID = {
             timestamp: msg.getTimestamp(),
@@ -179,7 +177,10 @@ export class StreamMessageTranslator {
         )
         let prevMsgRef: OldMessageRef | undefined = undefined
         if (msg.previousMessageRef) {
-            prevMsgRef = new OldMessageRef(Number(msg.previousMessageRef.timestamp), msg.previousMessageRef.sequenceNumber)
+            prevMsgRef = new OldMessageRef(
+                Number(msg.previousMessageRef.timestamp),
+                msg.previousMessageRef.sequenceNumber
+            )
         }
         const translated = new OldStreamMessage({
             messageId,

@@ -16,7 +16,11 @@ const MESSAGE_SIZE = 1e3 // 1k
 
 const logger = new Logger(module)
 
-function retryFlakyTest(fn: () => Promise<unknown>, isFlakyError: (e: Error) => boolean, maxRuns: number): () => Promise<void> {
+function retryFlakyTest(
+    fn: () => Promise<unknown>,
+    isFlakyError: (e: Error) => boolean,
+    maxRuns: number
+): () => Promise<void> {
     return async () => {
         for (let i = 1; i <= maxRuns; ++i) {
             try {
@@ -71,7 +75,7 @@ describe('Storage: lots of data', () => {
                 timestamp: 1000000 + (i + 1),
                 sequenceNumber: 0,
                 publisherId,
-                content: randomBuffer.toString('hex'),
+                content: randomBuffer.toString('hex')
             })
             storePromises.push(() => storage.store(msg))
         }
@@ -99,23 +103,30 @@ describe('Storage: lots of data', () => {
     })
 
     // TODO: Determine actual reason for flaky behavior in NET-918, something to do with cassandra-driver?
-    it('can requestFrom', retryFlakyTest(
-        async () => {
-            const streamingResults = storage.requestFrom(streamId, 0, 1000, 0, undefined)
-            const results = await toArray(streamingResults)
-            expect(results.length).toEqual(NUM_MESSAGES)
-        },
-        (e) => e.message?.includes('The value of "offset" is out of range'),
-        5
-    ))
+    it(
+        'can requestFrom',
+        retryFlakyTest(
+            async () => {
+                const streamingResults = storage.requestFrom(streamId, 0, 1000, 0, undefined)
+                const results = await toArray(streamingResults)
+                expect(results.length).toEqual(NUM_MESSAGES)
+            },
+            (e) => e.message?.includes('The value of "offset" is out of range'),
+            5
+        )
+    )
 
     // TODO: Determine actual reason for flaky behavior in NET-918, something to do with cassandra-driver?
-    it('can requestFrom again', retryFlakyTest(
-        async () => {
-            const streamingResults = storage.requestFrom(streamId, 0, 1000, 0, undefined)
-            const results = await toArray(streamingResults)
-            expect(results.length).toEqual(NUM_MESSAGES)
-        },
-        (e) => e.message?.includes('The value of "offset" is out of range'),
-        5))
+    it(
+        'can requestFrom again',
+        retryFlakyTest(
+            async () => {
+                const streamingResults = storage.requestFrom(streamId, 0, 1000, 0, undefined)
+                const results = await toArray(streamingResults)
+                expect(results.length).toEqual(NUM_MESSAGES)
+            },
+            (e) => e.message?.includes('The value of "offset" is out of range'),
+            5
+        )
+    )
 })

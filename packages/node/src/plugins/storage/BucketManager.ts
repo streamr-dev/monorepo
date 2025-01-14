@@ -26,13 +26,13 @@ export interface BucketManagerOptions {
 
 const toKey = (streamId: string, partition: number): StreamPartKey => `${streamId}-${partition}`
 
-const instantiateNewHeap = () => new Heap((a: Bucket, b: Bucket) => {
-    // @ts-expect-error TODO is dateCreate a Date object or a number?
-    return b.dateCreate - a.dateCreate
-})
+const instantiateNewHeap = () =>
+    new Heap((a: Bucket, b: Bucket) => {
+        // @ts-expect-error TODO is dateCreate a Date object or a number?
+        return b.dateCreate - a.dateCreate
+    })
 
 export class BucketManager {
-
     opts: BucketManagerOptions
     streamParts: Record<StreamPartKey, StreamPartState>
     buckets: Record<BucketId, Bucket>
@@ -74,7 +74,8 @@ export class BucketManager {
 
             if (!bucketId) {
                 const stream = this.streamParts[key]
-                stream.minTimestamp = stream.minTimestamp !== undefined ? Math.min(stream.minTimestamp, timestamp) : timestamp
+                stream.minTimestamp =
+                    stream.minTimestamp !== undefined ? Math.min(stream.minTimestamp, timestamp) : timestamp
             }
         } else {
             logger.trace('Create new (stream not found)', { key })
@@ -193,8 +194,15 @@ export class BucketManager {
 
                 // we create first in memory, so don't wait for database, then _storeBuckets inserts bucket into database
                 const newBucket = new Bucket(
-                    TimeUuid.fromDate(new Date(minTimestamp)).toString(), streamId, partition, 0, 0, new Date(minTimestamp),
-                    this.opts.maxBucketSize, this.opts.maxBucketRecords, this.opts.bucketKeepAliveSeconds
+                    TimeUuid.fromDate(new Date(minTimestamp)).toString(),
+                    streamId,
+                    partition,
+                    0,
+                    0,
+                    new Date(minTimestamp),
+                    this.opts.maxBucketSize,
+                    this.opts.maxBucketRecords,
+                    this.opts.bucketKeepAliveSeconds
                 )
 
                 stream.buckets.push(newBucket)
@@ -223,16 +231,19 @@ export class BucketManager {
         const getExplicitFirst = () => {
             // if fromTimestamp is defined, the first data point are in a some earlier bucket
             // (bucket.dateCreated<=fromTimestamp as data within one millisecond won't be divided to multiple buckets)
-            const QUERY = 'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create <= ? ORDER BY date_create DESC LIMIT 1'
+            const QUERY =
+                'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create <= ? ORDER BY date_create DESC LIMIT 1'
             const params = [streamId, partition, fromTimestamp]
             return this.getBucketsFromDatabase(QUERY, params, streamId, partition)
         }
 
         const getRest = () => {
-            /* eslint-disable max-len */
-            const GET_LAST_BUCKETS_RANGE_TIMESTAMP = 'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create > ? AND date_create <= ? ORDER BY date_create DESC'
-            const GET_LAST_BUCKETS_FROM_TIMESTAMP = 'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create > ? ORDER BY date_create DESC'
-            const GET_LAST_BUCKETS_TO_TIMESTAMP = 'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create <= ? ORDER BY date_create DESC'
+            const GET_LAST_BUCKETS_RANGE_TIMESTAMP =
+                'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create > ? AND date_create <= ? ORDER BY date_create DESC'
+            const GET_LAST_BUCKETS_FROM_TIMESTAMP =
+                'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create > ? ORDER BY date_create DESC'
+            const GET_LAST_BUCKETS_TO_TIMESTAMP =
+                'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create <= ? ORDER BY date_create DESC'
             let query
             let params
             if (fromTimestamp !== undefined && toTimestamp !== undefined) {
@@ -245,14 +256,15 @@ export class BucketManager {
                 query = GET_LAST_BUCKETS_TO_TIMESTAMP
                 params = [streamId, partition, toTimestamp]
             } else {
-                throw new TypeError(`Not correct combination of fromTimestamp (${fromTimestamp}) and toTimestamp (${toTimestamp})`)
+                throw new TypeError(
+                    `Not correct combination of fromTimestamp (${fromTimestamp}) and toTimestamp (${toTimestamp})`
+                )
             }
             return this.getBucketsFromDatabase(query, params, streamId, partition)
         }
 
         if (fromTimestamp !== undefined) {
-            return Promise.all([getExplicitFirst(), getRest()])
-                .then(([first, rest]) => rest.concat(first))
+            return Promise.all([getExplicitFirst(), getRest()]).then(([first, rest]) => rest.concat(first))
         } else {
             return getRest()
         }
@@ -267,9 +279,16 @@ export class BucketManager {
      * @param timestamp
      * @returns {Promise<[]>}
      */
-    async getLastBuckets(streamId: string, partition: number, limit = 1, timestamp: number | undefined = undefined): Promise<Bucket[]> {
-        const GET_LAST_BUCKETS = 'SELECT * FROM bucket WHERE stream_id = ? and partition = ?  ORDER BY date_create DESC LIMIT ?'
-        const GET_LAST_BUCKETS_TIMESTAMP = 'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create <= ? ORDER BY date_create DESC LIMIT ?'
+    async getLastBuckets(
+        streamId: string,
+        partition: number,
+        limit = 1,
+        timestamp: number | undefined = undefined
+    ): Promise<Bucket[]> {
+        const GET_LAST_BUCKETS =
+            'SELECT * FROM bucket WHERE stream_id = ? and partition = ?  ORDER BY date_create DESC LIMIT ?'
+        const GET_LAST_BUCKETS_TIMESTAMP =
+            'SELECT * FROM bucket WHERE stream_id = ? and partition = ? AND date_create <= ? ORDER BY date_create DESC LIMIT ?'
 
         let query
         let params
@@ -285,19 +304,31 @@ export class BucketManager {
         return this.getBucketsFromDatabase(query, params, streamId, partition)
     }
 
-    private async getBucketsFromDatabase(query: string, params: any, streamId: string, partition: number): Promise<Bucket[]> {
+    private async getBucketsFromDatabase(
+        query: string,
+        params: any,
+        streamId: string,
+        partition: number
+    ): Promise<Bucket[]> {
         const buckets: Bucket[] = []
 
         const resultSet = await this.cassandraClient.execute(query, params, {
-            prepare: true,
+            prepare: true
         })
 
         resultSet.rows.forEach((row) => {
             const { id, records, size, date_create: dateCreate } = row
 
             const bucket = new Bucket(
-                id.toString(), streamId, partition, size, records, new Date(dateCreate),
-                this.opts.maxBucketSize, this.opts.maxBucketRecords, this.opts.bucketKeepAliveSeconds
+                id.toString(),
+                streamId,
+                partition,
+                size,
+                records,
+                new Date(dateCreate),
+                this.opts.maxBucketSize,
+                this.opts.maxBucketRecords,
+                this.opts.bucketKeepAliveSeconds
             )
 
             buckets.push(bucket)
@@ -313,24 +344,25 @@ export class BucketManager {
 
     private async storeBuckets(): Promise<void> {
         // for non-existing buckets UPDATE works as INSERT
-        const UPDATE_BUCKET = 'UPDATE bucket SET size = ?, records = ?, id = ? WHERE stream_id = ? AND partition = ? AND date_create = ?'
+        const UPDATE_BUCKET =
+            'UPDATE bucket SET size = ?, records = ?, id = ? WHERE stream_id = ? AND partition = ? AND date_create = ?'
 
         const notStoredBuckets = Object.values(this.buckets).filter((bucket: Bucket) => !bucket.isStored())
 
-        const results = await Promise.allSettled(notStoredBuckets.map(async (bucket) => {
-            const {
-                id, size, records, streamId, partition, dateCreate
-            } = bucket
-            const params = [size, records, id, streamId, partition, dateCreate]
+        const results = await Promise.allSettled(
+            notStoredBuckets.map(async (bucket) => {
+                const { id, size, records, streamId, partition, dateCreate } = bucket
+                const params = [size, records, id, streamId, partition, dateCreate]
 
-            await this.cassandraClient.execute(UPDATE_BUCKET, params, {
-                prepare: true
+                await this.cassandraClient.execute(UPDATE_BUCKET, params, {
+                    prepare: true
+                })
+                return {
+                    bucket,
+                    records
+                }
             })
-            return {
-                bucket,
-                records
-            }
-        }))
+        )
 
         results.forEach((result) => {
             if (result.status === 'fulfilled') {
@@ -346,8 +378,12 @@ export class BucketManager {
             }
         })
 
-        const bucketsToRemove = Object.values(this.buckets).filter((bucket: Bucket) => bucket.isStored() && !bucket.isAlive())
-        bucketsToRemove.forEach((bucket: Bucket) => this.removeBucket(bucket.getId(), bucket.streamId, bucket.partition))
+        const bucketsToRemove = Object.values(this.buckets).filter(
+            (bucket: Bucket) => bucket.isStored() && !bucket.isAlive()
+        )
+        bucketsToRemove.forEach((bucket: Bucket) =>
+            this.removeBucket(bucket.getId(), bucket.streamId, bucket.partition)
+        )
 
         this.storeBucketsTimeout = setTimeout(() => this.storeBuckets(), this.opts.storeBucketsTimeout)
     }

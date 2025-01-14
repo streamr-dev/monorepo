@@ -6,7 +6,6 @@ import { createMockPeerDescriptor, createStreamMessage } from '../utils/utils'
 import { randomUserId } from '@streamr/test-utils'
 
 describe('inspect', () => {
-
     let simulator: Simulator
 
     const streamPartId = StreamPartIDUtils.parse('stream#0')
@@ -45,11 +44,13 @@ describe('inspect', () => {
         inspectorNode = await initiateNode(inspectorPeerDescriptor, simulator)
 
         inspectedNodes = []
-        await Promise.all(range(inspectedNodeCount).map(async () => {
-            const peerDescriptor = createMockPeerDescriptor()
-            const node = await initiateNode(peerDescriptor, simulator)
-            inspectedNodes.push(node)
-        }))
+        await Promise.all(
+            range(inspectedNodeCount).map(async () => {
+                const peerDescriptor = createMockPeerDescriptor()
+                const node = await initiateNode(peerDescriptor, simulator)
+                inspectedNodes.push(node)
+            })
+        )
         await Promise.all([
             publisherNode.joinStreamPart(streamPartId, { minCount: 4, timeout: 15000 }),
             inspectorNode.joinStreamPart(streamPartId, { minCount: 4, timeout: 15000 }),
@@ -60,11 +61,7 @@ describe('inspect', () => {
 
     afterEach(async () => {
         clearInterval(publishInterval)
-        await Promise.all([
-            publisherNode.stop(),
-            inspectorNode.stop(),
-            ...inspectedNodes.map((node) => node.stop())
-        ])
+        await Promise.all([publisherNode.stop(), inspectorNode.stop(), ...inspectedNodes.map((node) => node.stop())])
     })
 
     it('gets successful inspections from all suspects', async () => {
@@ -81,9 +78,10 @@ describe('inspect', () => {
         }, 200)
 
         for (const node of inspectedNodes) {
-            const result = await inspectorNode.getContentDeliveryManager().inspect(node.getControlLayerNode().getLocalPeerDescriptor(), streamPartId)
+            const result = await inspectorNode
+                .getContentDeliveryManager()
+                .inspect(node.getControlLayerNode().getLocalPeerDescriptor(), streamPartId)
             expect(result).toEqual(true)
         }
     }, 25000)
-
 })

@@ -13,7 +13,8 @@ const logger = new Logger(module)
 export type NormalizedNodeInfo = ChangeFieldType<
     NodeInfo,
     'streamPartitions',
-    Omit<StreamPartitionInfo, 'deprecatedContentDeliveryLayerNeighbors'>[]>
+    Omit<StreamPartitionInfo, 'deprecatedContentDeliveryLayerNeighbors'>[]
+>
 
 const toNormalizeNodeInfo = (info: NodeInfo): NormalizedNodeInfo => {
     const isLegacyFormat = semver.satisfies(semver.coerce(info.applicationVersion)!, '< 102.0.0')
@@ -24,8 +25,8 @@ const toNormalizeNodeInfo = (info: NodeInfo): NormalizedNodeInfo => {
             contentDeliveryLayerNeighbors: !isLegacyFormat
                 ? sp.contentDeliveryLayerNeighbors
                 : sp.deprecatedContentDeliveryLayerNeighbors.map((n) => ({
-                    peerDescriptor: n
-                }))
+                      peerDescriptor: n
+                  }))
         }))
     }
 }
@@ -39,8 +40,8 @@ const createPeerDescriptorOutput = (peerDescriptor: PeerDescriptor) => {
         websocket: peerDescriptor.websocket,
         region: peerDescriptor.region,
         ipAddress: peerDescriptor.ipAddress,
-        publicKey: (peerDescriptor.publicKey !== undefined) ? binaryToHex(peerDescriptor.publicKey) : undefined,
-        signature: (peerDescriptor.signature !== undefined) ? binaryToHex(peerDescriptor.signature) : undefined
+        publicKey: peerDescriptor.publicKey !== undefined ? binaryToHex(peerDescriptor.publicKey) : undefined,
+        signature: peerDescriptor.signature !== undefined ? binaryToHex(peerDescriptor.signature) : undefined
     }
 }
 
@@ -64,7 +65,7 @@ const createNodeInfoOutput = (nodeInfo: NormalizedNodeInfo) => {
 }
 
 createClientCommand(async (client: StreamrClient, nodeId: string) => {
-    const networkNode = await client.getNode().getNode() as NetworkNode
+    const networkNode = (await client.getNode().getNode()) as NetworkNode
     const controlLayerNode = networkNode.stack.getControlLayerNode()
     const peerDescriptors = await (controlLayerNode as DhtNode).findClosestNodesFromDht(nodeId as DhtAddress)
     const peerDescriptor = peerDescriptors.find((pd) => toDhtAddress(pd.nodeId) === nodeId)

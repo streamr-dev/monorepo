@@ -4,10 +4,9 @@ import { Database, Subdomain } from '../src/Database'
 import { Route53Api } from '../src/Route53Api'
 import { chunk } from 'lodash'
 import { ChangeAction } from '@aws-sdk/client-route-53'
-
-(async () => {
+;(async () => {
     const logger = new Logger(module)
-    
+
     const domainName = validateEnvironmentVariable('AUTOCERTIFIER_DOMAIN_NAME')
     const databaseFilePath = validateEnvironmentVariable('AUTOCERTIFIER_DATABASE_FILE_PATH')
     validateEnvironmentVariable('AWS_ACCESS_KEY_ID')
@@ -36,7 +35,6 @@ import { ChangeAction } from '@aws-sdk/client-route-53'
                 await route53Api.changeRecords(ChangeAction.UPSERT, 'A', records, 300)
             }
         }
-
     } catch (error) {
         logger.error(error)
     } finally {

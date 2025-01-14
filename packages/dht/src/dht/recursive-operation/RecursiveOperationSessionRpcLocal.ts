@@ -19,17 +19,22 @@ interface RecursiveOperationSessionRpcLocalOptions {
 }
 
 export class RecursiveOperationSessionRpcLocal implements IRecursiveOperationSessionRpc {
-
     private readonly options: RecursiveOperationSessionRpcLocalOptions
 
     constructor(options: RecursiveOperationSessionRpcLocalOptions) {
         this.options = options
     }
-    
+
     async sendResponse(report: RecursiveOperationResponse, context: ServerCallContext): Promise<Empty> {
         const remoteNodeId = toNodeId((context as DhtCallContext).incomingSourceDescriptor!)
         logger.trace('RecursiveOperationResponse arrived: ' + JSON.stringify(report))
-        this.options.onResponseReceived(remoteNodeId, report.routingPath, report.closestConnectedNodes, report.dataEntries, report.noCloserNodesFound)
+        this.options.onResponseReceived(
+            remoteNodeId,
+            report.routingPath,
+            report.closestConnectedNodes,
+            report.dataEntries,
+            report.noCloserNodesFound
+        )
         return {}
     }
 }

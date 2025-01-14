@@ -45,7 +45,6 @@ describe('SubscriptionSession', () => {
             await session.add(createSubscription(ADDRESS_ONE))
             expect(session.getERC1271ContractAddress()).toEqual(ADDRESS_ONE)
         })
-
     })
 
     it('can add multiple subscriptions without erc1271contractAddress', async () => {
@@ -60,7 +59,9 @@ describe('SubscriptionSession', () => {
 
     it('cannot subscribe with erc1271contractAddress if existing has none', async () => {
         await session.add(createSubscription())
-        await expect(session.add(createSubscription(ADDRESS_ONE))).rejects.toEqual(new Error('Subscription ERC-1271 mismatch'))
+        await expect(session.add(createSubscription(ADDRESS_ONE))).rejects.toEqual(
+            new Error('Subscription ERC-1271 mismatch')
+        )
     })
 
     it('cannot subscribe without erc1271contractAddress if existing has one', async () => {
@@ -70,6 +71,8 @@ describe('SubscriptionSession', () => {
 
     it('cannot subscribe with different erc1271contractAddress if existing has one', async () => {
         await session.add(createSubscription(ADDRESS_ONE))
-        await expect(session.add(createSubscription(ADDRESS_TWO))).rejects.toEqual(new Error('Subscription ERC-1271 mismatch'))
+        await expect(session.add(createSubscription(ADDRESS_TWO))).rejects.toEqual(
+            new Error('Subscription ERC-1271 mismatch')
+        )
     })
 })

@@ -5,11 +5,7 @@
     "rootDirs": ["src", "test"],
     "noImplicitOverride": false
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "package.json"
-  ],
+  "include": ["src/**/*", "test/**/*", "package.json"],
   "exclude": [
     "src/connection/webrtc/NodeWebrtcConnection.ts",
     "src/connection/websocket/NodeWebsocketClientConnection.ts"

@@ -23,12 +23,12 @@ const createPermissionFilter = async (
 ): Promise<SearchStreamsPermissionFilter | undefined> => {
     if (user !== undefined) {
         return {
-            userId: (getOptionType(user) === OptionType.ARGUMENT) ? user as string : await client.getUserId(),
+            userId: getOptionType(user) === OptionType.ARGUMENT ? (user as string) : await client.getUserId(),
             allowPublic: allowPublic ?? false,
             allOf,
             anyOf
         }
-    } else if ((allowPublic !== undefined) || (allOf !== undefined) || (anyOf !== undefined)) {
+    } else if (allowPublic !== undefined || allOf !== undefined || anyOf !== undefined) {
         console.error('specify a user with "--user" when using "--public", "--all" or "--any"')
         process.exit(1)
     }

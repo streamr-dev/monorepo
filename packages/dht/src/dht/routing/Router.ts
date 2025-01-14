@@ -1,4 +1,10 @@
-import { Message, PeerDescriptor, RouteMessageAck, RouteMessageError, RouteMessageWrapper } from '../../../generated/packages/dht/protos/DhtRpc'
+import {
+    Message,
+    PeerDescriptor,
+    RouteMessageAck,
+    RouteMessageError,
+    RouteMessageWrapper
+} from '../../../generated/packages/dht/protos/DhtRpc'
 import { RoutingMode, RoutingRemoteContact, RoutingSession, RoutingSessionEvents } from './RoutingSession'
 import { Logger, executeSafePromise, raceEvents3, withTimeout } from '@streamr/utils'
 import { RoutingRpcCommunicator } from '../../transport/RoutingRpcCommunicator'
@@ -23,7 +29,6 @@ interface ForwardingTableEntry {
 const logger = new Logger(module)
 
 export class Router {
-
     private readonly forwardingTable: Map<DhtAddress, ForwardingTableEntry> = new Map()
     private readonly routingTablesCache = new RoutingTablesCache()
     private ongoingRoutingSessions: Map<string, RoutingSession> = new Map()
@@ -41,7 +46,8 @@ export class Router {
 
     private registerLocalRpcMethods() {
         const rpcLocal = new RouterRpcLocal({
-            doRouteMessage: (routedMessage: RouteMessageWrapper, mode?: RoutingMode) => this.doRouteMessage(routedMessage, mode),
+            doRouteMessage: (routedMessage: RouteMessageWrapper, mode?: RoutingMode) =>
+                this.doRouteMessage(routedMessage, mode),
             setForwardingEntries: (routedMessage: RouteMessageWrapper) => this.setForwardingEntries(routedMessage),
             duplicateRequestDetector: this.duplicateRequestDetector,
             localPeerDescriptor: this.options.localPeerDescriptor,
@@ -69,7 +75,6 @@ export class Router {
                 return rpcLocal.forwardMessage(forwardMessage)
             }
         )
-
     }
 
     public send(msg: Message, reachableThrough: PeerDescriptor[]): void {
@@ -112,12 +117,18 @@ export class Router {
         this.messagesSent += 1
     }
 
-    public doRouteMessage(routedMessage: RouteMessageWrapper, mode = RoutingMode.ROUTE, excludedPeer?: DhtAddress): RouteMessageAck {
+    public doRouteMessage(
+        routedMessage: RouteMessageWrapper,
+        mode = RoutingMode.ROUTE,
+        excludedPeer?: DhtAddress
+    ): RouteMessageAck {
         if (this.stopped) {
             return createRouteMessageAck(routedMessage, RouteMessageError.STOPPED)
         }
-        logger.trace(`Routing message ${routedMessage.requestId} from ${toNodeId(routedMessage.sourcePeer!)} `
-            + `to ${toDhtAddress(routedMessage.target)}`)
+        logger.trace(
+            `Routing message ${routedMessage.requestId} from ${toNodeId(routedMessage.sourcePeer!)} ` +
+                `to ${toDhtAddress(routedMessage.target)}`
+        )
         const session = this.createRoutingSession(routedMessage, mode, excludedPeer)
         const contacts = session.updateAndGetRoutablePeers()
         if (contacts.length > 0) {
@@ -137,10 +148,10 @@ export class Router {
                     await withTimeout(eventReceived, 10000)
                     logger.trace('raceEvents ended from routingSession: ' + session.sessionId)
                 } catch {
-                    logger.trace('raceEvents timed out for routingSession ' + session.sessionId) 
+                    logger.trace('raceEvents timed out for routingSession ' + session.sessionId)
                 }
                 session.stop()
-                this.removeRoutingSession(session.sessionId) 
+                this.removeRoutingSession(session.sessionId)
             })
             session.sendMoreRequests(contacts)
             this.messagesRouted += 1
@@ -151,7 +162,11 @@ export class Router {
         }
     }
 
-    private createRoutingSession(routedMessage: RouteMessageWrapper, mode: RoutingMode, excludedNode?: DhtAddress): RoutingSession {
+    private createRoutingSession(
+        routedMessage: RouteMessageWrapper,
+        mode: RoutingMode,
+        excludedNode?: DhtAddress
+    ): RoutingSession {
         const excludedNodeIds = new Set<DhtAddress>(routedMessage.routingPath.map((descriptor) => toNodeId(descriptor)))
         if (excludedNode) {
             excludedNodeIds.add(excludedNode)
@@ -189,7 +204,11 @@ export class Router {
     }
 
     onNodeConnected(peerDescriptor: PeerDescriptor): void {
-        const remote = new RoutingRemoteContact(peerDescriptor, this.options.localPeerDescriptor, this.options.rpcCommunicator)
+        const remote = new RoutingRemoteContact(
+            peerDescriptor,
+            this.options.localPeerDescriptor,
+            this.options.rpcCommunicator
+        )
         this.routingTablesCache.onNodeConnected(remote)
     }
 
@@ -226,7 +245,7 @@ export class Router {
         const reachableThroughWithoutSelf = routedMessage.reachableThrough.filter((peer) => {
             return !areEqualPeerDescriptors(peer, this.options.localPeerDescriptor)
         })
-        
+
         if (reachableThroughWithoutSelf.length > 0) {
             const sourceNodeId = toNodeId(routedMessage.sourcePeer!)
             if (this.forwardingTable.has(sourceNodeId)) {
@@ -238,7 +257,7 @@ export class Router {
                 peerDescriptors: reachableThroughWithoutSelf,
                 timeout: setTimeout(() => {
                     this.forwardingTable.delete(sourceNodeId)
-                }, 10000)  // TODO use options option or named constant?
+                }, 10000) // TODO use options option or named constant?
             }
             this.forwardingTable.set(sourceNodeId, forwardingEntry)
         }

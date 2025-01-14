@@ -7,7 +7,7 @@ export { StreamMetadata } from './StreamMetadata'
 export { Message, MessageMetadata } from './Message'
 export { StreamrClientEvents } from './events'
 export { PublishMetadata } from './publish/Publisher'
-export { Subscription, SubscriptionEvents, } from './subscribe/Subscription'
+export { Subscription, SubscriptionEvents } from './subscribe/Subscription'
 export type { MessageStream, MessageListener } from './subscribe/MessageStream'
 export { ResendOptions, ResendLastOptions, ResendFromOptions, ResendRangeOptions, ResendRef } from './subscribe/Resends'
 export { GapFillStrategy } from './subscribe/ordering/GapFiller'
@@ -52,7 +52,7 @@ export { convertBytesToStreamMessage, convertStreamMessageToBytes } from './prot
 
 export { DhtAddress } from '@streamr/dht'
 export { ProxyDirection } from '@streamr/trackerless-network'
-export type { 
+export type {
     StreamID,
     StreamPartID,
     BrandedString,
@@ -127,7 +127,12 @@ const _operatorContractUtils = {
     getOperatorContract
 }
 export { _operatorContractUtils }
-export type { SetupOperatorContractOpts, SetupOperatorContractReturnType, DeployOperatorContractOpts, DeploySponsorshipContractOpts }
+export type {
+    SetupOperatorContractOpts,
+    SetupOperatorContractReturnType,
+    DeployOperatorContractOpts,
+    DeploySponsorshipContractOpts
+}
 
 export type { IceServer, PeerDescriptor, PortRange } from '@streamr/dht'
 export type { AbstractSigner, Eip1193Provider, Overrides } from 'ethers'

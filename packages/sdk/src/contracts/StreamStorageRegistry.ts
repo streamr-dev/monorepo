@@ -1,4 +1,12 @@
-import { EthereumAddress, Logger, StreamID, TheGraphClient, collect, toEthereumAddress, toStreamID } from '@streamr/utils'
+import {
+    EthereumAddress,
+    Logger,
+    StreamID,
+    TheGraphClient,
+    collect,
+    toEthereumAddress,
+    toStreamID
+} from '@streamr/utils'
 import min from 'lodash/min'
 import { Lifecycle, inject, scoped } from 'tsyringe'
 import { Authentication, AuthenticationInjectionToken } from '../Authentication'
@@ -35,7 +43,6 @@ const GET_ALL_STORAGE_NODES = Symbol('GET_ALL_STORAGE_NODES')
  */
 @scoped(Lifecycle.ContainerScoped)
 export class StreamStorageRegistry {
-
     private streamStorageRegistryContract?: StreamStorageRegistryContract
     private readonly streamStorageRegistryContractReadonly: StreamStorageRegistryContract
     private readonly streamIdBuilder: StreamIDBuilder
@@ -70,13 +77,16 @@ export class StreamStorageRegistry {
             rpcProviderSource.getProvider(),
             'streamStorageRegistry'
         ) as StreamStorageRegistryContract
-        const chainEventPoller = new ChainEventPoller(this.rpcProviderSource.getSubProviders().map((p) => {
-            return contractFactory.createEventContract(
-                toEthereumAddress(this.config.contracts.streamStorageRegistryChainAddress), 
-                StreamStorageRegistryArtifact,
-                p
-            )
-        }), config.contracts.pollInterval)
+        const chainEventPoller = new ChainEventPoller(
+            this.rpcProviderSource.getSubProviders().map((p) => {
+                return contractFactory.createEventContract(
+                    toEthereumAddress(this.config.contracts.streamStorageRegistryChainAddress),
+                    StreamStorageRegistryArtifact,
+                    p
+                )
+            }),
+            config.contracts.pollInterval
+        )
         this.initStreamAssignmentEventListeners(eventEmitter, chainEventPoller, loggerFactory)
         this.storageNodesCache = createCacheMap({
             valueFactory: (query) => {
@@ -98,7 +108,7 @@ export class StreamStorageRegistry {
             blockNumber
         })
         initContractEventGateway({
-            sourceName: 'Added', 
+            sourceName: 'Added',
             sourceEmitter: chainEventPoller,
             targetName: 'streamAddedToStorageNode',
             targetEmitter: eventEmitter,
@@ -106,7 +116,7 @@ export class StreamStorageRegistry {
             loggerFactory
         })
         initContractEventGateway({
-            sourceName: 'Removed', 
+            sourceName: 'Removed',
             sourceEmitter: chainEventPoller,
             targetName: 'streamRemovedFromStorageNode',
             targetEmitter: eventEmitter,
@@ -118,12 +128,13 @@ export class StreamStorageRegistry {
     private async connectToContract() {
         if (!this.streamStorageRegistryContract) {
             const chainSigner = await this.authentication.getTransactionSigner(this.rpcProviderSource)
-            this.streamStorageRegistryContract = this.contractFactory.createWriteContract<StreamStorageRegistryContract>(
-                toEthereumAddress(this.config.contracts.streamStorageRegistryChainAddress),
-                StreamStorageRegistryArtifact,
-                chainSigner,
-                'streamStorageRegistry'
-            )
+            this.streamStorageRegistryContract =
+                this.contractFactory.createWriteContract<StreamStorageRegistryContract>(
+                    toEthereumAddress(this.config.contracts.streamStorageRegistryChainAddress),
+                    StreamStorageRegistryArtifact,
+                    chainSigner,
+                    'streamStorageRegistry'
+                )
         }
     }
 
@@ -151,12 +162,15 @@ export class StreamStorageRegistry {
         return await this.streamStorageRegistryContractReadonly.isStorageNodeOf(streamId, nodeAddress)
     }
 
-    async getStoredStreams(nodeAddress: EthereumAddress): Promise<{ streams: { id: StreamID, metadata: StreamMetadata }[], blockNumber: number }> {
+    async getStoredStreams(
+        nodeAddress: EthereumAddress
+    ): Promise<{ streams: { id: StreamID; metadata: StreamMetadata }[]; blockNumber: number }> {
         this.logger.debug('Get stored streams of storage node', { nodeAddress })
         const blockNumbers: number[] = []
-        const res = await collect(this.theGraphClient.queryEntities(
-            (lastId: string, pageSize: number) => {
-                const query = `{
+        const res = await collect(
+            this.theGraphClient.queryEntities(
+                (lastId: string, pageSize: number) => {
+                    const query = `{
                     node (id: "${nodeAddress}") {
                         id
                         metadata
@@ -172,14 +186,15 @@ export class StreamStorageRegistry {
                         }
                     }
                 }`
-                return { query }
-            },
-            (response: any) => {
-                // eslint-disable-next-line no-underscore-dangle
-                blockNumbers.push(response._meta.block.number)
-                return (response.node !== null) ? response.node.storedStreams : []
-            }
-        ))
+                    return { query }
+                },
+                (response: any) => {
+                    // eslint-disable-next-line no-underscore-dangle
+                    blockNumbers.push(response._meta.block.number)
+                    return response.node !== null ? response.node.storedStreams : []
+                }
+            )
+        )
         const streams = res.map((stream: any) => {
             return { id: toStreamID(stream.id), metadata: parseMetadata(stream.metadata) } // toStreamID() not strictly necessary
         })
@@ -190,18 +205,22 @@ export class StreamStorageRegistry {
     }
 
     async getStorageNodes(streamIdOrPath?: string): Promise<EthereumAddress[]> {
-        const query = (streamIdOrPath !== undefined) ? await this.streamIdBuilder.toStreamID(streamIdOrPath) : GET_ALL_STORAGE_NODES
+        const query =
+            streamIdOrPath !== undefined ? await this.streamIdBuilder.toStreamID(streamIdOrPath) : GET_ALL_STORAGE_NODES
         return this.storageNodesCache.get(query)
     }
 
-    private async getStorageNodes_nonCached(query: StreamID | typeof GET_ALL_STORAGE_NODES): Promise<EthereumAddress[]> {
+    private async getStorageNodes_nonCached(
+        query: StreamID | typeof GET_ALL_STORAGE_NODES
+    ): Promise<EthereumAddress[]> {
         let queryResults: NodeQueryResult[]
         if (query !== GET_ALL_STORAGE_NODES) {
             const streamId = query
             this.logger.debug('Get storage nodes of stream', { streamId })
-            queryResults = await collect(this.theGraphClient.queryEntities<NodeQueryResult>(
-                (lastId: string, pageSize: number) => {
-                    const query = `{
+            queryResults = await collect(
+                this.theGraphClient.queryEntities<NodeQueryResult>(
+                    (lastId: string, pageSize: number) => {
+                        const query = `{
                         stream (id: "${streamId}") {
                             id
                             metadata
@@ -212,16 +231,17 @@ export class StreamStorageRegistry {
                             }
                         }
                     }`
-                    return { query }
-                },
-                (response: any) => {
-                    return (response.stream !== null) ? response.stream.storageNodes : []
-                }
-            ))
+                        return { query }
+                    },
+                    (response: any) => {
+                        return response.stream !== null ? response.stream.storageNodes : []
+                    }
+                )
+            )
         } else {
             this.logger.debug('Get all storage nodes')
-            queryResults = await collect(this.theGraphClient.queryEntities<NodeQueryResult>(
-                (lastId: string, pageSize: number) => {
+            queryResults = await collect(
+                this.theGraphClient.queryEntities<NodeQueryResult>((lastId: string, pageSize: number) => {
                     const query = `{
                         nodes (first: ${pageSize} orderBy: "id" where: { id_gt: "${lastId}"}) {
                             id
@@ -230,8 +250,8 @@ export class StreamStorageRegistry {
                         }
                     }`
                     return { query }
-                }
-            ))
+                })
+            )
         }
         return queryResults.map((node) => toEthereumAddress(node.id))
     }

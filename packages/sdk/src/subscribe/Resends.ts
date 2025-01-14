@@ -23,7 +23,11 @@ import { forEach, map, transformError } from '../utils/GeneratorUtils'
 import { LoggerFactory } from '../utils/LoggerFactory'
 import { pull } from '../utils/PushBuffer'
 import { PushPipeline } from '../utils/PushPipeline'
-import { FetchHttpStreamResponseError, createQueryString, fetchLengthPrefixedFrameHttpBinaryStream } from '../utils/utils'
+import {
+    FetchHttpStreamResponseError,
+    createQueryString,
+    fetchLengthPrefixedFrameHttpBinaryStream
+} from '../utils/utils'
 import { MessagePipelineFactory } from './MessagePipelineFactory'
 
 type QueryDict = Record<string, string | number | boolean | null | undefined>
@@ -63,7 +67,8 @@ export interface ResendRangeOptions {
  */
 export type ResendOptions = ResendLastOptions | ResendFromOptions | ResendRangeOptions
 
-export type InternalResendOptions = ResendLastOptions
+export type InternalResendOptions =
+    | ResendLastOptions
     | ChangeFieldType<ResendFromOptions, 'publisherId', UserID | undefined>
     | ChangeFieldType<ResendRangeOptions, 'publisherId', UserID | undefined>
 
@@ -78,10 +83,22 @@ function isResendFrom<T extends ResendFromOptions>(options: any): options is T {
 }
 
 function isResendRange<T extends ResendRangeOptions>(options: any): options is T {
-    return options && typeof options === 'object' && 'from' in options && 'to' in options && options.to && options.from != null
+    return (
+        options &&
+        typeof options === 'object' &&
+        'from' in options &&
+        'to' in options &&
+        options.to &&
+        options.from != null
+    )
 }
 
-const createUrl = (baseUrl: string, endpointSuffix: string, streamPartId: StreamPartID, query: QueryDict = {}): string => {
+const createUrl = (
+    baseUrl: string,
+    endpointSuffix: string,
+    streamPartId: StreamPartID,
+    query: QueryDict = {}
+): string => {
     const queryMap = {
         ...query,
         format: 'raw'
@@ -91,7 +108,7 @@ const createUrl = (baseUrl: string, endpointSuffix: string, streamPartId: Stream
     return `${baseUrl}/streams/${encodeURIComponent(streamId)}/data/partitions/${streamPartition}/${endpointSuffix}?${queryString}`
 }
 
-const getHttpErrorTransform = (): (error: any) => Promise<StreamrClientError> => {
+const getHttpErrorTransform = (): ((error: any) => Promise<StreamrClientError>) => {
     return async (err: any) => {
         let message
         if (err instanceof FetchHttpStreamResponseError) {
@@ -115,19 +132,18 @@ const getHttpErrorTransform = (): (error: any) => Promise<StreamrClientError> =>
 export const toInternalResendOptions = (options: ResendOptions): InternalResendOptions => {
     return {
         ...options,
-        publisherId: (('publisherId' in options) && (options.publisherId !== undefined)) ? toUserId(options.publisherId) : undefined
+        publisherId:
+            'publisherId' in options && options.publisherId !== undefined ? toUserId(options.publisherId) : undefined
     }
 }
 
 @scoped(Lifecycle.ContainerScoped)
 export class Resends {
-
     private readonly storageNodeRegistry: StorageNodeRegistry
     private readonly messagePipelineFactory: MessagePipelineFactory
     private readonly config: StrictStreamrClientConfig
     private readonly logger: Logger
 
-    /* eslint-disable indent */
     constructor(
         @inject(delay(() => StorageNodeRegistry)) storageNodeRegistry: StorageNodeRegistry,
         @inject(delay(() => MessagePipelineFactory)) messagePipelineFactory: MessagePipelineFactory,
@@ -153,24 +169,45 @@ export class Resends {
                 emptyStream.endWrite()
                 return emptyStream
             }
-            return this.fetchStream('last', streamPartId, {
-                count: options.last
-            }, raw, getStorageNodes, abortSignal)
+            return this.fetchStream(
+                'last',
+                streamPartId,
+                {
+                    count: options.last
+                },
+                raw,
+                getStorageNodes,
+                abortSignal
+            )
         } else if (isResendRange(options)) {
-            return this.fetchStream('range', streamPartId, {
-                fromTimestamp: new Date(options.from.timestamp).getTime(),
-                fromSequenceNumber: options.from.sequenceNumber,
-                toTimestamp: new Date(options.to.timestamp).getTime(),
-                toSequenceNumber: options.to.sequenceNumber,
-                publisherId: options.publisherId,
-                msgChainId: options.msgChainId
-            }, raw, getStorageNodes, abortSignal)
+            return this.fetchStream(
+                'range',
+                streamPartId,
+                {
+                    fromTimestamp: new Date(options.from.timestamp).getTime(),
+                    fromSequenceNumber: options.from.sequenceNumber,
+                    toTimestamp: new Date(options.to.timestamp).getTime(),
+                    toSequenceNumber: options.to.sequenceNumber,
+                    publisherId: options.publisherId,
+                    msgChainId: options.msgChainId
+                },
+                raw,
+                getStorageNodes,
+                abortSignal
+            )
         } else if (isResendFrom(options)) {
-            return this.fetchStream('from', streamPartId, {
-                fromTimestamp: new Date(options.from.timestamp).getTime(),
-                fromSequenceNumber: options.from.sequenceNumber,
-                publisherId: options.publisherId
-            }, raw, getStorageNodes, abortSignal)
+            return this.fetchStream(
+                'from',
+                streamPartId,
+                {
+                    fromTimestamp: new Date(options.from.timestamp).getTime(),
+                    fromSequenceNumber: options.from.sequenceNumber,
+                    publisherId: options.publisherId
+                },
+                raw,
+                getStorageNodes,
+                abortSignal
+            )
         } else {
             throw new StreamrClientError(
                 `can not resend without valid resend options: ${JSON.stringify({ streamPartId, options })}`,
@@ -202,18 +239,23 @@ export class Resends {
         const nodeAddress = nodeAddresses[random(0, nodeAddresses.length - 1)]
         const nodeUrls = (await this.storageNodeRegistry.getStorageNodeMetadata(nodeAddress)).urls
         const url = createUrl(sample(nodeUrls)!, resendType, streamPartId, query)
-        const messageStream = raw ? new PushPipeline<StreamMessage, StreamMessage>() : this.messagePipelineFactory.createMessagePipeline({
-            streamPartId,
-            /*
-             * Disable ordering if the source of this resend is the only storage node. In that case there is no
-             * other storage node from which we could fetch the gaps. When we set "disableMessageOrdering"
-             * to true, we disable both gap filling and message ordering. As resend messages always arrive
-             * in ascending order, we don't need the ordering functionality.
-             */
-            getStorageNodes: async () => without(nodeAddresses, nodeAddress),
-            config: (nodeAddresses.length === 1) ? { ...this.config, orderMessages: false } : this.config
-        })
-        const lines = transformError(fetchLengthPrefixedFrameHttpBinaryStream(url, abortSignal), getHttpErrorTransform())
+        const messageStream = raw
+            ? new PushPipeline<StreamMessage, StreamMessage>()
+            : this.messagePipelineFactory.createMessagePipeline({
+                  streamPartId,
+                  /*
+                   * Disable ordering if the source of this resend is the only storage node. In that case there is no
+                   * other storage node from which we could fetch the gaps. When we set "disableMessageOrdering"
+                   * to true, we disable both gap filling and message ordering. As resend messages always arrive
+                   * in ascending order, we don't need the ordering functionality.
+                   */
+                  getStorageNodes: async () => without(nodeAddresses, nodeAddress),
+                  config: nodeAddresses.length === 1 ? { ...this.config, orderMessages: false } : this.config
+              })
+        const lines = transformError(
+            fetchLengthPrefixedFrameHttpBinaryStream(url, abortSignal),
+            getHttpErrorTransform()
+        )
         setImmediate(async () => {
             let count = 0
             const messages = map(lines, (bytes: Uint8Array) => convertBytesToStreamMessage(bytes))

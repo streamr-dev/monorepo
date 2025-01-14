@@ -4,7 +4,6 @@ import { createMockPeerDescriptor } from '../utils/utils'
 import { ConnectionEvents } from '../../src/connection/IConnection'
 
 describe('WebrtcConnection', () => {
-
     let connection: NodeWebrtcConnection
 
     beforeEach(() => {
@@ -20,10 +19,14 @@ describe('WebrtcConnection', () => {
 
     it('Disconnects early if remote descriptor is not set', async () => {
         connection.start(true)
-        await waitForEvent3<ConnectionEvents>(connection as any, 'disconnected', 5001, (_graceful: boolean, _code: number, reason: string) => {
-            expect(reason).toBe('timed out due to remote descriptor not being set')
-            return true
-        })
+        await waitForEvent3<ConnectionEvents>(
+            connection as any,
+            'disconnected',
+            5001,
+            (_graceful: boolean, _code: number, reason: string) => {
+                expect(reason).toBe('timed out due to remote descriptor not being set')
+                return true
+            }
+        )
     })
-
 })

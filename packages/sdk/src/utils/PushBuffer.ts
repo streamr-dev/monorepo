@@ -4,16 +4,15 @@ import { StreamrClientError } from '../StreamrClientError'
 export const DEFAULT_BUFFER_SIZE = 256
 
 function isError(err: any): err is Error {
-    if (!err) { return false }
+    if (!err) {
+        return false
+    }
 
-    if (err instanceof Error) { return true }
+    if (err instanceof Error) {
+        return true
+    }
 
-    return !!(
-        err?.stack
-        && err.message
-        && typeof err.stack === 'string'
-        && typeof err.message === 'string'
-    )
+    return !!(err?.stack && err.message && typeof err.stack === 'string' && typeof err.message === 'string')
 }
 
 export type IPushBuffer<InType, OutType = InType> = {
@@ -135,7 +134,7 @@ export class PushBuffer<T> implements IPushBuffer<T> {
         return !this.writeGate.isLocked && !this.readGate.isLocked
     }
 
-    private async* iterate(): AsyncGenerator<T, void, unknown> {
+    private async *iterate(): AsyncGenerator<T, void, unknown> {
         this.isIterating = true
         try {
             // if there's something buffered, we want to flush it
@@ -221,7 +220,7 @@ export class PushBuffer<T> implements IPushBuffer<T> {
  */
 export async function pull<InType, OutType = InType>(
     src: AsyncGenerator<InType>,
-    dest: IPushBuffer<InType, OutType>,
+    dest: IPushBuffer<InType, OutType>
 ): Promise<void> {
     if (!src) {
         throw new Error('no source')
