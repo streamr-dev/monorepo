@@ -5,7 +5,9 @@ import semver from 'semver'
 import Table from 'cli-table'
 $.verbose = false
 
-const packages = JSON.parse(await $`lerna list --all --json --loglevel=silent --toposort`)
+const tmp = await $`lerna list --all --json --loglevel=silent --toposort`
+console.log('DEBUG <' + tmp + '>')
+const packages = JSON.parse(tmp)
 const pkgNames = new Set(packages.map(({ name }) => name))
 const pkgVersions = packages.map(({ version }) => version)
 const pkgJSONs = packages.reduce((obj, info) => {
